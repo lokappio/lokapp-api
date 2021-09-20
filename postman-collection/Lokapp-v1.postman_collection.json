@@ -1,0 +1,1091 @@
+{
+	"info": {
+		"_postman_id": "0158b8e6-2310-4cde-a414-6ad314ba960b",
+		"name": "Lokapp",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Get token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"firebase_token\", pm.response.json().idToken);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"lorem-ipsum@dolor.sit\",\n    \"password\": \"loremipsum\",\n    \"returnSecureToken\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=YOUR_KEY_HERE",
+							"protocol": "https",
+							"host": [
+								"www",
+								"googleapis",
+								"com"
+							],
+							"path": [
+								"identitytoolkit",
+								"v3",
+								"relyingparty",
+								"verifyPassword"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "YOUR_KEY_HERE"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{firebase_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"username_or_null\",\n    \"email\": \"your@email.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host_url}}/api/v1/auth/register",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get me",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{firebase_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_url}}/api/v1/users/me",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Edit user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{firebase_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"new-username\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host_url}}/api/v1/users/me",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Projects",
+			"item": [
+				{
+					"name": "Get users' projects",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{firebase_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create project",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{firebase_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Toto au congo\",\n    \"color\": \"FDC24E\",\n    \"description\": \"tatatata\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Edit project",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{firebase_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Lorem Ipsum\",\n    \"color\": \"AABBCC\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/1",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get specific project",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{firebase_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/1",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete project",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{firebase_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/1",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Language",
+			"item": [
+				{
+					"name": "Get languages",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{firebase_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/1/languages",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								"1",
+								"languages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create language",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{firebase_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"English\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/1/languages",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								"1",
+								"languages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get language",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{firebase_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/1/languages/1",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								"1",
+								"languages",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Edit language",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{firebase_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"EN\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/1/languages/1",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								"1",
+								"languages",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete language",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{firebase_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/1/languages/1",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								"1",
+								"languages",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Group",
+			"item": [
+				{
+					"name": "Get groups",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{firebase_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/1/groups",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								"1",
+								"groups"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create group",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{firebase_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"An awesome group\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/1/groups",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								"1",
+								"groups"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update group",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{firebase_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"An even more awesome group\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/1/groups/1",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								"1",
+								"groups",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Translation",
+			"item": [
+				{
+					"name": "Keys",
+					"item": [
+						{
+							"name": "Get keys",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{firebase_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host_url}}/api/v1/projects/1/translations",
+									"host": [
+										"{{host_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"projects",
+										"1",
+										"translations"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create key",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{firebase_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"your_translation_key\",\n    \"group_id\": 1,\n    \"is_plural\": false\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host_url}}/api/v1/projects/1/translations",
+									"host": [
+										"{{host_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"projects",
+										"1",
+										"translations"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get key",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{firebase_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host_url}}/api/v1/projects/1/translations/1",
+									"host": [
+										"{{host_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"projects",
+										"1",
+										"translations",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete key",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{firebase_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{host_url}}/api/v1/projects/1/translations/1",
+									"host": [
+										"{{host_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"projects",
+										"1",
+										"translations",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Edit key",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{firebase_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"another_translation_key\",\n    \"group_id\": 1,\n    \"is_plural\": false\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host_url}}/api/v1/projects/1/translations/1",
+									"host": [
+										"{{host_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"projects",
+										"1",
+										"translations",
+										"1"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Values",
+					"item": [
+						{
+							"name": "Create value",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{firebase_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"This is my first translated value\",\n    \"language_id\": 1,\n    \"quantity_string\": null\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host_url}}/api/v1/projects/1/translations/1/values",
+									"host": [
+										"{{host_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"projects",
+										"1",
+										"translations",
+										"1",
+										"values"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get values",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{firebase_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host_url}}/api/v1/projects/1/translations/1/values",
+									"host": [
+										"{{host_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"projects",
+										"1",
+										"translations",
+										"1",
+										"values"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get every values of project",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{firebase_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host_url}}/api/v1/projects/1/translations/all",
+									"host": [
+										"{{host_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"projects",
+										"1",
+										"translations",
+										"all"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update value",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{firebase_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"My edited content\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host_url}}/api/v1/projects/1/translations/1/values/1",
+									"host": [
+										"{{host_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"projects",
+										"1",
+										"translations",
+										"1",
+										"values",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get specific value",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{firebase_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host_url}}/api/v1/projects/1/translations/1/values?language_id=1",
+									"host": [
+										"{{host_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"projects",
+										"1",
+										"translations",
+										"1",
+										"values"
+									],
+									"query": [
+										{
+											"key": "language_id",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete value",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{firebase_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host_url}}/api/v1/projects/1/translations/1/values/1",
+									"host": [
+										"{{host_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"projects",
+										"1",
+										"translations",
+										"1",
+										"values",
+										"1"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	]
+}

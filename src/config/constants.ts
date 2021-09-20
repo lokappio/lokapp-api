@@ -1,0 +1,1 @@
+export const DB_URL_CONFIG_KEY = "DATABASE_URL";
