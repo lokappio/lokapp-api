@@ -15,7 +15,7 @@ export default class UpdateProjectDto extends BaseDto {
     description: Joi
       .string()
       .optional()
-      .allow(null)
+      .allow(null, ''),
   });
 
   public name: string;
