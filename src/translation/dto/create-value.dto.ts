@@ -6,6 +6,7 @@ export default class CreateValueDto extends BaseDto {
   public static schema: Joi.ObjectSchema = Joi.object({
     name: Joi
       .string()
+      .allow('')
       .required(),
 
     language_id: Joi

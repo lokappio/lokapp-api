@@ -30,9 +30,7 @@ export default class TranslationService {
     const sameKeys = await this.translationKeyRepository.find({
       where: {
         name: createKeyDto.name,
-        project: {
-          id: projectId
-        },
+        project: {id: projectId},
         group_id: createKeyDto.group_id
       }
     });
@@ -45,11 +43,14 @@ export default class TranslationService {
     key.name = createKeyDto.name;
     key.project = projectFound;
     key.is_plural = createKeyDto.is_plural;
+
     const groupFound = await this.groupsService.getGroup(userId, projectId, createKeyDto.group_id);
+
     if (!groupFound) {
       throw new NotFoundException();
     }
     key.group = groupFound;
+
     const createdKey = await this.translationKeyRepository.save(key);
 
     return this.getKey(userId, projectId, createdKey.id);
@@ -57,6 +58,7 @@ export default class TranslationService {
 
   public async getKey(userId: string, projectId: number, keyId: number): Promise<TranslationKey> {
     await this.projectsService.getProject(userId, projectId);
+
     const key: TranslationKey = await this.translationKeyRepository.findOne(keyId);
     if (!key) {
       throw new NotFoundException();
@@ -124,20 +126,33 @@ export default class TranslationService {
     }
 
     if (updateKeyDto.is_plural !== undefined && updateKeyDto.is_plural !== key.is_plural) {
-      if (updateKeyDto.is_plural === true) {
+      // If previous was SINGULAR and current is PLURAL
+      if (updateKeyDto.is_plural) {
         key.is_plural = true;
 
-        // Change actual values into Other values
-        const valuesToUpdate = await this.translationValueRepository.find({
-          where: {
-            key: key
-          }
-        });
-        valuesToUpdate.forEach((value: TranslationValue) => {
+
+        //CHANGE CURRENT QUANTITY FROM NULL TO OTHER
+        const singularValues = await this.translationValueRepository.find({where: {key: key}});
+        singularValues.forEach((value: TranslationValue) => {
           value.quantity_string = QuantityString.OTHER;
           this.translationValueRepository.save(value);
         });
-      } else {
+
+        //add values [ONE and ZERO] and Give them the value of OTHER quantity
+        [QuantityString.ONE, QuantityString.ZERO].forEach((quantity) => {
+          singularValues.forEach((value) => {
+            const quantityValue = new TranslationValue();
+            quantityValue.key = key;
+            quantityValue.language_id = value.language_id;
+            quantityValue.quantity_string = quantity;
+            quantityValue.name = value.name
+
+            this.translationValueRepository.save(quantityValue);
+          })
+        })
+      }
+      // If previous was PLURAL and current is SINGULAR
+      else {
         key.is_plural = false;
 
         // Delete One and Zero values of key
@@ -158,6 +173,7 @@ export default class TranslationService {
             quantity_string: QuantityString.OTHER
           }
         });
+
         valuesToUpdate.forEach((value: TranslationValue) => {
           value.quantity_string = null;
           this.translationValueRepository.save(value);

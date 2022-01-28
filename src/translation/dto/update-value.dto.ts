@@ -5,6 +5,7 @@ export default class UpdateValueDto extends BaseDto {
   public static schema: Joi.ObjectSchema = Joi.object({
     name: Joi
       .string()
+      .allow('')
       .required()
   });
   public name: string;
