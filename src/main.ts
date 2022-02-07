@@ -18,8 +18,8 @@ async function bootstrap() {
   );
 
   const options = new DocumentBuilder()
-    .setTitle("L10N")
-    .setDescription("L10N tool API description")
+    .setTitle("Lokapp API")
+    .setDescription("Lokapp API description")
     .addBearerAuth()
     .setVersion("1.0")
     .build();
@@ -29,7 +29,7 @@ async function bootstrap() {
 
   customBootstrap();
 
-  await app.listen(5000);
+  await app.listen(8081);
 }
 
 bootstrap();
