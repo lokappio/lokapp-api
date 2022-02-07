@@ -6,7 +6,7 @@ import {JwtAuthUserGuard} from "../../../src/auth/guards/jwt-auth-user.guard";
 import {HttpExceptionFilter} from "../../../src/common/http-error.filter";
 import CreateGroupDto from "../../../src/groups/dto/create-group.dto";
 import UpdateGroupDto from "../../../src/groups/dto/update-group.dto";
-import Group, {defaultGroupName} from "../../../src/groups/group.entity";
+import Group, {DefaultGroupName} from "../../../src/groups/group.entity";
 import CreateInvitationDto from "../../../src/invitations/dto/create-invitation.dto";
 import Invitation from "../../../src/invitations/invitation.entity";
 import Language from "../../../src/languages/language.entity";
@@ -167,7 +167,7 @@ describe("Tests TRANSLATOR", () => {
     relation2.role = Role.Translator;
     await ProjectHelper.dbAddUserProjectRelation(userProjectRepository, relation2);
 
-    defaultGroup.name = defaultGroupName;
+    defaultGroup.name = DefaultGroupName;
     defaultGroup.project = project;
     defaultGroup = await GroupHelper.dbAddGroup(groupRepository, defaultGroup);
   });

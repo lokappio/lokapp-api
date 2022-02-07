@@ -4,8 +4,7 @@ import {ApiProperty} from "@nestjs/swagger";
 import Project from "../projects/project.entity";
 
 export const GroupTableName: string = "groups";
-
-export const defaultGroupName: string = "common";
+export const DefaultGroupName: string = "common";
 
 @Entity(GroupTableName)
 @Unique(PostgresUniqueKeys.GroupInProject, ["name", "project"])

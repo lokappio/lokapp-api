@@ -23,7 +23,7 @@ import TranslationModule from "../../../src/translation/translation.module";
 import CreateKeyDto from "../../../src/translation/dto/create-key.dto";
 import KeyHelper from "../../helpers/KeyHelper";
 import UpdateKeyDto from "../../../src/translation/dto/update-key.dto";
-import Group, {defaultGroupName} from "../../../src/groups/group.entity";
+import Group, {DefaultGroupName} from "../../../src/groups/group.entity";
 import GroupModule from "../../../src/groups/group.module";
 import GroupHelper from "../../helpers/GroupHelper";
 
@@ -106,7 +106,7 @@ describe("Key edge", () => {
     await ProjectHelper.dbAddUserProjectRelation(userProjectRepository, relation);
     projectId = relation.project.id;
 
-    defaultGroup.name = defaultGroupName;
+    defaultGroup.name = DefaultGroupName;
     defaultGroup.project = project;
     defaultGroup = await GroupHelper.dbAddGroup(groupRepository, defaultGroup);
 

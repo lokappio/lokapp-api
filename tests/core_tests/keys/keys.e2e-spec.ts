@@ -21,7 +21,7 @@ import Role from "../../../src/roles/role.enum";
 import KeyHelper from "../../helpers/KeyHelper";
 import CreateKeyDto from "../../../src/translation/dto/create-key.dto";
 import UpdateKeyDto from "../../../src/translation/dto/update-key.dto";
-import Group, {defaultGroupName} from "../../../src/groups/group.entity";
+import Group, {DefaultGroupName} from "../../../src/groups/group.entity";
 import GroupHelper from "../../helpers/GroupHelper";
 import GroupModule from "../../../src/groups/group.module";
 
@@ -133,7 +133,7 @@ describe("Keys", () => {
       userProjectCreated.role = Role.Owner;
       await ProjectHelper.dbAddUserProjectRelation(userProjectRepository, userProjectCreated);
 
-      defaultGroup.name = defaultGroupName;
+      defaultGroup.name = DefaultGroupName;
       defaultGroup.project = project;
       defaultGroup = await GroupHelper.dbAddGroup(groupRepository, defaultGroup);
       keyCreateDto.group_id = defaultGroup.id;
@@ -225,7 +225,7 @@ describe("Keys", () => {
         language_id: null,
         language_name: null,
         group_id: defaultGroup.id,
-        group_name: defaultGroupName
+        group_name: DefaultGroupName
       }]);
     });
 

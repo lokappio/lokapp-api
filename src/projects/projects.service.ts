@@ -12,7 +12,7 @@ import ProjectUser from "./model/project-user.model";
 import Invitation, {InvitationTableName} from "../invitations/invitation.entity";
 import UpdateRoleDto from "./dto/update-role.dto";
 import {UsersTableName} from "../users/user.entity";
-import Group, { defaultGroupName } from "../groups/group.entity";
+import Group, {DefaultGroupName} from "../groups/group.entity";
 
 @Injectable()
 export default class ProjectsService {
@@ -82,9 +82,9 @@ export default class ProjectsService {
       await this.createLanguage(userId, createdProject.id, createLanguageDto);
     }
 
-    //Create default group
+    // Create default group
     const group = new Group();
-    group.name = defaultGroupName;
+    group.name = DefaultGroupName;
     group.project = createdProject;
     await this.groupRepository.save(group);
 
@@ -291,10 +291,12 @@ export default class ProjectsService {
     if (userId === targetId) {
       throw new UnauthorizedException();
     }
-    const relation = await this.usersProjectsRepository.findOne({ where: {
-      projectId: projectId,
-      userId: targetId
-    }});
+    const relation = await this.usersProjectsRepository.findOne({
+      where: {
+        projectId: projectId,
+        userId: targetId
+      }
+    });
     if (!relation) {
       throw new NotFoundException();
     }
