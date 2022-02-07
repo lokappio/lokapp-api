@@ -14,8 +14,8 @@ export default class ProjectHelper {
         return await projectRepository.save(project);
     }
 
-    public static async dbAddUserProjectRelation(userProjectRepository: Repository<UserProject>, userProject: UserProject) {
-        await userProjectRepository.save(userProject);
+    public static async dbAddUserProjectRelation(userProjectRepository: Repository<UserProject>, userProject: UserProject): Promise<UserProject> {
+        return await userProjectRepository.save(userProject);
     }
 
     public static async getProjectsOfUser(app: INestApplication, userId: string): Promise<request.Response> {

@@ -1,10 +1,9 @@
-import {Injectable, NotFoundException, UnauthorizedException, UnprocessableEntityException} from "@nestjs/common";
+import {Injectable, NotFoundException, UnauthorizedException} from "@nestjs/common";
 import CreateProjectDto from "./dto/create-project.dto";
 import Project from "./project.entity";
 import {InjectRepository} from "@nestjs/typeorm";
 import {getManager, Repository} from "typeorm";
 import Language from "../languages/language.entity";
-import {QueryFailedErrorType} from "../common/query-error.filter";
 import CreateLanguageDto from "./dto/create-language.dto";
 import UpdateProjectDto from "./dto/update-project.dto";
 import UserProject, {UsersProjectsTableName} from "../users-projects/user_project.entity";

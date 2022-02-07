@@ -232,7 +232,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Toto au congo\",\n    \"color\": \"FDC24E\",\n    \"description\": \"tatatata\"\n}",
+							"raw": "{\n    \"name\": \"Lorem ipsum\",\n    \"color\": \"FDC24E\",\n    \"description\": \"Lorem ipsum dolor sit amet\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"

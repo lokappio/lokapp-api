@@ -1,12 +1,12 @@
-import { INestApplication } from "@nestjs/common";
-import { Test } from "@nestjs/testing";
-import { getRepositoryToken } from "@nestjs/typeorm";
+import {INestApplication} from "@nestjs/common";
+import {Test} from "@nestjs/testing";
+import {getRepositoryToken} from "@nestjs/typeorm";
 import AuthModule from "../../../src/auth/auth.module";
-import { JwtAuthUserGuard } from "../../../src/auth/guards/jwt-auth-user.guard";
-import { HttpExceptionFilter } from "../../../src/common/http-error.filter";
+import {JwtAuthUserGuard} from "../../../src/auth/guards/jwt-auth-user.guard";
+import {HttpExceptionFilter} from "../../../src/common/http-error.filter";
 import CreateGroupDto from "../../../src/groups/dto/create-group.dto";
 import UpdateGroupDto from "../../../src/groups/dto/update-group.dto";
-import Group, { defaultGroupName } from "../../../src/groups/group.entity";
+import Group, {defaultGroupName} from "../../../src/groups/group.entity";
 import CreateInvitationDto from "../../../src/invitations/dto/create-invitation.dto";
 import Invitation from "../../../src/invitations/invitation.entity";
 import Language from "../../../src/languages/language.entity";
@@ -18,15 +18,15 @@ import TranslationValue from "../../../src/translation/translation_value.entity"
 import UserProject from "../../../src/users-projects/user_project.entity";
 import User from "../../../src/users/user.entity";
 import UsersModule from "../../../src/users/users.module";
-import { mockedAuthGuard } from "../../common/mocked-auth-guard";
-import { TestQueryExceptionFilter } from "../../common/test-query-error.filter";
+import {mockedAuthGuard} from "../../common/mocked-auth-guard";
+import {TestQueryExceptionFilter} from "../../common/test-query-error.filter";
 import TestDatabaseModule from "../../database/test-database.module";
 import AuthHelper from "../../helpers/AuthHelper";
 import EdgeHelper from "../../helpers/EdgeHelper";
 import GroupHelper from "../../helpers/GroupHelper";
 import InvitationHelper from "../../helpers/InvitationHelper";
 import ProjectHelper from "../../helpers/ProjectHelper";
-import { Repository } from "typeorm";
+import {Repository} from "typeorm";
 import GroupModule from "../../../src/groups/group.module";
 import InvitationModule from "../../../src/invitations/invitation.module";
 import TranslationModule from "../../../src/translation/translation.module";
@@ -43,352 +43,352 @@ import UpdateRoleDto from "../../../src/projects/dto/update-role.dto";
 
 
 describe("Tests TRANSLATOR", () => {
-    let app: INestApplication;
-    let userRepository: Repository<User>;
-    let projectRepository: Repository<Project>;
-    let userProjectRepository: Repository<UserProject>;
-    let languageRepository: Repository<Language>;
-    let groupRepository: Repository<Group>;
-    let invitationRepository: Repository<Invitation>;
-    let keyRepository: Repository<TranslationKey>;
-    let valueRepository: Repository<TranslationValue>;
+  let app: INestApplication;
+  let userRepository: Repository<User>;
+  let projectRepository: Repository<Project>;
+  let userProjectRepository: Repository<UserProject>;
+  let languageRepository: Repository<Language>;
+  let groupRepository: Repository<Group>;
+  let invitationRepository: Repository<Invitation>;
+  let keyRepository: Repository<TranslationKey>;
+  let valueRepository: Repository<TranslationValue>;
 
-    const admin = new User("admin_id", "userA");
-    const tester = new User("tester_id", "userB");
+  const admin = new User("admin_id", "userA");
+  const tester = new User("tester_id", "userB");
 
-    let project = new Project();
-    let defaultGroup = new Group();
+  let project = new Project();
+  let defaultGroup = new Group();
 
-    beforeAll(async () => {
-        const moduleRef = await Test.createTestingModule({
-            imports: [
-                UsersModule,
-                AuthModule,
-                ProjectsModule,
-                GroupModule,
-                InvitationModule,
-                TranslationModule,
-                TestDatabaseModule
-            ],
-            providers: [
-                {
-                    provide: getRepositoryToken(User),
-                    useClass: Repository
-                },
-                {
-                    provide: getRepositoryToken(Project),
-                    useClass: Repository
-                },
-                {
-                    provide: getRepositoryToken(UserProject),
-                    useClass: Repository
-                },
-                {
-                    provide: getRepositoryToken(Language),
-                    useClass: Repository
-                },
-                {
-                    provide: getRepositoryToken(Group),
-                    useClass: Repository
-                },
-                {
-                    provide: getRepositoryToken(Invitation),
-                    useClass: Repository
-                },
-                {
-                    provide: getRepositoryToken(TranslationKey),
-                    useClass: Repository
-                },
-                {
-                    provide: getRepositoryToken(TranslationValue),
-                    useClass: Repository
-                }
-            ]
-        })
-        .overrideGuard(JwtAuthUserGuard)
-        .useValue(mockedAuthGuard)
-        .compile();
+  beforeAll(async () => {
+    const moduleRef = await Test.createTestingModule({
+      imports: [
+        UsersModule,
+        AuthModule,
+        ProjectsModule,
+        GroupModule,
+        InvitationModule,
+        TranslationModule,
+        TestDatabaseModule
+      ],
+      providers: [
+        {
+          provide: getRepositoryToken(User),
+          useClass: Repository
+        },
+        {
+          provide: getRepositoryToken(Project),
+          useClass: Repository
+        },
+        {
+          provide: getRepositoryToken(UserProject),
+          useClass: Repository
+        },
+        {
+          provide: getRepositoryToken(Language),
+          useClass: Repository
+        },
+        {
+          provide: getRepositoryToken(Group),
+          useClass: Repository
+        },
+        {
+          provide: getRepositoryToken(Invitation),
+          useClass: Repository
+        },
+        {
+          provide: getRepositoryToken(TranslationKey),
+          useClass: Repository
+        },
+        {
+          provide: getRepositoryToken(TranslationValue),
+          useClass: Repository
+        }
+      ]
+    })
+      .overrideGuard(JwtAuthUserGuard)
+      .useValue(mockedAuthGuard)
+      .compile();
 
-        userRepository = moduleRef.get<Repository<User>>(getRepositoryToken(User));
-        projectRepository = moduleRef.get<Repository<Project>>(getRepositoryToken(Project));
-        userProjectRepository = moduleRef.get<Repository<UserProject>>(getRepositoryToken(UserProject));
-        languageRepository = moduleRef.get<Repository<Language>>(getRepositoryToken(Language));
-        groupRepository = moduleRef.get<Repository<Group>>(getRepositoryToken(Group));
-        invitationRepository = moduleRef.get<Repository<Invitation>>(getRepositoryToken(Invitation));
-        keyRepository = moduleRef.get<Repository<TranslationKey>>(getRepositoryToken(TranslationKey));
-        valueRepository = moduleRef.get<Repository<TranslationValue>>(getRepositoryToken(TranslationValue));
+    userRepository = moduleRef.get<Repository<User>>(getRepositoryToken(User));
+    projectRepository = moduleRef.get<Repository<Project>>(getRepositoryToken(Project));
+    userProjectRepository = moduleRef.get<Repository<UserProject>>(getRepositoryToken(UserProject));
+    languageRepository = moduleRef.get<Repository<Language>>(getRepositoryToken(Language));
+    groupRepository = moduleRef.get<Repository<Group>>(getRepositoryToken(Group));
+    invitationRepository = moduleRef.get<Repository<Invitation>>(getRepositoryToken(Invitation));
+    keyRepository = moduleRef.get<Repository<TranslationKey>>(getRepositoryToken(TranslationKey));
+    valueRepository = moduleRef.get<Repository<TranslationValue>>(getRepositoryToken(TranslationValue));
 
-        app = moduleRef.createNestApplication();
-        app.useGlobalFilters(new HttpExceptionFilter(), new TestQueryExceptionFilter());
-        await app.init();
+    app = moduleRef.createNestApplication();
+    app.useGlobalFilters(new HttpExceptionFilter(), new TestQueryExceptionFilter());
+    await app.init();
+  });
+
+  afterAll(async () => {
+    await userRepository.clear();
+    await projectRepository.clear();
+    await userProjectRepository.clear();
+    await languageRepository.clear();
+    await groupRepository.clear();
+    await invitationRepository.clear();
+    await keyRepository.clear();
+    await valueRepository.clear();
+  });
+
+  beforeEach(async () => {
+    await userRepository.clear();
+    await projectRepository.clear();
+    await userProjectRepository.clear();
+    await languageRepository.clear();
+    await groupRepository.clear();
+    await invitationRepository.clear();
+    await keyRepository.clear();
+    await valueRepository.clear();
+
+    //Setup users
+    admin.email = "admin@email.com";
+    tester.email = "tester@email.com";
+    await AuthHelper.dbAddUser(userRepository, admin);
+    await AuthHelper.dbAddUser(userRepository, tester);
+
+    //Setup project
+    project.name = "project_name";
+    project.color = "FFFFFF";
+    project = await ProjectHelper.dbAddProject(projectRepository, project);
+
+    const relation = new UserProject();
+    relation.project = project;
+    relation.user = admin;
+    relation.role = Role.Owner;
+    await ProjectHelper.dbAddUserProjectRelation(userProjectRepository, relation);
+
+    const relation2 = new UserProject();
+    relation2.project = project;
+    relation2.user = tester;
+    relation2.role = Role.Translator;
+    await ProjectHelper.dbAddUserProjectRelation(userProjectRepository, relation2);
+
+    defaultGroup.name = defaultGroupName;
+    defaultGroup.project = project;
+    defaultGroup = await GroupHelper.dbAddGroup(groupRepository, defaultGroup);
+  });
+
+  describe("Test group", () => {
+    beforeEach(async () => {
+      await groupRepository.clear();
     });
 
-    afterAll(async () => {
-        await userRepository.clear();
-        await projectRepository.clear();
-        await userProjectRepository.clear();
-        await languageRepository.clear();
-        await groupRepository.clear();
-        await invitationRepository.clear();
-        await keyRepository.clear();
-        await valueRepository.clear();
+    it("Creation", async () => {
+      const dto = new CreateGroupDto({
+        name: "My group"
+      });
+      await EdgeHelper.invalidRequest(GroupHelper.createGroup(app, tester.id, project.id, dto));
     });
+
+    it("Update", async () => {
+      let group = new Group();
+      group.name = "My group";
+      group.project = project;
+      group = await GroupHelper.dbAddGroup(groupRepository, group);
+
+      const dto = new UpdateGroupDto({
+        name: "New name"
+      });
+      await EdgeHelper.invalidRequest(GroupHelper.updateGroup(app, tester.id, project.id, group.id, dto));
+    });
+  });
+
+  describe("Test invitation", () => {
+    const random = new User("random_id", "random");
 
     beforeEach(async () => {
-        await userRepository.clear();
-        await projectRepository.clear();
-        await userProjectRepository.clear();
-        await languageRepository.clear();
-        await groupRepository.clear();
-        await invitationRepository.clear();
-        await keyRepository.clear();
-        await valueRepository.clear();
-
-        //Setup users
-        admin.email = "admin@email.com";
-        tester.email = "tester@email.com";
-        await AuthHelper.dbAddUser(userRepository, admin);
-        await AuthHelper.dbAddUser(userRepository, tester);
-
-        //Setup project
-        project.name = "project_name";
-        project.color = "FFFFFF";
-        project = await ProjectHelper.dbAddProject(projectRepository, project);
-
-        let relation = new UserProject();
-        relation.project = project;
-        relation.user = admin;
-        relation.role = Role.Owner;
-        await ProjectHelper.dbAddUserProjectRelation(userProjectRepository, relation);
-
-        let relation2 = new UserProject();
-        relation2.project = project;
-        relation2.user = tester;
-        relation2.role = Role.Translator;
-        await ProjectHelper.dbAddUserProjectRelation(userProjectRepository, relation2);
-
-        defaultGroup.name = defaultGroupName;
-        defaultGroup.project = project;
-        defaultGroup = await GroupHelper.dbAddGroup(groupRepository, defaultGroup);
+      await invitationRepository.clear();
+      random.email = "random@email.com";
+      await AuthHelper.dbAddUser(userRepository, random);
     });
 
-    describe("Test group", () => {
-        beforeEach(async () => {
-            await groupRepository.clear();
-        });
-
-        it("Creation", async () => {
-            const dto = new CreateGroupDto({
-               name: "My group" 
-            });
-            await EdgeHelper.invalidRequest(GroupHelper.createGroup(app, tester.id, project.id, dto));
-        });
-
-        it("Update", async () => {
-            let group = new Group();
-            group.name = "My group";
-            group.project = project;
-            group = await GroupHelper.dbAddGroup(groupRepository, group);
-
-            const dto = new UpdateGroupDto({
-                name: "New name"
-            });
-            await EdgeHelper.invalidRequest(GroupHelper.updateGroup(app, tester.id, project.id, group.id, dto));
-        });
+    it("Creation", async () => {
+      const dto = new CreateInvitationDto({
+        email: "random@email.com",
+        project_id: project.id,
+        role: Role.Manager
+      });
+      await EdgeHelper.invalidRequest(InvitationHelper.createInvitation(app, tester.id, dto));
     });
 
-    describe("Test invitation", () => {
-        const random = new User("random_id", "random");
+    it("Delete", async () => {
+      let invitation = new Invitation();
+      invitation = await InvitationHelper.dbAddInvitation(invitationRepository, project, random, tester, Role.Manager);
 
-        beforeEach(async () => {
-            await invitationRepository.clear();
-            random.email = "random@email.com";
-            await AuthHelper.dbAddUser(userRepository, random);
-        });
+      await EdgeHelper.invalidRequest(InvitationHelper.deleteInvitation(app, tester.id, project.id, invitation.id));
+    });
+  });
 
-        it("Creation", async () => {
-            const dto = new CreateInvitationDto({
-               email: "random@email.com",
-               project_id: project.id,
-               role: Role.Manager
-            });
-            await EdgeHelper.invalidRequest(InvitationHelper.createInvitation(app, tester.id, dto));
-        });
-
-        it("Delete", async () => {
-            let invitation = new Invitation();
-            invitation = await InvitationHelper.dbAddInvitation(invitationRepository, project, random, tester, Role.Manager);
-
-            await EdgeHelper.invalidRequest(InvitationHelper.deleteInvitation(app, tester.id, project.id, invitation.id));
-        });
+  describe("Test key", () => {
+    beforeEach(async () => {
+      await keyRepository.clear();
     });
 
-    describe("Test key", () => {
-        beforeEach(async () => {
-            await keyRepository.clear();
-        });
-
-        it("Creation", async () => {
-            const dto = new CreateKeyDto({
-                name: "My key",
-                group_id: defaultGroup.id,
-                is_plural: false
-            });
-            await EdgeHelper.invalidRequest(KeyHelper.createKey(app, tester.id, project.id, dto));
-        });
-
-        it("Update", async () => {
-            let key = new TranslationKey();
-            key.group = defaultGroup;
-            key.is_plural = false;
-            key.name = "My key";
-            key.project = project;
-            key = await KeyHelper.dbAddKey(keyRepository, key);
-
-            const dto = new UpdateKeyDto({
-                name: "Update",
-                is_plural: true,
-                group_id: defaultGroup.id
-            });
-            await EdgeHelper.invalidRequest(KeyHelper.updateKey(app, tester.id, project.id, key.id, dto));
-        });
-
-        it("Delete", async () => {
-            let key = new TranslationKey();
-            key.group = defaultGroup;
-            key.is_plural = false;
-            key.name = "My key";
-            key.project = project;
-            key = await KeyHelper.dbAddKey(keyRepository, key);
-
-            await EdgeHelper.invalidRequest(KeyHelper.deleteKey(app, tester.id, project.id, key.id));
-        });
+    it("Creation", async () => {
+      const dto = new CreateKeyDto({
+        name: "My key",
+        group_id: defaultGroup.id,
+        is_plural: false
+      });
+      await EdgeHelper.invalidRequest(KeyHelper.createKey(app, tester.id, project.id, dto));
     });
 
-    describe("Test language", () => {
-        beforeEach(async () => {
-            await languageRepository.clear();
-        });
+    it("Update", async () => {
+      let key = new TranslationKey();
+      key.group = defaultGroup;
+      key.is_plural = false;
+      key.name = "My key";
+      key.project = project;
+      key = await KeyHelper.dbAddKey(keyRepository, key);
 
-        it("Creation", async () => {
-            const dto = new CreateLanguageDto({
-                name: "My language"
-            });
-            await EdgeHelper.invalidRequest(LanguageHelper.createLanguage(app, tester.id, project.id, dto));
-        });
-
-        it("Update", async () => {
-            let language = new Language();
-            language.name = "My language";
-            language.project = project;
-            language = await LanguageHelper.dbAddLanguage(languageRepository, language);
-
-            const dto = new CreateLanguageDto({
-                name: "Updated name"
-            });
-            await EdgeHelper.invalidRequest(LanguageHelper.updateLanguage(app, tester.id, project.id, language.id, dto));
-        });
-
-        it("Delete", async () => {
-            let language = new Language();
-            language.name = "My language";
-            language.project = project;
-            language = await LanguageHelper.dbAddLanguage(languageRepository, language);
-
-            await EdgeHelper.invalidRequest(LanguageHelper.deleteLanguage(app, tester.id, project.id, language.id));
-        });
+      const dto = new UpdateKeyDto({
+        name: "Update",
+        is_plural: true,
+        group_id: defaultGroup.id
+      });
+      await EdgeHelper.invalidRequest(KeyHelper.updateKey(app, tester.id, project.id, key.id, dto));
     });
 
-    describe("Test project", () => {
-        it("Update", async () => {
-            const dto = new UpdateProjectDto({
-                name: "UpdateName",
-                color: "000000"
-            });
-            await EdgeHelper.invalidRequest(ProjectHelper.updateProject(app, tester.id, project.id, dto));
-        });
+    it("Delete", async () => {
+      let key = new TranslationKey();
+      key.group = defaultGroup;
+      key.is_plural = false;
+      key.name = "My key";
+      key.project = project;
+      key = await KeyHelper.dbAddKey(keyRepository, key);
 
-        it("Delete", async () => {
-            await EdgeHelper.invalidRequest(ProjectHelper.deleteProject(app, tester.id, project.id)); 
-        });
+      await EdgeHelper.invalidRequest(KeyHelper.deleteKey(app, tester.id, project.id, key.id));
+    });
+  });
+
+  describe("Test language", () => {
+    beforeEach(async () => {
+      await languageRepository.clear();
     });
 
-    describe("Test value", () => {
-        let key = new TranslationKey();
-        key.group = defaultGroup;
-        key.is_plural = false;
-        key.name = "key";
-        key.project = project;
-
-        let language = new Language();
-        language.name = "language";
-        language.project = project;
-
-        beforeEach(async () => {
-            await valueRepository.clear();
-            await keyRepository.clear();
-            await languageRepository.clear();
-            key = await KeyHelper.dbAddKey(keyRepository, key);
-            language = await LanguageHelper.dbAddLanguage(languageRepository, language);
-        });
-
-        it("Creation", async () => {
-            let dto = new CreateValueDto({
-                name: "value",
-                language_id: language.id,
-                quantity_string: null
-            });
-            await EdgeHelper.validRequest(ValueHelper.createValue(app, tester.id, project.id, key.id, dto));
-        });
-
-        it("Update", async () => {
-            let value = new TranslationValue();
-            value.key = key;
-            value.language = language;
-            value.name = "value";
-            value.quantity_string = null;
-            value = await ValueHelper.dbAddValue(valueRepository, value);
-
-            let dto = new UpdateValueDto({
-                name: "update",
-            });
-            await EdgeHelper.validRequest(ValueHelper.updateValue(app, tester.id, project.id, key.id, value.id, dto));
-        });
-
-        it("Delete", async () => {
-            let value = new TranslationValue();
-            value.key = key;
-            value.language = language;
-            value.name = "value";
-            value.quantity_string = null;
-            value = await ValueHelper.dbAddValue(valueRepository, value);
-
-            await EdgeHelper.validRequest(ValueHelper.deleteValue(app, tester.id, project.id, key.id, value.id));
-        });
+    it("Creation", async () => {
+      const dto = new CreateLanguageDto({
+        name: "My language"
+      });
+      await EdgeHelper.invalidRequest(LanguageHelper.createLanguage(app, tester.id, project.id, dto));
     });
 
-    describe("Test user", () => {
-        const random = new User("random_id", "random");
+    it("Update", async () => {
+      let language = new Language();
+      language.name = "My language";
+      language.project = project;
+      language = await LanguageHelper.dbAddLanguage(languageRepository, language);
 
-        beforeEach(async () => {
-            random.email = "random@email.com";
-            await AuthHelper.dbAddUser(userRepository, random);
-            let relation = new UserProject();
-            relation.project = project;
-            relation.user = random;
-            relation.role = Role.Manager;
-            await userProjectRepository.save(relation);
-        });
-
-        it("Update", async () => {
-            const dto = new UpdateRoleDto({
-                role: Role.Translator
-            });
-            await EdgeHelper.invalidRequest(ProjectHelper.updateRoleOfUser(app, tester.id, project.id, random.id, dto));
-        });
-
-        it("Delete", async () => {
-            await EdgeHelper.invalidRequest(ProjectHelper.removeUserFromProject(app, tester.id, project.id, random.id));
-        });
+      const dto = new CreateLanguageDto({
+        name: "Updated name"
+      });
+      await EdgeHelper.invalidRequest(LanguageHelper.updateLanguage(app, tester.id, project.id, language.id, dto));
     });
+
+    it("Delete", async () => {
+      let language = new Language();
+      language.name = "My language";
+      language.project = project;
+      language = await LanguageHelper.dbAddLanguage(languageRepository, language);
+
+      await EdgeHelper.invalidRequest(LanguageHelper.deleteLanguage(app, tester.id, project.id, language.id));
+    });
+  });
+
+  describe("Test project", () => {
+    it("Update", async () => {
+      const dto = new UpdateProjectDto({
+        name: "UpdateName",
+        color: "000000"
+      });
+      await EdgeHelper.invalidRequest(ProjectHelper.updateProject(app, tester.id, project.id, dto));
+    });
+
+    it("Delete", async () => {
+      await EdgeHelper.invalidRequest(ProjectHelper.deleteProject(app, tester.id, project.id));
+    });
+  });
+
+  describe("Test value", () => {
+    let key = new TranslationKey();
+    key.group = defaultGroup;
+    key.is_plural = false;
+    key.name = "key";
+    key.project = project;
+
+    let language = new Language();
+    language.name = "language";
+    language.project = project;
+
+    beforeEach(async () => {
+      await valueRepository.clear();
+      await keyRepository.clear();
+      await languageRepository.clear();
+      key = await KeyHelper.dbAddKey(keyRepository, key);
+      language = await LanguageHelper.dbAddLanguage(languageRepository, language);
+    });
+
+    it("Creation", async () => {
+      const dto = new CreateValueDto({
+        name: "value",
+        language_id: language.id,
+        quantity_string: null
+      });
+      await EdgeHelper.validRequest(ValueHelper.createValue(app, tester.id, project.id, key.id, dto));
+    });
+
+    it("Update", async () => {
+      let value = new TranslationValue();
+      value.key = key;
+      value.language = language;
+      value.name = "value";
+      value.quantity_string = null;
+      value = await ValueHelper.dbAddValue(valueRepository, value);
+
+      const dto = new UpdateValueDto({
+        name: "update"
+      });
+      await EdgeHelper.validRequest(ValueHelper.updateValue(app, tester.id, project.id, key.id, value.id, dto));
+    });
+
+    it("Delete", async () => {
+      let value = new TranslationValue();
+      value.key = key;
+      value.language = language;
+      value.name = "value";
+      value.quantity_string = null;
+      value = await ValueHelper.dbAddValue(valueRepository, value);
+
+      await EdgeHelper.validRequest(ValueHelper.deleteValue(app, tester.id, project.id, key.id, value.id));
+    });
+  });
+
+  describe("Test user", () => {
+    const random = new User("random_id", "random");
+
+    beforeEach(async () => {
+      random.email = "random@email.com";
+      await AuthHelper.dbAddUser(userRepository, random);
+      const relation = new UserProject();
+      relation.project = project;
+      relation.user = random;
+      relation.role = Role.Manager;
+      await userProjectRepository.save(relation);
+    });
+
+    it("Update", async () => {
+      const dto = new UpdateRoleDto({
+        role: Role.Translator
+      });
+      await EdgeHelper.invalidRequest(ProjectHelper.updateRoleOfUser(app, tester.id, project.id, random.id, dto));
+    });
+
+    it("Delete", async () => {
+      await EdgeHelper.invalidRequest(ProjectHelper.removeUserFromProject(app, tester.id, project.id, random.id));
+    });
+  });
 });
