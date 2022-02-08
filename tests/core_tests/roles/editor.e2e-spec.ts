@@ -21,7 +21,7 @@ import UsersModule from "../../../src/users/users.module";
 import {mockedAuthGuard} from "../../common/mocked-auth-guard";
 import {TestQueryExceptionFilter} from "../../common/test-query-error.filter";
 import TestDatabaseModule from "../../database/test-database.module";
-import AuthHelper from "../../helpers/AuthHelper";
+import AuthTestsHelpers from "../../auth/auth-tests.helpers";
 import EdgeHelper from "../../helpers/EdgeHelper";
 import GroupHelper from "../../helpers/GroupHelper";
 import InvitationHelper from "../../helpers/InvitationHelper";
@@ -147,8 +147,8 @@ describe("Tests EDITOR", () => {
     //Setup users
     admin.email = "admin@email.com";
     tester.email = "tester@email.com";
-    await AuthHelper.dbAddUser(userRepository, admin);
-    await AuthHelper.dbAddUser(userRepository, tester);
+    await userRepository.save(admin);
+    await userRepository.save(tester);
 
     //Setup project
     project.name = "project_name";
@@ -206,7 +206,7 @@ describe("Tests EDITOR", () => {
     beforeEach(async () => {
       await invitationRepository.clear();
       random.email = "random@email.com";
-      await AuthHelper.dbAddUser(userRepository, random);
+      await userRepository.save(random);
     });
 
     it("Creation", async () => {
@@ -375,7 +375,7 @@ describe("Tests EDITOR", () => {
 
     beforeEach(async () => {
       random.email = "random@email.com";
-      await AuthHelper.dbAddUser(userRepository, random);
+      await userRepository.save(random);
       const relation = new UserProject();
       relation.project = project;
       relation.user = random;

@@ -13,7 +13,7 @@ import UserProject from "../../../src/users-projects/user_project.entity";
 import Project from "../../../src/projects/project.entity";
 import ProjectsModule from "../../../src/projects/projects.module";
 import {JwtAuthUserGuard} from "../../../src/auth/guards/jwt-auth-user.guard";
-import AuthHelper from "../../helpers/AuthHelper";
+import AuthTestsHelpers from "../../auth/auth-tests.helpers";
 import ProjectHelper from "../../helpers/ProjectHelper";
 import Role from "../../../src/roles/role.enum";
 import Invitation from "../../../src/invitations/invitation.entity";
@@ -97,8 +97,8 @@ describe("Invitations", () => {
 
     beforeAll(async () => {
       // Register user
-      await AuthHelper.dbAddUser(userRepository, userA);
-      await AuthHelper.dbAddUser(userRepository, userB);
+      await userRepository.save(userA);
+      await userRepository.save(userB);
 
       //Create project
       projectCreated = await ProjectHelper.dbAddProject(projectRepository, projectCreated);

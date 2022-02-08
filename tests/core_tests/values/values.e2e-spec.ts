@@ -15,7 +15,7 @@ import ProjectsModule from "../../../src/projects/projects.module";
 import {JwtAuthUserGuard} from "../../../src/auth/guards/jwt-auth-user.guard";
 import TranslationKey from "../../../src/translation/translation_key.entity";
 import TranslationModule from "../../../src/translation/translation.module";
-import AuthHelper from "../../helpers/AuthHelper";
+import AuthTestsHelpers from "../../auth/auth-tests.helpers";
 import ProjectHelper from "../../helpers/ProjectHelper";
 import Role from "../../../src/roles/role.enum";
 import KeyHelper from "../../helpers/KeyHelper";
@@ -122,7 +122,7 @@ describe("Values", () => {
 
     beforeAll(async () => {
       //Register user
-      await AuthHelper.dbAddUser(userRepository, userA);
+      await userRepository.save(userA);
 
       //Create project
       await ProjectHelper.dbAddProject(projectRepository, projectCreated);

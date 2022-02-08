@@ -14,7 +14,7 @@ import Project from "../../../src/projects/project.entity";
 import ProjectsModule from "../../../src/projects/projects.module";
 import {JwtAuthUserGuard} from "../../../src/auth/guards/jwt-auth-user.guard";
 import Language from "../../../src/languages/language.entity";
-import AuthHelper from "../../helpers/AuthHelper";
+import AuthTestsHelpers from "../../auth/auth-tests.helpers";
 import ProjectHelper from "../../helpers/ProjectHelper";
 import Role from "../../../src/roles/role.enum";
 import LanguageHelper from "../../helpers/LanguageHelper";
@@ -97,7 +97,7 @@ describe("Languages", () => {
 
     beforeAll(async () => {
       //Register user
-      await AuthHelper.dbAddUser(userRepository, userA);
+      await userRepository.save(userA);
 
       //Create project
       await ProjectHelper.dbAddProject(projectRepository, projectCreated);

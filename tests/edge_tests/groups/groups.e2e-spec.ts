@@ -13,7 +13,7 @@ import {JwtAuthUserGuard} from "../../../src/auth/guards/jwt-auth-user.guard";
 import * as request from "supertest";
 import Project from "../../../src/projects/project.entity";
 import UserProject from "../../../src/users-projects/user_project.entity";
-import AuthHelper from "../../helpers/AuthHelper";
+import AuthTestsHelpers from "../../auth/auth-tests.helpers";
 import ProjectsModule from "../../../src/projects/projects.module";
 import EdgeHelper from "../../helpers/EdgeHelper";
 import ProjectHelper from "../../helpers/ProjectHelper";
@@ -81,8 +81,8 @@ describe("Group edge", () => {
     //Setup users
     userA.email = "usera@email.com";
     userB.email = "userb@email.com";
-    await AuthHelper.dbAddUser(userRepository, userA);
-    await AuthHelper.dbAddUser(userRepository, userB);
+    await userRepository.save(userA);
+    await userRepository.save(userB);
 
     //Setup project
     project.name = "project name";

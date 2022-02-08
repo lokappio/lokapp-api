@@ -1,15 +1,15 @@
 import {Test} from "@nestjs/testing";
 import {UnauthorizedException} from "@nestjs/common";
-import TestDatabaseModule from "../../database/test-database.module";
-import AuthController from "../../../src/auth/auth.controller";
-import AuthModule from "../../../src/auth/auth.module";
+import TestDatabaseModule from "../database/test-database.module";
+import AuthController from "../../src/auth/auth.controller";
+import AuthModule from "../../src/auth/auth.module";
 import {Request} from "express";
-import RegisterUserDto from "../../../src/auth/dto/register-user.dto";
+import RegisterUserDto from "../../src/auth/dto/register-user.dto";
 import {Repository} from "typeorm";
-import User from "../../../src/users/user.entity";
+import User from "../../src/users/user.entity";
 import {getRepositoryToken} from "@nestjs/typeorm";
-import JwtDecodedUser from "../../../src/auth/model/jwt-decoded-user.model";
-import AuthService from "../../../src/auth/auth.service";
+import JwtDecodedUser from "../../src/auth/model/jwt-decoded-user.model";
+import AuthService from "../../src/auth/auth.service";
 
 describe("AuthController", function () {
   let authController: AuthController;
