@@ -87,7 +87,7 @@ export default class TestsHelpers {
     await userRepository.save(userB);
 
     const userC = new User(TestsHelpers.MOCKED_USER_ID_3, "username #3");
-    userC.email = "user_C@lokapp.io";
+    userC.email = "user_c@lokapp.io";
     await userRepository.save(userC);
 
     return [userA, userB, userC];
