@@ -1,11 +1,11 @@
 import {Test} from "@nestjs/testing";
-import TestDatabaseModule from "../../database/test-database.module";
+import TestDatabaseModule from "../database/test-database.module";
 import {Repository} from "typeorm";
-import User from "../../../src/users/user.entity";
+import User from "../../src/users/user.entity";
 import {getRepositoryToken} from "@nestjs/typeorm";
-import UsersController from "../../../src/users/users.controller";
-import UsersService from "../../../src/users/users.service";
-import UsersModule from "../../../src/users/users.module";
+import UsersController from "../../src/users/users.controller";
+import UsersService from "../../src/users/users.service";
+import UsersModule from "../../src/users/users.module";
 
 describe("UserController", function () {
   let usersController: UsersController;

@@ -9,7 +9,6 @@ import AuthTestsHelpers from "./auth-tests.helpers";
 import RegisterUserDto from "../../src/auth/dto/register-user.dto";
 import {JwtAuthUserGuard} from "../../src/auth/guards/jwt-auth-user.guard";
 import {JwtAuthGuard} from "../../src/auth/guards/jwt-auth.guard";
-import EditUserDto from "../../src/users/dto/edit-user.dto";
 import * as request from "supertest";
 import TestsHelpers from "../helpers/tests.helpers";
 
@@ -133,121 +132,6 @@ describe("Auth", () => {
         .set("mocked_user_id", "duplicated_id")
         .send({email: "example@lokapp.io"});
       expect(response.status).toEqual(400);
-    });
-
-    afterAll(async () => {
-      await userRepository.clear();
-    });
-  });
-
-  describe("Getting user", () => {
-    beforeAll(async () => {
-      // Before all test, insert a user in database
-      const user = new User("new_user_id", "New user");
-      user.email = "new_user@lokapp.io";
-      await userRepository.save(user);
-    });
-
-    it("Unauthenticated user (without JWT)", async () => {
-      const resp = await request(app.getHttpServer())
-        .get("/users/me");
-      expect(resp.status).toEqual(401);
-    });
-
-    it("No userId decoded from the JWT", async () => {
-      const resp = await request(app.getHttpServer())
-        .get("/users/me")
-        .auth("mocked.jwt", {type: "bearer"});
-      expect(resp.status).toEqual(404);
-    });
-
-    it("Unregistered user", async () => {
-      const response = await AuthTestsHelpers.getCurrentUserProfile(app, "wrong_user_id");
-      expect(response.status).toEqual(404);
-    });
-
-    it("Get another user profile", async () => {
-      // Add another user in database
-      const anotherUser = new User("another_id", "Lorem ipsum");
-      anotherUser.email = "another_user@lokapp.io";
-      await userRepository.save(anotherUser);
-      // Check there are 2 users in database
-      const allUsers = await userRepository.find();
-      expect(allUsers.length).toBe(2);
-
-      // Then try to access the other user's profile with its id.
-      // Route does not exist. Should get a 404
-      const result = await request(app.getHttpServer())
-        .get("/users/another_id")
-        .auth("mocked.jwt", {type: "bearer"})
-        .set("mocked_user_id", "new_user_id");
-      expect(result.status).toBe(404);
-    });
-
-    it("Get user profile", async () => {
-      const allUsers = await userRepository.find();
-      expect(allUsers.length).toBeGreaterThanOrEqual(1);
-
-      const getProfileResult = await AuthTestsHelpers.getCurrentUserProfile(app, "new_user_id");
-      expect(getProfileResult.status).toBe(200);
-      expect(getProfileResult.body.id).toEqual("new_user_id");
-      expect(getProfileResult.body.username).toEqual("New user");
-      expect(getProfileResult.body.email).toEqual("new_user@lokapp.io");
-    });
-
-    afterAll(async () => {
-      await userRepository.clear();
-    });
-  });
-
-  describe("Updating user", () => {
-    beforeAll(async () => {
-      const user = new User("editable_user_id", "New user");
-      user.email = "editable_user@lokapp.io";
-      await userRepository.save(user);
-    });
-
-    it("Unauthenticated user (no JWT)", async () => {
-      const editUserDto = new EditUserDto({username: "Edited username"});
-      const response = await request(app.getHttpServer())
-        .patch("/users/me")
-        .send(editUserDto);
-      expect(response.status).toEqual(401);
-    });
-
-    it("Edit user without userId decoded from token", async () => {
-      const editUserDto = new EditUserDto({username: "Edited username"});
-      const response = await request(app.getHttpServer())
-        .patch("/users/me")
-        .auth("mocked.jwt", {type: "bearer"})
-        .send(editUserDto);
-      expect(response.status).toEqual(404);
-    });
-
-    it("Editing profile without being registered", async () => {
-      const editUserDto = new EditUserDto({username: "Edited username"});
-      const response = await request(app.getHttpServer())
-        .patch("/users/me")
-        .auth("mocked.jwt", {type: "bearer"})
-        .set("mocked_user_id", "wrong_user_id")
-        .send(editUserDto);
-      expect(response.status).toEqual(404);
-    });
-
-    it("Editing user", async () => {
-      const updateDto = new EditUserDto({username: "Edited username"});
-      const updateProfileResult = await AuthTestsHelpers.editCurrentUserProfile(app, "editable_user_id", updateDto);
-      expect(updateProfileResult.status).toBe(200);
-      expect(updateProfileResult.body.id).toEqual("editable_user_id");
-      expect(updateProfileResult.body.email).toEqual("editable_user@lokapp.io");
-      expect(updateProfileResult.body.username).not.toEqual("Editable user");
-      expect(updateProfileResult.body.username).toEqual("Edited username");
-
-      const getProfileResult = await AuthTestsHelpers.getCurrentUserProfile(app, "editable_user_id");
-      expect(getProfileResult.status).toBe(200);
-      expect(getProfileResult.body.id).toEqual("editable_user_id");
-      expect(getProfileResult.body.username).not.toEqual("Editable user");
-      expect(getProfileResult.body.username).toEqual("Edited username");
     });
 
     afterAll(async () => {

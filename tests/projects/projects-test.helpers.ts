@@ -1,6 +1,5 @@
 import {INestApplication} from "@nestjs/common";
 import * as request from "supertest";
-import CreateProjectDto from "../../src/projects/dto/create-project.dto";
 import UpdateProjectDto from "../../src/projects/dto/update-project.dto";
 import UpdateRoleDto from "../../src/projects/dto/update-role.dto";
 
@@ -8,21 +7,6 @@ export default class ProjectsTestHelpers {
   public static async getUserProjects(app: INestApplication, userId: string): Promise<request.Response> {
     return request(app.getHttpServer())
       .get("/projects")
-      .auth("mocked.jwt", {type: "bearer"})
-      .set("mocked_user_id", userId);
-  }
-
-  public static async createProject(app: INestApplication, userId: string, dto: CreateProjectDto): Promise<request.Response> {
-    return request(app.getHttpServer())
-      .post("/projects")
-      .auth("mocked.jwt", {type: "bearer"})
-      .set("mocked_user_id", userId)
-      .send(dto);
-  }
-
-  public static async getProject(app: INestApplication, userId: string, projectId: number): Promise<request.Response> {
-    return request(app.getHttpServer())
-      .get(`/projects/${projectId}`)
       .auth("mocked.jwt", {type: "bearer"})
       .set("mocked_user_id", userId);
   }
