@@ -26,4 +26,4 @@ export default class AuthTestsHelpers {
       .set("mocked_user_id", userId)
       .send(dto);
   }
-};
+}

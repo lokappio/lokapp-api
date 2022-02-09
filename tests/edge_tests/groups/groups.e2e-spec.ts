@@ -16,7 +16,7 @@ import UserProject from "../../../src/users-projects/user_project.entity";
 import AuthTestsHelpers from "../../auth/auth-tests.helpers";
 import ProjectsModule from "../../../src/projects/projects.module";
 import EdgeHelper from "../../helpers/EdgeHelper";
-import ProjectHelper from "../../helpers/ProjectHelper";
+import ProjectsTestHelpers from "../../projects/projects-test.helpers";
 import Role from "../../../src/roles/role.enum";
 import Group from "../../../src/groups/group.entity";
 import GroupModule from "../../../src/groups/group.module";
@@ -87,21 +87,21 @@ describe("Group edge", () => {
     //Setup project
     project.name = "project name";
     project.color = "FFFFFF";
-    await ProjectHelper.dbAddProject(projectRepository, project);
+    await projectRepository.save(project);
     const relation = new UserProject();
     relation.project = (await projectRepository.findOne({where: {name: project.name}}));
     relation.user = userA;
     relation.role = Role.Owner;
-    await ProjectHelper.dbAddUserProjectRelation(userProjectRepository, relation);
+    await userProjectRepository.save(relation);
     projectId = relation.project.id;
     projectB.name = "project nameB";
     projectB.color = "FFFFFF";
-    await ProjectHelper.dbAddProject(projectRepository, projectB);
+    await projectRepository.save(projectB);
     const relation2 = new UserProject();
     relation2.project = (await projectRepository.findOne({where: {name: projectB.name}}));
     relation2.user = userA;
     relation2.role = Role.Owner;
-    await ProjectHelper.dbAddUserProjectRelation(userProjectRepository, relation2);
+    await userProjectRepository.save(relation2);
 
     app = moduleRef.createNestApplication();
     app.useGlobalFilters(new HttpExceptionFilter(), new TestQueryExceptionFilter());

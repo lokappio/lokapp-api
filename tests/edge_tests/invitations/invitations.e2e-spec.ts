@@ -16,7 +16,7 @@ import UserProject from "../../../src/users-projects/user_project.entity";
 import AuthTestsHelpers from "../../auth/auth-tests.helpers";
 import ProjectsModule from "../../../src/projects/projects.module";
 import EdgeHelper from "../../helpers/EdgeHelper";
-import ProjectHelper from "../../helpers/ProjectHelper";
+import ProjectsTestHelpers from "../../projects/projects-test.helpers";
 import Role from "../../../src/roles/role.enum";
 import Invitation from "../../../src/invitations/invitation.entity";
 import InvitationModule from "../../../src/invitations/invitation.module";
@@ -86,21 +86,21 @@ describe("Invitation edge", () => {
     //Setup projects
     projectA.name = "project name";
     projectA.color = "FFFFFF";
-    projectA = await ProjectHelper.dbAddProject(projectRepository, projectA);
+    await projectRepository.save(projectA);
     const relation = new UserProject();
     relation.project = projectA;
     relation.user = userA;
     relation.role = Role.Owner;
-    await ProjectHelper.dbAddUserProjectRelation(userProjectRepository, relation);
+    await userProjectRepository.save(relation);
 
     projectB.name = "project nameB";
     projectB.color = "FFFFFF";
-    await ProjectHelper.dbAddProject(projectRepository, projectB);
+    await projectRepository.save(projectB);
     const relation2 = new UserProject();
     relation2.project = projectB;
     relation2.user = userA;
     relation2.role = Role.Owner;
-    await ProjectHelper.dbAddUserProjectRelation(userProjectRepository, relation2);
+    await userProjectRepository.save(relation2);
 
     app = moduleRef.createNestApplication();
     app.useGlobalFilters(new HttpExceptionFilter(), new TestQueryExceptionFilter());
@@ -203,7 +203,7 @@ describe("Invitation edge", () => {
       relation.project = projectA;
       relation.user = userB;
       relation.role = Role.Translator;
-      await ProjectHelper.dbAddUserProjectRelation(userProjectRepository, relation);
+      await userProjectRepository.save(relation);
 
       const req = request(app.getHttpServer())
         .post(`/invitations`)
@@ -402,7 +402,7 @@ describe("Invitation edge", () => {
       relation.project = projectA;
       relation.user = userB;
       relation.role = Role.Translator;
-      await ProjectHelper.dbAddUserProjectRelation(userProjectRepository, relation);
+      await userProjectRepository.save(relation);
 
       updateRoleDto = {
         role: Role.Manager
@@ -545,7 +545,7 @@ describe("Invitation edge", () => {
       relation.project = projectA;
       relation.user = userB;
       relation.role = Role.Translator;
-      await ProjectHelper.dbAddUserProjectRelation(userProjectRepository, relation);
+      await userProjectRepository.save(relation);
     });
 
     it("No JWT on request", async () => {

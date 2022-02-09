@@ -25,7 +25,7 @@ import AuthTestsHelpers from "../../auth/auth-tests.helpers";
 import EdgeHelper from "../../helpers/EdgeHelper";
 import GroupHelper from "../../helpers/GroupHelper";
 import InvitationHelper from "../../helpers/InvitationHelper";
-import ProjectHelper from "../../helpers/ProjectHelper";
+import ProjectsTestHelpers from "../../projects/projects-test.helpers";
 import {Repository} from "typeorm";
 import GroupModule from "../../../src/groups/group.module";
 import InvitationModule from "../../../src/invitations/invitation.module";
@@ -153,19 +153,19 @@ describe("Tests OWNER", () => {
     //Setup project
     project.name = "project_name";
     project.color = "FFFFFF";
-    project = await ProjectHelper.dbAddProject(projectRepository, project);
+    await projectRepository.save(project);
 
     const relation = new UserProject();
     relation.project = project;
     relation.user = admin;
     relation.role = Role.Manager;
-    await ProjectHelper.dbAddUserProjectRelation(userProjectRepository, relation);
+    await userProjectRepository.save(relation);
 
     const relation2 = new UserProject();
     relation2.project = project;
     relation2.user = tester;
     relation2.role = Role.Owner;
-    await ProjectHelper.dbAddUserProjectRelation(userProjectRepository, relation2);
+    await userProjectRepository.save(relation2);
 
     defaultGroup.name = DefaultGroupName;
     defaultGroup.project = project;
@@ -305,11 +305,11 @@ describe("Tests OWNER", () => {
         name: "UpdateName",
         color: "000000"
       });
-      await EdgeHelper.validRequest(ProjectHelper.updateProject(app, tester.id, project.id, dto));
+      await EdgeHelper.validRequest(ProjectsTestHelpers.updateProject(app, tester.id, project.id, dto));
     });
 
     it("Delete", async () => {
-      await EdgeHelper.validRequest(ProjectHelper.deleteProject(app, tester.id, project.id));
+      await EdgeHelper.validRequest(ProjectsTestHelpers.deleteProject(app, tester.id, project.id));
     });
   });
 
@@ -373,14 +373,14 @@ describe("Tests OWNER", () => {
       const dto = new UpdateRoleDto({
         role: Role.Owner
       });
-      await EdgeHelper.validRequest(ProjectHelper.updateRoleOfUser(app, tester.id, project.id, admin.id, dto));
+      await EdgeHelper.validRequest(ProjectsTestHelpers.updateUserRole(app, tester.id, project.id, admin.id, dto));
     });
 
     it("Update Manager into Translator", async () => {
       const dto = new UpdateRoleDto({
         role: Role.Translator
       });
-      await EdgeHelper.validRequest(ProjectHelper.updateRoleOfUser(app, tester.id, project.id, admin.id, dto));
+      await EdgeHelper.validRequest(ProjectsTestHelpers.updateUserRole(app, tester.id, project.id, admin.id, dto));
     });
 
     it("Update Translator into Owner", async () => {
@@ -395,7 +395,7 @@ describe("Tests OWNER", () => {
       const dto = new UpdateRoleDto({
         role: Role.Owner
       });
-      await EdgeHelper.validRequest(ProjectHelper.updateRoleOfUser(app, tester.id, project.id, admin.id, dto));
+      await EdgeHelper.validRequest(ProjectsTestHelpers.updateUserRole(app, tester.id, project.id, admin.id, dto));
     });
 
     it("Update Translator into Manager", async () => {
@@ -411,11 +411,11 @@ describe("Tests OWNER", () => {
       const dto = new UpdateRoleDto({
         role: Role.Translator
       });
-      await EdgeHelper.validRequest(ProjectHelper.updateRoleOfUser(app, tester.id, project.id, admin.id, dto));
+      await EdgeHelper.validRequest(ProjectsTestHelpers.updateUserRole(app, tester.id, project.id, admin.id, dto));
     });
 
     it("Delete", async () => {
-      await EdgeHelper.validRequest(ProjectHelper.removeUserFromProject(app, tester.id, project.id, admin.id));
+      await EdgeHelper.validRequest(ProjectsTestHelpers.removeUserFromProject(app, tester.id, project.id, admin.id));
     });
   });
 });

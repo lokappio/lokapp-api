@@ -16,7 +16,7 @@ import UserProject from "../../../src/users-projects/user_project.entity";
 import AuthTestsHelpers from "../../auth/auth-tests.helpers";
 import ProjectsModule from "../../../src/projects/projects.module";
 import EdgeHelper from "../../helpers/EdgeHelper";
-import ProjectHelper from "../../helpers/ProjectHelper";
+import ProjectsTestHelpers from "../../projects/projects-test.helpers";
 import Role from "../../../src/roles/role.enum";
 import TranslationKey from "../../../src/translation/translation_key.entity";
 import TranslationModule from "../../../src/translation/translation.module";
@@ -98,12 +98,12 @@ describe("Key edge", () => {
     //Setup project
     project.name = "project name";
     project.color = "FFFFFF";
-    await ProjectHelper.dbAddProject(projectRepository, project);
+    await projectRepository.save(project);
     const relation = new UserProject();
     relation.project = (await projectRepository.findOne({where: {name: project.name}}));
     relation.user = userA;
     relation.role = Role.Owner;
-    await ProjectHelper.dbAddUserProjectRelation(userProjectRepository, relation);
+    await userProjectRepository.save(relation);
     projectId = relation.project.id;
 
     defaultGroup.name = DefaultGroupName;

@@ -15,7 +15,7 @@ import ProjectsModule from "../../../src/projects/projects.module";
 import {JwtAuthUserGuard} from "../../../src/auth/guards/jwt-auth-user.guard";
 import Language from "../../../src/languages/language.entity";
 import AuthTestsHelpers from "../../auth/auth-tests.helpers";
-import ProjectHelper from "../../helpers/ProjectHelper";
+import ProjectsTestHelpers from "../../projects/projects-test.helpers";
 import Role from "../../../src/roles/role.enum";
 import LanguageHelper from "../../helpers/LanguageHelper";
 import CreateLanguageDto from "../../../src/projects/dto/create-language.dto";
@@ -100,7 +100,7 @@ describe("Languages", () => {
       await userRepository.save(userA);
 
       //Create project
-      await ProjectHelper.dbAddProject(projectRepository, projectCreated);
+      await projectRepository.save(projectCreated);
       const project = await projectRepository.findOne({
         where: {
           name: projectCreated.name
@@ -110,7 +110,7 @@ describe("Languages", () => {
       userProjectCreated.project = project;
       userProjectCreated.userId = userA.id;
       userProjectCreated.role = Role.Owner;
-      await ProjectHelper.dbAddUserProjectRelation(userProjectRepository, userProjectCreated);
+      await userProjectRepository.save(userProjectCreated);
     });
 
     it("1) Get list of project's language", async () => {

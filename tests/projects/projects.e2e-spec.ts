@@ -1,22 +1,17 @@
 import {INestApplication} from "@nestjs/common";
 import {getRepositoryToken} from "@nestjs/typeorm";
-import {Test} from "@nestjs/testing";
-import UsersModule from "../../../src/users/users.module";
-import AuthModule from "../../../src/auth/auth.module";
-import TestDatabaseModule from "../../database/test-database.module";
-import User from "../../../src/users/user.entity";
+import User from "../../src/users/user.entity";
 import {Repository} from "typeorm";
-import {mockedAuthGuard} from "../../common/mocked-auth-guard";
-import {HttpExceptionFilter} from "../../../src/common/http-error.filter";
-import {TestQueryExceptionFilter} from "../../common/test-query-error.filter";
-import {JwtAuthUserGuard} from "../../../src/auth/guards/jwt-auth-user.guard";
-import Project from "../../../src/projects/project.entity";
-import UserProject from "../../../src/users-projects/user_project.entity";
-import AuthHelper from "../../helpers/AuthHelper";
-import ProjectHelper from "../../helpers/ProjectHelper";
-import ProjectsModule from "../../../src/projects/projects.module";
-import CreateProjectDto from "../../../src/projects/dto/create-project.dto";
-import UpdateProjectDto from "../../../src/projects/dto/update-project.dto";
+import {mockedAuthGuard} from "../common/mocked-auth-guard";
+import {HttpExceptionFilter} from "../../src/common/http-error.filter";
+import {TestQueryExceptionFilter} from "../common/test-query-error.filter";
+import {JwtAuthUserGuard} from "../../src/auth/guards/jwt-auth-user.guard";
+import Project from "../../src/projects/project.entity";
+import UserProject from "../../src/users-projects/user_project.entity";
+import CreateProjectDto from "../../src/projects/dto/create-project.dto";
+import TestsHelpers from "../helpers/tests.helpers";
+import * as request from "supertest";
+import Role from "../../src/roles/role.enum";
 
 describe("Projects E2E", () => {
   let app: INestApplication;
@@ -25,28 +20,7 @@ describe("Projects E2E", () => {
   let userProjectRepository: Repository<UserProject>;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [
-        UsersModule,
-        AuthModule,
-        ProjectsModule,
-        TestDatabaseModule
-      ],
-      providers: [
-        {
-          provide: getRepositoryToken(User),
-          useClass: Repository
-        },
-        {
-          provide: getRepositoryToken(Project),
-          useClass: Repository
-        },
-        {
-          provide: getRepositoryToken(UserProject),
-          useClass: Repository
-        }
-      ]
-    })
+    const moduleRef = await TestsHelpers.getTestingModule()
       .overrideGuard(JwtAuthUserGuard)
       .useValue(mockedAuthGuard)
       .compile();
@@ -58,6 +32,8 @@ describe("Projects E2E", () => {
     app = moduleRef.createNestApplication();
     app.useGlobalFilters(new HttpExceptionFilter(), new TestQueryExceptionFilter());
     await app.init();
+
+    await TestsHelpers.populateUsers(userRepository);
   });
 
   afterAll(async () => {
@@ -68,124 +44,491 @@ describe("Projects E2E", () => {
   });
 
   describe("Creating project", () => {
-    beforeAll(async () => {
-      // Insert user in database before each test
-      const userA = new User("mocked_user_id_1", "username one");
-      userA.email = "userA@email.com";
-      await userRepository.save(userA);
+    it("Unauthenticated user (without JWT)", async () => {
+      const response = await request(app.getHttpServer())
+        .post("/projects")
+        .send(new CreateProjectDto({
+          name: "Unauthenticated project",
+          color: "123456"
+        }));
+      expect(response.status).toEqual(401);
     });
 
-    it("Get empty list of projects", async () => {
-      const projectsResp = await ProjectHelper.getProjectsOfUser(app, "mocked_user_id_1");
-      expect(projectsResp.status).toBe(200);
-      expect(projectsResp.body.length).toBe(0);
+    it("Creating project with DTO errors", async () => {
+      const noColorResp = await request(app.getHttpServer())
+        .post("/projects")
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({name: "Missing color parameter", language: "fr"});
+      expect(noColorResp.status).toEqual(400);
+      expect(noColorResp.body.message).toBe("Validation failed");
+
+      const noNameResp = await request(app.getHttpServer())
+        .post("/projects")
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({color: "123456", language: "fr"});
+      expect(noNameResp.status).toEqual(400);
+      expect(noNameResp.body.message).toBe("Validation failed");
+
+      const noLanguageResp = await request(app.getHttpServer())
+        .post("/projects")
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({name: "Project without language", color: "123456"});
+      expect(noLanguageResp.status).toEqual(400);
+      expect(noLanguageResp.body.message).toBe("Validation failed");
+
+      const noDataResp = await request(app.getHttpServer())
+        .post("/projects")
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({});
+      expect(noDataResp.status).toEqual(400);
+      expect(noDataResp.body.message).toBe("Validation failed");
+
+      const tooLongNameResp = await request(app.getHttpServer())
+        .post("/projects")
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({
+          name: "This is a really long name for a project. The API requires a length of 80 characters maximum",
+          color: "000000",
+          language: "fr"
+        });
+      expect(tooLongNameResp.status).toEqual(400);
+
+      const colorFormatResp = await request(app.getHttpServer())
+        .post("/projects")
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({name: "Name", color: "FGHIJK", language: "fr"});
+      expect(colorFormatResp.status).toEqual(400);
+
+      const colorLengthResp = await request(app.getHttpServer())
+        .post("/projects")
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({name: "Name", color: "112233445566", language: "fr"});
+      expect(colorLengthResp.status).toEqual(400);
+    });
+
+    it("Creating project", async () => {
+      const projectsCount = (await projectRepository.find()).length;
+
+      const dto = new CreateProjectDto({
+        name: "New project name",
+        description: "Lorem ipsum dolor sit amet",
+        color: "112233",
+        language: "fr"
+      });
+
+      const createdProjectResp = await request(app.getHttpServer())
+        .post("/projects")
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send(dto);
+
+      expect(createdProjectResp.status).toBe(201);
+      expect(createdProjectResp.body.id).not.toBeNull();
+      expect(createdProjectResp.body.name).toEqual(dto.name);
+      expect(createdProjectResp.body.description).toEqual(dto.description);
+      expect(createdProjectResp.body.color).toEqual(dto.color);
+
+      const updatedProjectsCount = (await projectRepository.find()).length;
+      expect(updatedProjectsCount).toEqual(projectsCount + 1);
+
+      const relations = await userProjectRepository.find();
+      expect(relations.length).toEqual(1);
+      expect(relations[0].role).toEqual(Role.Owner);
+      expect(relations[0].userId).toEqual(TestsHelpers.MOCKED_USER_ID_1);
+      expect(relations[0].projectId).toEqual(createdProjectResp.body.id);
+    });
+
+    afterAll(async () => {
+      await projectRepository.clear();
     });
   });
-  // TODO refactor tests
-  // Virer les core et les edges tests. Tout mettre dans un seul fichier
 
-  // Creating project
-  // 401 / 422 / 201 ok créé
-
-  // Getting project
-  // 401 / 403 (not mine) / 404 not found
-  // 200 ok avec 0 projet
-  // 200 ok avec plusieurs projet
-  // 200 ok getting details
-
-  // Updating
-  // 401 / 403 / 404 / 200 ok
-
-  // Deleting project
-  // 401 403 404 204
-
-  describe("Projects E2E", () => {
-    const userA = new User("mocked_user_id_1", "username one");
-    userA.email = "userA@email.com";
-
-    const projectACreateDto = new CreateProjectDto({
-      name: "ProjectA",
-      color: "121212",
-      description: "Lorem ipsum"
+  describe("Getting projects", () => {
+    afterEach(async () => {
+      // After each test, clear projects and relations with users
+      await projectRepository.clear();
+      await userProjectRepository.clear();
     });
 
-    beforeAll(async () => {
-      // Insert user in database before each test
-      await userRepository.save(userA);
+    it("Unauthenticated user (without JWT)", async () => {
+      // Cannot get the list of project
+      const projectsResp = await request(app.getHttpServer())
+        .get("/projects");
+      expect(projectsResp.status).toEqual(401);
+
+      // Create a project (being authenticated)
+      const createdProject = await request(app.getHttpServer())
+        .post("/projects")
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({
+          name: "Project",
+          description: "Lorem ipsum dolor sit amet",
+          color: "987654",
+          language: "de"
+        });
+      expect(createdProject.status).toEqual(201);
+
+      // Then check a user without JWT can't access it
+      const projectResp = await request(app.getHttpServer())
+        .get("/projects/" + createdProject.body.id);
+      expect(projectResp.status).toEqual(401);
     });
 
-    it("Get empty list of projects", async () => {
-      const projectsResp = await ProjectHelper.getProjectsOfUser(app, "mocked_user_id_1");
-      expect(projectsResp.status).toBe(200);
-      expect(projectsResp.body.length).toBe(0);
+    it("Getting a non-existing project", async () => {
+      const projectsResp = await request(app.getHttpServer())
+        .get("/projects/132456789")
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1);
+
+      expect(projectsResp.status).toEqual(404);
     });
 
-    it("Get project after creating it", async () => {
+    it("Getting an empty list of projects", async () => {
+      // Get the projects as MOCKED_USER_ID_3 (has no project)
+      const projectsResp = await request(app.getHttpServer())
+        .get("/projects")
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_3);
+
+      expect(projectsResp.status).toEqual(200);
+      expect(projectsResp.body.length).toEqual(0);
+    });
+
+    it("Getting a list of projects", async () => {
+      // Create 2 projects
+      const firstProject = await request(app.getHttpServer())
+        .post("/projects")
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({
+          name: "New project name",
+          description: "Lorem ipsum dolor sit amet",
+          color: "112233",
+          language: "fr"
+        });
+      expect(firstProject.status).toEqual(201);
+
+      const secondProject = await request(app.getHttpServer())
+        .post("/projects")
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({
+          name: "New project name",
+          description: "Lorem ipsum dolor sit amet",
+          color: "112233",
+          language: "fr"
+        });
+      expect(secondProject.status).toEqual(201);
+
+      // Get projects and expect to get 2
+      const projectsResp = await request(app.getHttpServer())
+        .get("/projects")
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1);
+      expect(projectsResp.status).toEqual(200);
+      expect(projectsResp.body.length).toEqual(2);
+
+      // Check there are two relations for MOCKED_USER_ID_1 user
+      const relations = await userProjectRepository.find({
+        where: {
+          user: {
+            id: TestsHelpers.MOCKED_USER_ID_1
+          }
+        }
+      });
+      expect(relations.length).toEqual(2);
+      expect(projectsResp.body.length).toEqual(relations.length);
+    });
+
+    it("Getting project's details", async () => {
       // Create a project
-      const createdProjectResp = await ProjectHelper.createProject(app, "mocked_user_id_1", projectACreateDto);
-      expect(createdProjectResp.status).toBe(201);
-      expect(createdProjectResp.body).toEqual({
-        ...projectACreateDto,
-        id: expect.any(Number),
-        created_at: expect.any(String),
-        updated_at: expect.any(String)
-      });
+      const createdProject = await request(app.getHttpServer())
+        .post("/projects")
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({
+          name: "A new project",
+          description: "This is a new project",
+          color: "000000",
+          language: "en"
+        });
+      expect(createdProject.status).toEqual(201);
 
-      // Get list of projects
-      const projectsListResp = await ProjectHelper.getProjectsOfUser(app, "mocked_user_id_1");
-      expect(projectsListResp.status).toBe(200);
-      expect(projectsListResp.body.length).toBe(1);
+      const projectResp = await request(app.getHttpServer())
+        .get(`/projects/${createdProject.body.id}`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1);
 
-      // Get project details
-      const projectDetailsResp = await ProjectHelper.getProject(app, "mocked_user_id_1", createdProjectResp.body.id);
-      expect(projectDetailsResp.status).toBe(200);
-      expect(projectDetailsResp.body).toEqual({
-        ...projectACreateDto,
-        id: createdProjectResp.body.id,
-        created_at: expect.any(String),
-        updated_at: expect.any(String)
-      });
-
-      // Find the project by its id
-      const foundProject = await projectRepository.findOne(createdProjectResp.body.id);
-      expect(foundProject).not.toBeNull();
+      expect(projectResp.status).toEqual(200);
+      expect(projectResp.body.id).toEqual(createdProject.body.id);
     });
 
-    it("Updating a project", async () => {
-      // Create a project
-      const createdProject = await ProjectHelper.createProject(app, "mocked_user_id_1", projectACreateDto);
+    it("Trying to access a project of another user", async () => {
+      // Create a project as MOCKED_USER_ID_1
+      const createdProject = await request(app.getHttpServer())
+        .post("/projects")
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({
+          name: "A new project",
+          description: "This project belongs to MOCKED_USER_ID_1",
+          color: "000000",
+          language: "en"
+        });
+      expect(createdProject.status).toEqual(201);
 
-      // Update it
-      const projectAUpdateDto = new UpdateProjectDto({
-        name: "UpdatedA",
-        color: "000000",
-        description: null
-      });
-      const updatedProjectResponse = await ProjectHelper.updateProject(app, "mocked_user_id_1", createdProject.body.id, projectAUpdateDto);
-      expect(updatedProjectResponse.status).toBe(200);
-      expect(updatedProjectResponse.body).toEqual({
-        ...projectAUpdateDto,
-        id: createdProject.body.id,
-        created_at: expect.any(String),
-        updated_at: expect.any(String)
-      });
+      // Try to access this project as MOCKED_USER_ID_2
+      const projectResp = await request(app.getHttpServer())
+        .get(`/projects/${createdProject.body.id}`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_2);
+
+      expect(projectResp.status).toEqual(401);
+    });
+
+    afterAll(async () => {
+      await projectRepository.clear();
+      await userProjectRepository.clear();
+    });
+  });
+
+  describe("Updating projects", () => {
+    afterEach(async () => {
+      await userProjectRepository.clear();
+      await projectRepository.clear();
+    });
+
+    it("Unauthenticated user (without JWT)", async () => {
+      // Create a project (being authenticated)
+      const createdProject = await request(app.getHttpServer())
+        .post("/projects")
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({
+          name: "Project about to be edited",
+          description: "Lorem ipsum dolor sit amet",
+          color: "123456",
+          language: "fr"
+        });
+      expect(createdProject.status).toEqual(201);
+
+      // Then check a user without JWT can't edit it
+      const projectResp = await request(app.getHttpServer())
+        .put(`/projects/${createdProject.body.id}`)
+        .send({name: "The name", color: "123456", description: "The description"});
+      expect(projectResp.status).toEqual(401);
+    });
+
+    it("Editing a project not belonging to the user", async () => {
+      // Create a project as MOCKED_USER_ID_1
+      const createdProject = await request(app.getHttpServer())
+        .post("/projects")
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({
+          name: "Project about to be edited by MOCKED_USER_ID_2",
+          description: "Lorem ipsum",
+          color: "112233",
+          language: "fr"
+        });
+      expect(createdProject.status).toEqual(201);
+
+      // Then try to edit it as MOCKED_USER_ID_2
+      const projectResp = await request(app.getHttpServer())
+        .put(`/projects/${createdProject.body.id}`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_2)
+        .send({name: "The name", color: "123456", description: "The description"});
+      expect(projectResp.status).toEqual(403);
+    });
+
+    it("Editing a non-existing project", async () => {
+      const projectResp = await request(app.getHttpServer())
+        .put(`/projects/123456789`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_2)
+        .send({name: "The name", color: "123456", description: "The description"});
+      expect(projectResp.status).toEqual(403);
+    });
+
+    it("Editing project with DTO errors", async () => {
+      // Create a project
+      const projectResp = await request(app.getHttpServer())
+        .post("/projects")
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({
+          name: "Editable project",
+          description: "The description of this project",
+          color: "654321",
+          language: "en"
+        });
+      expect(projectResp.status).toEqual(201);
+
+      const noColorResp = await request(app.getHttpServer())
+        .put(`/projects/${projectResp.body.id}`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({name: "Missing color parameter", description: ""});
+      expect(noColorResp.status).toEqual(400);
+
+      const noNameResp = await request(app.getHttpServer())
+        .put(`/projects/${projectResp.body.id}`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({color: "000000", description: ""});
+      expect(noNameResp.status).toEqual(400);
+
+      const noDescription = await request(app.getHttpServer())
+        .put(`/projects/${projectResp.body.id}`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({name: "Name", color: "000000"});
+      expect(noDescription.status).toEqual(400);
+
+      const noDataResp = await request(app.getHttpServer())
+        .put(`/projects/${projectResp.body.id}`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({});
+      expect(noDataResp.status).toEqual(400);
+    });
+
+    it("Editing a project", async () => {
+      // Create a project
+      const createdProject = await request(app.getHttpServer())
+        .post("/projects")
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({
+          name: "Project about to be edited",
+          description: "Lorem ipsum dolor sit amet",
+          color: "123456",
+          language: "fr"
+        });
+      expect(createdProject.status).toEqual(201);
+
+      const editedResp = await request(app.getHttpServer())
+        .put(`/projects/${createdProject.body.id}`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({
+          name: "Edited name",
+          color: "FF0000",
+          description: "Edited description"
+        });
+      expect(editedResp.status).toEqual(200);
+      expect(editedResp.body.id).toEqual(createdProject.body.id);
+      expect(editedResp.body.name).toEqual("Edited name");
+      expect(editedResp.body.color).toEqual("FF0000");
+      expect(editedResp.body.description).not.toBeNull();
+      expect(editedResp.body.description).toEqual("Edited description");
+
+      const descriptionErasedResp = await request(app.getHttpServer())
+        .put(`/projects/${createdProject.body.id}`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({
+          name: "Another name again",
+          color: "000000",
+          description: null
+        });
+      expect(descriptionErasedResp.status).toEqual(200);
+      expect(descriptionErasedResp.body.id).toEqual(createdProject.body.id);
+      expect(descriptionErasedResp.body.name).toEqual("Another name again");
+      expect(descriptionErasedResp.body.color).toEqual("000000");
+      expect(descriptionErasedResp.body.description).toBeNull();
+    });
+
+    afterEach(async () => {
+      // Clear all relations between users and projects
+      await userProjectRepository.clear();
+    });
+
+    afterAll(async () => {
+      await projectRepository.clear();
+      await userProjectRepository.clear();
+    });
+  });
+
+  describe("Deleting project", () => {
+    it("Unauthenticated user (without JWT)", async () => {
+      // Create a project (being authenticated)
+      const createdProject = await request(app.getHttpServer())
+        .post("/projects")
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({name: "Will be deleted", color: "123456", language: "fr"});
+      expect(createdProject.status).toEqual(201);
+
+      // Then check the project can't be deleted if no JWT
+      const projectResp = await request(app.getHttpServer())
+        .delete(`/projects/${createdProject.body.id}`);
+      expect(projectResp.status).toEqual(401);
+    });
+
+    it("Deleting a project not belonging to the user", async () => {
+      // Create a project as MOCKED_USER_ID_1
+      const createdProject = await request(app.getHttpServer())
+        .post("/projects")
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({name: "Will be deleted", color: "123456", language: "fr"});
+
+      // Then try to delete it as MOCKED_USER_ID_2
+      const projectResp = await request(app.getHttpServer())
+        .delete(`/projects/${createdProject.body.id}`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_2);
+      expect(projectResp.status).toEqual(403);
+    });
+
+    it("Deleting a non-existing project", async () => {
+      const projectResp = await request(app.getHttpServer())
+        .delete(`/projects/123456789`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_2);
+      expect(projectResp.status).toEqual(403);
     });
 
     it("Deleting a project", async () => {
       // Create a project
-      const createdProjectResp = await ProjectHelper.createProject(app, "mocked_user_id_1", new CreateProjectDto({
-        name: "Temporary project",
-        color: "FF0000",
-        description: "Project about to be deleted"
-      }));
+      const createdProject = await request(app.getHttpServer())
+        .post("/projects")
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({name: "Will be deleted", color: "123456", language: "fr"});
 
       // Delete this project
-      const deleteResult = await ProjectHelper.deleteProject(app, "mocked_user_id_1", createdProjectResp.body.id);
-      expect(deleteResult.status).toBe(204);
+      const deleteResp = await request(app.getHttpServer())
+        .delete(`/projects/${createdProject.body.id}`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1);
+      expect(deleteResp.status).toBe(204);
 
-      // Expect not to be able to find the project anymore
-      const foundProject = await projectRepository.findOne(createdProjectResp.body.id);
-      expect(foundProject).not.toBeNull();
+      // Expect to not be able to find the project anymore
+      const foundProject = await projectRepository.findOne(createdProject.body.id);
+      expect(foundProject).toBeUndefined();
+
+      const relations = await userProjectRepository.find({
+        where: {
+          projectId: createdProject.body.id
+        }
+      });
+      expect(relations.length).toEqual(0);
+    });
+
+    afterAll(async () => {
+      await projectRepository.clear();
+      await userProjectRepository.clear();
     });
   });
 });

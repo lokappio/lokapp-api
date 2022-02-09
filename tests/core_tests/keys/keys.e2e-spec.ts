@@ -16,7 +16,7 @@ import {JwtAuthUserGuard} from "../../../src/auth/guards/jwt-auth-user.guard";
 import TranslationKey from "../../../src/translation/translation_key.entity";
 import TranslationModule from "../../../src/translation/translation.module";
 import AuthTestsHelpers from "../../auth/auth-tests.helpers";
-import ProjectHelper from "../../helpers/ProjectHelper";
+import ProjectsTestHelpers from "../../projects/projects-test.helpers";
 import Role from "../../../src/roles/role.enum";
 import KeyHelper from "../../helpers/KeyHelper";
 import CreateKeyDto from "../../../src/translation/dto/create-key.dto";
@@ -24,6 +24,7 @@ import UpdateKeyDto from "../../../src/translation/dto/update-key.dto";
 import Group, {DefaultGroupName} from "../../../src/groups/group.entity";
 import GroupHelper from "../../helpers/GroupHelper";
 import GroupModule from "../../../src/groups/group.module";
+import TestsHelpers from "../../helpers/tests.helpers";
 
 describe("Keys", () => {
   let app: INestApplication;
@@ -121,7 +122,7 @@ describe("Keys", () => {
       await userRepository.save(userA);
 
       //Create project
-      await ProjectHelper.dbAddProject(projectRepository, projectCreated);
+      await projectRepository.save(projectCreated);
       const project = await projectRepository.findOne({
         where: {
           name: projectCreated.name
@@ -131,7 +132,7 @@ describe("Keys", () => {
       userProjectCreated.project = project;
       userProjectCreated.userId = userA.id;
       userProjectCreated.role = Role.Owner;
-      await ProjectHelper.dbAddUserProjectRelation(userProjectRepository, userProjectCreated);
+      await userProjectRepository.save(userProjectCreated);
 
       defaultGroup.name = DefaultGroupName;
       defaultGroup.project = project;

@@ -14,7 +14,7 @@ import Project from "../../../src/projects/project.entity";
 import ProjectsModule from "../../../src/projects/projects.module";
 import {JwtAuthUserGuard} from "../../../src/auth/guards/jwt-auth-user.guard";
 import AuthTestsHelpers from "../../auth/auth-tests.helpers";
-import ProjectHelper from "../../helpers/ProjectHelper";
+import ProjectsTestHelpers from "../../projects/projects-test.helpers";
 import Role from "../../../src/roles/role.enum";
 import Invitation from "../../../src/invitations/invitation.entity";
 import InvitationModule from "../../../src/invitations/invitation.module";
@@ -101,7 +101,7 @@ describe("Invitations", () => {
       await userRepository.save(userB);
 
       //Create project
-      projectCreated = await ProjectHelper.dbAddProject(projectRepository, projectCreated);
+      projectCreated = await projectRepository.save(projectCreated);
       const project = await projectRepository.findOne({
         where: {
           name: projectCreated.name
@@ -111,11 +111,11 @@ describe("Invitations", () => {
       userProjectCreated.project = project;
       userProjectCreated.userId = userA.id;
       userProjectCreated.role = Role.Owner;
-      await ProjectHelper.dbAddUserProjectRelation(userProjectRepository, userProjectCreated);
+      await userProjectRepository.save(userProjectCreated);
     });
 
     it("1) UserA gets users of project", async () => {
-      const getResult = await ProjectHelper.getUsersOfProject(app, userA.id, projectId);
+      const getResult = await ProjectsTestHelpers.getUsersOfProject(app, userA.id, projectId);
       expect(getResult.status).toBe(200);
       expect(getResult.body.length).toBe(1);
       expect(getResult.body).toEqual([{
@@ -177,7 +177,7 @@ describe("Invitations", () => {
     });
 
     it("4) UserA gets users of project", async () => {
-      const getResult = await ProjectHelper.getUsersOfProject(app, userA.id, projectId);
+      const getResult = await ProjectsTestHelpers.getUsersOfProject(app, userA.id, projectId);
       expect(getResult.status).toBe(200);
       expect(getResult.body.length).toBe(2);
       expect(getResult.body).toEqual([
@@ -213,7 +213,7 @@ describe("Invitations", () => {
     });
 
     it("7) UserA gets users of project", async () => {
-      const getResult = await ProjectHelper.getUsersOfProject(app, userA.id, projectId);
+      const getResult = await ProjectsTestHelpers.getUsersOfProject(app, userA.id, projectId);
       expect(getResult.status).toBe(200);
       expect(getResult.body.length).toBe(1);
       expect(getResult.body).toEqual([{
@@ -239,7 +239,7 @@ describe("Invitations", () => {
     });
 
     it("9) UserB list his projects", async () => {
-      const getResult = await ProjectHelper.getProjectsOfUser(app, userB.id);
+      const getResult = await ProjectsTestHelpers.getUserProjects(app, userB.id);
       expect(getResult.status).toBe(200);
       expect(getResult.body.length).toBe(0);
     });
@@ -257,7 +257,7 @@ describe("Invitations", () => {
     });
 
     it("12) UserA gets users of project", async () => {
-      const getResult = await ProjectHelper.getUsersOfProject(app, userA.id, projectId);
+      const getResult = await ProjectsTestHelpers.getUsersOfProject(app, userA.id, projectId);
       expect(getResult.status).toBe(200);
       expect(getResult.body.length).toBe(1);
       expect(getResult.body).toEqual([{
@@ -294,7 +294,7 @@ describe("Invitations", () => {
     });
 
     it("16) UserB list his projects", async () => {
-      const getResult = await ProjectHelper.getProjectsOfUser(app, userB.id);
+      const getResult = await ProjectsTestHelpers.getUserProjects(app, userB.id);
       expect(getResult.status).toBe(200);
       expect(getResult.body.length).toBe(1);
       expect(getResult.body).toEqual([{
@@ -305,7 +305,7 @@ describe("Invitations", () => {
     });
 
     it("17) UserA gets users of project", async () => {
-      const getResult = await ProjectHelper.getUsersOfProject(app, userA.id, projectId);
+      const getResult = await ProjectsTestHelpers.getUsersOfProject(app, userA.id, projectId);
       expect(getResult.status).toBe(200);
       expect(getResult.body.length).toBe(2);
       expect(getResult.body).toEqual([
@@ -333,12 +333,12 @@ describe("Invitations", () => {
       const updateRoleDto = new UpdateRoleDto({
         role: Role.Manager
       });
-      const updateResult = await ProjectHelper.updateRoleOfUser(app, userA.id, projectCreated.id, userB.id, updateRoleDto);
+      const updateResult = await ProjectsTestHelpers.updateUserRole(app, userA.id, projectCreated.id, userB.id, updateRoleDto);
       expect(updateResult.status).toBe(200);
     });
 
     it("19) UserA gets users of project", async () => {
-      const getResult = await ProjectHelper.getUsersOfProject(app, userA.id, projectId);
+      const getResult = await ProjectsTestHelpers.getUsersOfProject(app, userA.id, projectId);
       expect(getResult.status).toBe(200);
       expect(getResult.body.length).toBe(2);
       expect(getResult.body).toEqual([
@@ -366,12 +366,12 @@ describe("Invitations", () => {
       const updateRoleDto = new UpdateRoleDto({
         role: Role.Owner
       });
-      const updateResult = await ProjectHelper.updateRoleOfUser(app, userA.id, projectCreated.id, userB.id, updateRoleDto);
+      const updateResult = await ProjectsTestHelpers.updateUserRole(app, userA.id, projectCreated.id, userB.id, updateRoleDto);
       expect(updateResult.status).toBe(200);
     });
 
     it("21) UserA gets users of project", async () => {
-      const getResult = await ProjectHelper.getUsersOfProject(app, userA.id, projectId);
+      const getResult = await ProjectsTestHelpers.getUsersOfProject(app, userA.id, projectId);
       expect(getResult.status).toBe(200);
       expect(getResult.body.length).toBe(2);
       expect(getResult.body).toEqual([
@@ -399,18 +399,18 @@ describe("Invitations", () => {
       const updateRoleDto = new UpdateRoleDto({
         role: Role.Owner
       });
-      const updateResult = await ProjectHelper.updateRoleOfUser(app, userB.id, projectCreated.id, userA.id, updateRoleDto);
+      const updateResult = await ProjectsTestHelpers.updateUserRole(app, userB.id, projectCreated.id, userA.id, updateRoleDto);
       expect(updateResult.status).toBe(200);
     });
 
     //Remove user from project
     it("23) UserA remove UserB from project", async () => {
-      const deleteResult = await ProjectHelper.removeUserFromProject(app, userA.id, projectCreated.id, userB.id);
+      const deleteResult = await ProjectsTestHelpers.removeUserFromProject(app, userA.id, projectCreated.id, userB.id);
       expect(deleteResult.status).toBe(204);
     });
 
     it("24) UserA gets users of project", async () => {
-      const getResult = await ProjectHelper.getUsersOfProject(app, userA.id, projectId);
+      const getResult = await ProjectsTestHelpers.getUsersOfProject(app, userA.id, projectId);
       expect(getResult.status).toBe(200);
       expect(getResult.body.length).toBe(1);
       expect(getResult.body).toEqual([{
@@ -424,7 +424,7 @@ describe("Invitations", () => {
     });
 
     it("25) UserB list his projects", async () => {
-      const getResult = await ProjectHelper.getProjectsOfUser(app, userB.id);
+      const getResult = await ProjectsTestHelpers.getUserProjects(app, userB.id);
       expect(getResult.status).toBe(200);
       expect(getResult.body.length).toBe(0);
     });

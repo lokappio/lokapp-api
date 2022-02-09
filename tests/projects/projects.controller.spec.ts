@@ -1,15 +1,15 @@
 import {Test} from "@nestjs/testing";
-import ProjectsController from "../../../src/projects/projects.controller";
-import Project from "../../../src/projects/project.entity";
+import ProjectsController from "../../src/projects/projects.controller";
+import Project from "../../src/projects/project.entity";
 import {getRepositoryToken} from "@nestjs/typeorm";
 import {DeleteResult, Repository} from "typeorm";
 import {NotFoundException} from "@nestjs/common";
-import CreateProjectDto from "../../../src/projects/dto/create-project.dto";
-import ProjectsModule from "../../../src/projects/projects.module";
-import TestDatabaseModule from "../../database/test-database.module";
-import CreateLanguageDto from "../../../src/projects/dto/create-language.dto";
-import Language from "../../../src/languages/language.entity";
-import ProjectsService from "../../../src/projects/projects.service";
+import CreateProjectDto from "../../src/projects/dto/create-project.dto";
+import ProjectsModule from "../../src/projects/projects.module";
+import TestDatabaseModule from "../database/test-database.module";
+import CreateLanguageDto from "../../src/projects/dto/create-language.dto";
+import Language from "../../src/languages/language.entity";
+import ProjectsService from "../../src/projects/projects.service";
 
 describe("ProjectsController", function () {
   let projectsController: ProjectsController;

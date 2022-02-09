@@ -28,5 +28,4 @@ export default class Project {
   @UpdateDateColumn()
   @ApiProperty()
   readonly updated_at: Date;
-
 }

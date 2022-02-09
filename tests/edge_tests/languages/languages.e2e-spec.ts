@@ -16,7 +16,7 @@ import UserProject from "../../../src/users-projects/user_project.entity";
 import AuthTestsHelpers from "../../auth/auth-tests.helpers";
 import ProjectsModule from "../../../src/projects/projects.module";
 import EdgeHelper from "../../helpers/EdgeHelper";
-import ProjectHelper from "../../helpers/ProjectHelper";
+import ProjectsTestHelpers from "../../projects/projects-test.helpers";
 import Role from "../../../src/roles/role.enum";
 import Language from "../../../src/languages/language.entity";
 import CreateLanguageDto from "../../../src/projects/dto/create-language.dto";
@@ -86,13 +86,13 @@ describe("Language edge", () => {
     const project = new Project();
     project.name = "project name";
     project.color = "FFFFFF";
-    await ProjectHelper.dbAddProject(projectRepository, project);
+    await projectRepository.save(project);
 
     const relation = new UserProject();
     relation.user = userA;
     relation.project = project;
     relation.role = Role.Owner;
-    await ProjectHelper.dbAddUserProjectRelation(userProjectRepository, relation);
+    await userProjectRepository.save(relation);
 
     projectId = (await projectRepository.findOne({where: {name: project.name}})).id;
   });

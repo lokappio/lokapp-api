@@ -1,9 +1,5 @@
 import {INestApplication} from "@nestjs/common";
 import {getRepositoryToken} from "@nestjs/typeorm";
-import {Test} from "@nestjs/testing";
-import UsersModule from "../../src/users/users.module";
-import AuthModule from "../../src/auth/auth.module";
-import TestDatabaseModule from "../database/test-database.module";
 import User from "../../src/users/user.entity";
 import {Repository} from "typeorm";
 import {mockedAuthGuard} from "../common/mocked-auth-guard";
@@ -15,25 +11,14 @@ import {JwtAuthUserGuard} from "../../src/auth/guards/jwt-auth-user.guard";
 import {JwtAuthGuard} from "../../src/auth/guards/jwt-auth.guard";
 import EditUserDto from "../../src/users/dto/edit-user.dto";
 import * as request from "supertest";
+import TestsHelpers from "../helpers/tests.helpers";
 
 describe("Auth", () => {
   let app: INestApplication;
   let userRepository: Repository<User>;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [
-        UsersModule,
-        AuthModule,
-        TestDatabaseModule
-      ],
-      providers: [
-        {
-          provide: getRepositoryToken(User),
-          useClass: Repository
-        }
-      ]
-    })
+    const moduleRef = await TestsHelpers.getTestingModule()
       .overrideGuard(JwtAuthUserGuard)
       .useValue(mockedAuthGuard)
       .overrideGuard(JwtAuthGuard)

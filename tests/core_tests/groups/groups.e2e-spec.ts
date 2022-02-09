@@ -16,7 +16,7 @@ import {JwtAuthUserGuard} from "../../../src/auth/guards/jwt-auth-user.guard";
 import TranslationKey from "../../../src/translation/translation_key.entity";
 import TranslationModule from "../../../src/translation/translation.module";
 import AuthTestsHelpers from "../../auth/auth-tests.helpers";
-import ProjectHelper from "../../helpers/ProjectHelper";
+import ProjectsTestHelpers from "../../projects/projects-test.helpers";
 import Role from "../../../src/roles/role.enum";
 import KeyHelper from "../../helpers/KeyHelper";
 import Group from "../../../src/groups/group.entity";
@@ -117,7 +117,7 @@ describe("Groups", () => {
       await userRepository.save(userA);
 
       //Create project
-      await ProjectHelper.dbAddProject(projectRepository, projectCreated);
+      await projectRepository.save(projectCreated);
       const project = await projectRepository.findOne({
         where: {
           name: projectCreated.name
@@ -127,7 +127,7 @@ describe("Groups", () => {
       userProjectCreated.project = project;
       userProjectCreated.userId = userA.id;
       userProjectCreated.role = Role.Owner;
-      await ProjectHelper.dbAddUserProjectRelation(userProjectRepository, userProjectCreated);
+      await userProjectRepository.save(userProjectCreated);
 
       keyA.is_plural = false;
       keyB.is_plural = false;
