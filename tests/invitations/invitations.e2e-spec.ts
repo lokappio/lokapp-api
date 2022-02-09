@@ -330,8 +330,7 @@ describe("Invitations", () => {
       const deleteInvitationResp = await request(app.getHttpServer())
         .delete(`/invitations/${invitationResp.body.id}`)
         .auth("mocked.jwt", {type: "bearer"})
-        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({project_id: populatedProjects[0].id});
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1);
       expect(deleteInvitationResp.status).toEqual(204);
     });
 
@@ -348,12 +347,40 @@ describe("Invitations", () => {
         });
       expect(invitationResp.status).toEqual(201);
 
-      // Delete invitation
+      // Try to delete invitation
       const deleteInvitationResp = await request(app.getHttpServer())
         .delete(`/invitations/${invitationResp.body.id}`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_3);
-      expect(deleteInvitationResp.status).toEqual(403);
+      expect(deleteInvitationResp.status).toEqual(401);
+    });
+
+    it("As another member of the project, try to delete invitation", async () => {
+      // Add user2 into the project
+      const relation = new UserProject();
+      relation.project = populatedProjects[0];
+      relation.user = await userRepository.findOne(TestsHelpers.MOCKED_USER_ID_2);
+      relation.role = Role.Manager;
+      await userProjectRepository.save(relation);
+
+      // Create invitation as user1
+      const invitationResp = await request(app.getHttpServer())
+        .post("/invitations")
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({
+          email: "user_c@lokapp.io", // Email of mocked user 3
+          project_id: populatedProjects[0].id,
+          role: Role.Translator
+        });
+      expect(invitationResp.status).toEqual(201);
+
+      // Try to delete invitation as user 2
+      const deleteInvitationResp = await request(app.getHttpServer())
+        .delete(`/invitations/${invitationResp.body.id}`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_2);
+      expect(deleteInvitationResp.status).toEqual(401);
     });
   });
 });
