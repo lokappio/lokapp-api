@@ -26,27 +26,6 @@ export default class InvitationHelper {
             .send(dto);
     }
 
-    public static getUserInvitations(app: INestApplication, userId: string): Promise<request.Response> {
-        return request(app.getHttpServer())
-            .get("/invitations")
-            .auth("mocked.jwt", {type: "bearer"})
-            .set("mocked_user_id", userId);
-    }
-
-    public static acceptInvitation(app: INestApplication, userId: string, invitationId: number): Promise<request.Response> {
-        return request(app.getHttpServer())
-            .post(`/invitations/${invitationId}/accept`)
-            .auth("mocked.jwt", {type: "bearer"})
-            .set("mocked_user_id", userId);
-    }
-
-    public static declineInvitation(app: INestApplication, userId: string, invitationId: number): Promise<request.Response> {
-        return request(app.getHttpServer())
-            .post(`/invitations/${invitationId}/decline`)
-            .auth("mocked.jwt", {type: "bearer"})
-            .set("mocked_user_id", userId);
-    }
-
     public static deleteInvitation(app: INestApplication, userId: string, projectId: number, invitationId: number): Promise<request.Response> {
         return request(app.getHttpServer())
             .delete(`/invitations/${invitationId}`)

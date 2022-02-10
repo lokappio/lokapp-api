@@ -526,6 +526,55 @@ describe("Projects E2E", () => {
       expect(relations.length).toEqual(0);
     });
 
+    it("Deleting a project with several users", async () => {
+      // Create project
+      const project = new Project();
+      project.name = "Project of 2 users";
+      project.description = "Project about to be deleted";
+      project.color = "654987"
+      await projectRepository.save(project);
+
+      // Create relation for user1
+      const relation1 = new UserProject();
+      relation1.user = await userRepository.findOne(TestsHelpers.MOCKED_USER_ID_1);
+      relation1.project = project;
+      relation1.role = Role.Owner;
+      await userProjectRepository.save(relation1);
+
+      // Create relation for user2
+      const relation2 = new UserProject();
+      relation2.user = await userRepository.findOne(TestsHelpers.MOCKED_USER_ID_2);
+      relation2.project = project;
+      relation2.role = Role.Manager;
+      await userProjectRepository.save(relation2);
+
+      // Check number of relations (expect 2)
+      const relationsCount = await userProjectRepository.find({
+        where: {
+          projectId: project.id
+        }
+      });
+      expect(relationsCount.length).toEqual(2);
+
+      // Delete this project
+      const deleteResp = await request(app.getHttpServer())
+        .delete(`/projects/${project.id}`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1);
+      expect(deleteResp.status).toBe(204);
+
+      // Expect to not be able to find the project anymore
+      const foundProject = await projectRepository.findOne(project.id);
+      expect(foundProject).toBeUndefined();
+
+      const relationsCountAfterDeletion = await userProjectRepository.find({
+        where: {
+          projectId: project.id
+        }
+      });
+      expect(relationsCountAfterDeletion.length).toEqual(0);
+    });
+
     afterAll(async () => {
       await projectRepository.clear();
       await userProjectRepository.clear();
