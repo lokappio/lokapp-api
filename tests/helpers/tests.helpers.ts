@@ -1,10 +1,6 @@
 import Group from "../../src/groups/group.entity";
-import { Repository } from "typeorm";
-import { INestApplication } from "@nestjs/common";
-import * as request from "supertest";
-import CreateGroupDto from "../../src/groups/dto/create-group.dto";
-import UpdateGroupDto from "../../src/groups/dto/update-group.dto";
-import {Test, TestingModule, TestingModuleBuilder} from "@nestjs/testing";
+import {Repository} from "typeorm";
+import {Test, TestingModuleBuilder} from "@nestjs/testing";
 import UsersModule from "../../src/users/users.module";
 import AuthModule from "../../src/auth/auth.module";
 import ProjectsModule from "../../src/projects/projects.module";
@@ -13,8 +9,6 @@ import {getRepositoryToken} from "@nestjs/typeorm";
 import User from "../../src/users/user.entity";
 import Project from "../../src/projects/project.entity";
 import UserProject from "../../src/users-projects/user_project.entity";
-import {JwtAuthUserGuard} from "../../src/auth/guards/jwt-auth-user.guard";
-import {mockedAuthGuard} from "../common/mocked-auth-guard";
 import Language from "../../src/languages/language.entity";
 import TranslationKey from "../../src/translation/translation_key.entity";
 import TranslationValue from "../../src/translation/translation_value.entity";
@@ -22,7 +16,6 @@ import GroupModule from "../../src/groups/group.module";
 import InvitationModule from "../../src/invitations/invitation.module";
 import TranslationModule from "../../src/translation/translation.module";
 import Role from "../../src/roles/role.enum";
-import ProjectsTestHelpers from "../projects/projects-test.helpers";
 
 export default class TestsHelpers {
   public static getTestingModule(): TestingModuleBuilder {
@@ -66,7 +59,7 @@ export default class TestsHelpers {
           useClass: Repository
         }
       ]
-    })
+    });
   }
 
   public static readonly MOCKED_USER_ID_1 = "mocked_user_id_1";
