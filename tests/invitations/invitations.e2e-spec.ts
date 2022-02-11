@@ -49,8 +49,9 @@ describe("Invitations", () => {
     app.useGlobalFilters(new HttpExceptionFilter(), new TestQueryExceptionFilter());
     await app.init();
 
-    const populatedData = await TestsHelpers.populateUsersAndProjects(userRepository, projectRepository, userProjectRepository);
-    populatedProjects = populatedData.projects;
+    const populatedUsers = await TestsHelpers.populateUsers(userRepository);
+    const populatedProjects = await TestsHelpers.populateProjects(projectRepository);
+    await TestsHelpers.populateDefaultRelations(populatedUsers, populatedProjects, userProjectRepository);
   });
 
   afterAll(async () => {

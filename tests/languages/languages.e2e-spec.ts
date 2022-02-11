@@ -9,7 +9,6 @@ import UserProject from "../../src/users-projects/user_project.entity";
 import Project from "../../src/projects/project.entity";
 import {JwtAuthUserGuard} from "../../src/auth/guards/jwt-auth-user.guard";
 import Language from "../../src/languages/language.entity";
-import Role from "../../src/roles/role.enum";
 import CreateLanguageDto from "../../src/projects/dto/create-language.dto";
 import * as request from "supertest";
 import TestsHelpers from "../helpers/tests.helpers";
@@ -40,9 +39,9 @@ describe("Languages of a project E2E", () => {
     await app.init();
 
     // Populate users and projects in database
-    await TestsHelpers.populateUsers(userRepository);
+    const populatedUsers = await TestsHelpers.populateUsers(userRepository);
     populatedProjects = await TestsHelpers.populateProjects(projectRepository);
-    await createProjectsRelations();
+    await TestsHelpers.populateDefaultRelations(populatedUsers, populatedProjects, userProjectRepository);
   });
 
   afterAll(async () => {
@@ -51,20 +50,6 @@ describe("Languages of a project E2E", () => {
     await projectRepository.clear();
     await app.close();
   });
-
-  async function createProjectRelation(project: Project, userId: string, role: Role): Promise<void> {
-    const relation = new UserProject();
-    relation.user = await userRepository.findOne(userId);
-    relation.project = project;
-    relation.role = role;
-    await userProjectRepository.save(relation);
-  }
-
-  async function createProjectsRelations(): Promise<void> {
-    await createProjectRelation(populatedProjects[0], TestsHelpers.MOCKED_USER_ID_1, Role.Owner);
-    await createProjectRelation(populatedProjects[0], TestsHelpers.MOCKED_USER_ID_2, Role.Manager);
-    await createProjectRelation(populatedProjects[1], TestsHelpers.MOCKED_USER_ID_1, Role.Owner);
-  }
 
   async function findLanguages(projectId: number): Promise<Language[]> {
     return await languageRepository.find({
@@ -137,6 +122,22 @@ describe("Languages of a project E2E", () => {
       const languages = await findLanguages(populatedProjects[0].id);
       expect(languages).not.toBeUndefined();
       expect(languages.length).toEqual(1);
+    });
+
+    it("Already existing language", async () => {
+      const createLanguageResp = await request(app.getHttpServer())
+        .post(`/projects/${populatedProjects[0].id}/languages`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({name: "language"});
+      expect(createLanguageResp.status).toEqual(201);
+
+      const duplicatedLanguageResp = await request(app.getHttpServer())
+        .post(`/projects/${populatedProjects[0].id}/languages`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({name: "language"});
+      expect(duplicatedLanguageResp.status).toEqual(422);
     });
 
     it("Creating a project from the API", async () => {
@@ -314,6 +315,38 @@ describe("Languages of a project E2E", () => {
       expect(gettingDetailsResp.status).toEqual(200);
       expect(gettingDetailsResp.body.name).not.toEqual("French");
       expect(gettingDetailsResp.body.name).toEqual(editLanguageDto.name);
+    });
+
+    it("Already existing language", async () => {
+      const language1Resp = await request(app.getHttpServer())
+        .post(`/projects/${populatedProjects[0].id}/languages`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({name: "Language #1"});
+      expect(language1Resp.status).toEqual(201);
+
+      const language2Resp = await request(app.getHttpServer())
+        .post(`/projects/${populatedProjects[0].id}/languages`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({name: "Language #2"});
+      expect(language2Resp.status).toEqual(201);
+
+      const editLanguageDto = new CreateLanguageDto({name: "Language #1"});
+      const editingResp = await request(app.getHttpServer())
+        .put(`/projects/${populatedProjects[0].id}/languages/${language2Resp.body.id}`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send(editLanguageDto);
+      expect(editingResp.status).toEqual(422);
+
+      const gettingDetailsResp = await request(app.getHttpServer())
+        .get(`/projects/${populatedProjects[0].id}/languages/${language2Resp.body.id}`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1);
+      expect(gettingDetailsResp.status).toEqual(200);
+      expect(gettingDetailsResp.body.name).toEqual("Language #2");
+      expect(gettingDetailsResp.body.name).not.toEqual(editLanguageDto.name);
     });
   });
 

@@ -120,39 +120,26 @@ export default class TestsHelpers {
   }
 
   /**
-   * Insert 2 users in database ([Ø] mocked_user_id_1 and [1] mocked_user_id_2),
-   * 3 projects and 3 relations: projects[0] and projects[1] owned by mocked_user_id_1
-   * and projects[2] owned by mocked_user_id_2.
-   * @param usersRepository the Repository<User> where saving test users
-   * @param projectsRepository the Repository<Project> where saving test projects
-   * @param userProjectRepository the Repository<UserProject> where saving relations between users and projects
+   * Create relation between user and project with the provided role
    */
-  public static async populateUsersAndProjects(
-    usersRepository: Repository<User>,
-    projectsRepository: Repository<Project>,
-    userProjectRepository: Repository<UserProject>
-  ): Promise<{ projects: Project[]; relations: UserProject[]; users: User[] }> {
-    const users = await TestsHelpers.populateUsers(usersRepository);
-    const projects = await TestsHelpers.populateProjects(projectsRepository);
+  public static async createProjectRelation(project: Project, user: User, role: Role, userProjectRepository: Repository<UserProject>): Promise<UserProject> {
+    const relation = new UserProject();
+    relation.user = user;
+    relation.project = project;
+    relation.role = role;
+    return await userProjectRepository.save(relation);
+  }
 
-    const relation1 = new UserProject();
-    relation1.project = projects[0];
-    relation1.user = users[0];
-    relation1.role = Role.Owner;
-    await userProjectRepository.save(relation1);
-
-    const relation2 = new UserProject();
-    relation2.project = projects[1];
-    relation2.user = users[0];
-    relation2.role = Role.Owner;
-    await userProjectRepository.save(relation2);
-
-    const relation3 = new UserProject();
-    relation3.project = projects[2];
-    relation3.user = users[1];
-    relation3.role = Role.Owner;
-    await userProjectRepository.save(relation3);
-
-    return {users: users, projects: projects, relations: [relation1, relation2, relation3]};
+  /**
+   * Insert 3 relations in database.
+   * - user[0] owner of project[0]
+   * - user[0] owner of project[1]
+   * - user[1] manager of project[0]
+   */
+  public static async populateDefaultRelations(users: User[], projects: Project[], userProjectRepository: Repository<UserProject>): Promise<UserProject[]> {
+    const relation1 = await TestsHelpers.createProjectRelation(projects[0], users[0], Role.Owner, userProjectRepository);
+    const relation2 = await TestsHelpers.createProjectRelation(projects[0], users[1], Role.Manager, userProjectRepository);
+    const relation3 = await TestsHelpers.createProjectRelation(projects[1], users[0], Role.Owner, userProjectRepository);
+    return [relation1, relation2, relation3];
   }
 }
