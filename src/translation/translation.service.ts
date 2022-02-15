@@ -193,9 +193,8 @@ export default class TranslationService {
     const languageFound = await this.projectsService.getLanguage(userId, projectId, createValueDto.language_id);
     const key = await this.getKey(userId, projectId, translationId);
     if (key.is_plural == false) {
-
-      // Check if quantity_string is valid
-      if (createValueDto.quantity_string !== null) {
+      // Check if quantity_string is valid. Should be null for a singular translation key
+      if (createValueDto.quantity_string != null || createValueDto.quantity_string != undefined) {
         throw new UnprocessableEntityException(QueryFailedErrorType.QUANTITY_STRING_NOT_VALID);
       }
 
@@ -214,8 +213,7 @@ export default class TranslationService {
         throw new UnprocessableEntityException(QueryFailedErrorType.VALUE_ALREADY_EXISTS);
       }
     } else {
-
-      // Check if quantity_string is valid
+      // Check if quantity_string is valid. Shouldn't be null for plural key
       if (createValueDto.quantity_string === null) {
         throw new UnprocessableEntityException(QueryFailedErrorType.QUANTITY_STRING_NOT_VALID);
       }
@@ -246,14 +244,7 @@ export default class TranslationService {
     } else {
       value.quantity_string = null;
     }
-    await this.translationValueRepository.save(value);
-    return this.translationValueRepository.findOne({
-      where: {
-        key_id: translationId,
-        language_id: languageFound.id,
-        quantity_string: createValueDto.quantity_string
-      }
-    });
+    return await this.translationValueRepository.save(value);
   }
 
   public async getAllValues(

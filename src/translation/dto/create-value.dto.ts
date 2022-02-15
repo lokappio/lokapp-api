@@ -16,7 +16,7 @@ export default class CreateValueDto extends BaseDto {
     quantity_string: Joi
       .string()
       .valid(QuantityString.OTHER, QuantityString.ONE, QuantityString.ZERO, null)
-      .required()
+      .optional()
   });
 
   public name: string;

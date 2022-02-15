@@ -231,8 +231,15 @@ describe("Translations values E2E", () => {
         .send({name: "Content of the translation value", language_id: populatedLanguages[0].id, quantity_string: null});
       expect(createResp.status).toEqual(201);
 
+      const createWithoutQuantityResp = await request(app.getHttpServer())
+        .post(`/projects/${populatedProjects[0].id}/translations/${populatedTranslationKeys[0].id}/values`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({name: "Content of the translation value", language_id: populatedLanguages[1].id});
+      expect(createWithoutQuantityResp.status).toEqual(201);
+
       const values = await findTranslationValues(populatedTranslationKeys[0].id);
-      expect(values.length).toEqual(1);
+      expect(values.length).toEqual(2);
     });
 
     it("Creating a new translation plural value with a singular quantity", async () => {
@@ -243,6 +250,13 @@ describe("Translations values E2E", () => {
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
         .send({name: "Content of the translation value", language_id: populatedLanguages[0].id, quantity_string: null});
+      expect(pluralWithSingularQuantityResp.status).toEqual(422);
+
+      const pluralWithoutQuantityResp = await request(app.getHttpServer())
+        .post(`/projects/${populatedProjects[0].id}/translations/${createdKey.id}/values`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({name: "Content of the translation value", language_id: populatedLanguages[0].id});
       expect(pluralWithSingularQuantityResp.status).toEqual(422);
     });
 
