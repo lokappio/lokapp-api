@@ -1,4 +1,4 @@
-import {Injectable, NotFoundException, UnauthorizedException} from "@nestjs/common";
+import {ForbiddenException, Injectable, MethodNotAllowedException, NotFoundException, UnauthorizedException} from "@nestjs/common";
 import CreateProjectDto from "./dto/create-project.dto";
 import Project from "./project.entity";
 import {InjectRepository} from "@nestjs/typeorm";
@@ -222,86 +222,87 @@ export default class ProjectsService {
     return usersFromRelations.concat(usersFromInvitations);
   }
 
-  public async updateRoleOfUser(userId: string, projectId: number, targetId: string, updateRoleDto: UpdateRoleDto): Promise<ProjectUser> {
-    await this.getProject(userId, projectId);
-    //Check if target try to update his own role
-    if (targetId === userId) {
-      throw new UnauthorizedException();
-    }
-    //Relation of target
-    const relation = await this.usersProjectsRepository.findOne({
-      where: {
-        userId: targetId,
-        projectId: projectId
-      }
-    });
-    if (!relation) {
-      throw new NotFoundException();
-    }
-
-    //Relation of user who wants to update a role
-    const relationOfUpdate = await this.usersProjectsRepository.findOne({
+  public async updateRoleOfUser(userId: string, projectId: number, userIdToUpdate: string, updateRoleDto: UpdateRoleDto): Promise<ProjectUser> {
+    // Relation of the user editing the role
+    const editorRelation = await this.usersProjectsRepository.findOne({
       where: {
         userId: userId,
         projectId: projectId
       }
     });
-    if (!relationOfUpdate) {
-      throw new UnauthorizedException();
+    if (!editorRelation) {
+      throw new ForbiddenException(null, "No access to this project.");
     }
 
-    if (relation.role === Role.Owner) {
-      throw new UnauthorizedException();
+    // Check the user isn't changing its own role
+    if (userIdToUpdate === userId) {
+      throw new ForbiddenException(null, "User can't change its own role.");
     }
 
+    // Relation of the user being updated
+    const changingRelation = await this.usersProjectsRepository.findOne({
+      where: {
+        userId: userIdToUpdate,
+        projectId: projectId
+      }
+    });
+    if (!changingRelation) {
+      throw new NotFoundException();
+    }
+
+    // When trying to change the role of the owner
+    if (changingRelation.role === Role.Owner) {
+      throw new ForbiddenException(null, "Can't change the role of the current owner.");
+    }
+
+    // Transferring ownership to another user
     if (updateRoleDto.role === Role.Owner) {
-      if (relationOfUpdate.role === Role.Owner) {
-        //The owner want to give project to another one
-        relationOfUpdate.role = Role.Manager;
-        await this.usersProjectsRepository.save(relationOfUpdate);
+      if (editorRelation.role === Role.Owner) {
+        // Previous owner will become a "Manager"
+        editorRelation.role = Role.Manager;
+        await this.usersProjectsRepository.save(editorRelation);
       } else {
-        //Somebody try to get Ownership of project
-        throw new UnauthorizedException();
+        throw new ForbiddenException(null, "Only the owner can transfer the project's ownership.");
       }
     }
 
-    relation.role = <Role>updateRoleDto.role;
-    await this.usersProjectsRepository.save(relation);
+    changingRelation.role = <Role>updateRoleDto.role;
+    const updatedRelation = await this.usersProjectsRepository.save(changingRelation);
 
-    const updateRelation = await getManager()
+    const updatedUser = await getManager()
       .createQueryBuilder()
-      .select(["relations.user_id AS user_id", "relations.role AS role", "users.username AS username", "users.email AS email"])
-      .from(UsersProjectsTableName, "relations")
-      .leftJoin(UsersTableName, "users", "relations.user_id = users.id")
-      .where("relations.project_id = :project_id AND relations.user_id = :user_id")
-      .setParameters({project_id: projectId, user_id: targetId})
+      .select(["users.id AS id", "users.username AS username", "users.email AS email"])
+      .from(UsersTableName, "users")
+      .where("users.id = :user_id")
+      .setParameters({user_id: userIdToUpdate})
       .getRawOne();
     return new ProjectUser(
-      targetId,
-      updateRelation.username,
-      updateRelation.email,
-      updateRelation.role,
+      userIdToUpdate,
+      updatedUser.username,
+      updatedUser.email,
+      updatedRelation.role,
       false,
       null
     );
   }
 
-  public async removeUserFromProject(userId: string, projectId: number, targetId: string): Promise<void> {
+  public async removeUserFromProject(userId: string, projectId: number, userIdToDelete: string): Promise<void> {
     await this.getProject(userId, projectId);
-    if (userId === targetId) {
-      throw new UnauthorizedException();
+    if (userId === userIdToDelete) {
+      throw new MethodNotAllowedException(null, "Can't remove itself from a project with a DELETE, should use the /leave endpoint.");
     }
+    // Relation of the user about to be removed from the project
     const relation = await this.usersProjectsRepository.findOne({
       where: {
         projectId: projectId,
-        userId: targetId
+        userId: userIdToDelete
       }
     });
     if (!relation) {
       throw new NotFoundException();
     }
     if (relation.role === Role.Owner) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException(null, "Can't remove the owner of the project");
     }
     await this.usersProjectsRepository.delete(relation);
   }
@@ -324,7 +325,7 @@ export default class ProjectsService {
     }
   }
 
-  public async getMyselfOnProject(userId: string, projectId: number): Promise<ProjectUser> {
+  public async getProjectUser(userId: string, projectId: number): Promise<ProjectUser> {
     const users = await this.getUsersOfProject(userId, projectId);
     const user = users.find((user: ProjectUser) => user.userId === userId);
     if (!user) {

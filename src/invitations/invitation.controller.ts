@@ -1,4 +1,4 @@
-import {Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Post, UseGuards, UseInterceptors} from "@nestjs/common";
+import {Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Post, UseGuards} from "@nestjs/common";
 import {ApiBearerAuth, ApiTags} from "@nestjs/swagger";
 import {JoiValidationPipe} from "../common/joi-validation.pipe";
 import {JwtAuthUserGuard} from "../auth/guards/jwt-auth-user.guard";
@@ -7,7 +7,7 @@ import {UserId} from "../users/user-id.decorator";
 import InvitationService from "./invitation.service";
 import Invitation from "./invitation.entity";
 import CreateInvitationDto from "./dto/create-invitation.dto";
-import { Roles } from "../roles/role.decorator";
+import {Roles} from "../roles/role.decorator";
 import Role from "../roles/role.enum";
 import UserInvitation from "./model/user-invitation.model";
 
@@ -18,7 +18,7 @@ import UserInvitation from "./model/user-invitation.model";
 export default class InvitationController {
   constructor(private readonly invitationService: InvitationService) {
   }
-  
+
   @Post()
   @Roles(Role.Owner, Role.Manager)
   public createInvitation(
@@ -47,12 +47,10 @@ export default class InvitationController {
   }
 
   @Delete(":invitation_id")
-  @Roles(Role.Owner, Role.Manager)
   @HttpCode(204)
   public deleteInvitation(
     @UserId() userId: string,
-    @Body("project_id", ParseIntPipe) projectId: number,
     @Param("invitation_id", ParseIntPipe) invitationId: number): Promise<void> {
-    return this.invitationService.deleteInvitation(userId, projectId, invitationId);
+    return this.invitationService.deleteInvitation(userId, invitationId);
   }
 }

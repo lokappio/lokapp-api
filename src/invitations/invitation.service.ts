@@ -64,38 +64,39 @@ export default class InvitationService {
   }
 
   public async acceptInvitation(userId: string, invitationId: number): Promise<void> {
-    const actualInvitation = await this.invitationRepository.findOne(invitationId);
-    if (!actualInvitation) {
+    const invitation = await this.invitationRepository.findOne(invitationId);
+    if (!invitation) {
       throw new NotFoundException();
     }
-    if (userId !== actualInvitation.guestId) {
+    if (userId !== invitation.guestId) {
       throw new UnauthorizedException();
     }
-    await this.projectsService.createUserProjectRelation(userId, actualInvitation.projectId, actualInvitation.role);
+    await this.projectsService.createUserProjectRelation(userId, invitation.projectId, invitation.role);
     await this.invitationRepository.delete(invitationId);
   }
 
   public async declineInvitation(userId: string, invitationId: number): Promise<void> {
-    const actualInvitation = await this.invitationRepository.findOne(invitationId);
-    if (!actualInvitation) {
+    const invitation = await this.invitationRepository.findOne(invitationId);
+    if (!invitation) {
       throw new NotFoundException();
     }
-    if (userId !== actualInvitation.guestId) {
+    if (userId !== invitation.guestId) {
       throw new UnauthorizedException();
     }
     await this.invitationRepository.delete(invitationId);
   }
 
-  public async deleteInvitation(userId: string, projectId: number, invitationId: number): Promise<void> {
-    const actualInvitation = await this.invitationRepository.findOne(invitationId);
-    if (!actualInvitation) {
+  public async deleteInvitation(userId: string, invitationId: number): Promise<void> {
+    const invitation = await this.invitationRepository.findOne(invitationId);
+    if (!invitation) {
       throw new NotFoundException();
     }
-    await this.projectsService.getProject(userId, actualInvitation.projectId);
-    if (actualInvitation.projectId != projectId) {
+    const userRole = await this.projectsService.getRoleOfUserInProject(userId, invitation.projectId);
+    const rolesAllowedToDelete: Role[] = [Role.Owner, Role.Manager];
+    if (!rolesAllowedToDelete.includes(userRole)) {
       throw new UnauthorizedException();
     }
-    if (userId !== actualInvitation.ownerId) {
+    if (userId !== invitation.ownerId) {
       throw new UnauthorizedException();
     }
     await this.invitationRepository.delete(invitationId);

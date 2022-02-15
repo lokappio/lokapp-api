@@ -20,5 +20,5 @@ export default class UpdateProjectDto extends BaseDto {
 
   public name: string;
   public color: string;
-  public description?: string;
+  public description: string;
 }
