@@ -130,7 +130,6 @@ export default class TranslationService {
       if (updateKeyDto.is_plural) {
         key.is_plural = true;
 
-
         //CHANGE CURRENT QUANTITY FROM NULL TO OTHER
         const singularValues = await this.translationValueRepository.find({where: {key: key}});
         singularValues.forEach((value: TranslationValue) => {
@@ -162,9 +161,9 @@ export default class TranslationService {
             quantity_string: In([QuantityString.ONE, QuantityString.ZERO])
           }
         });
-        valuesToDelete.forEach((value: TranslationValue) => {
-          this.deleteValue(userId, projectId, key.id, value.id);
-        });
+        for (const value of valuesToDelete) {
+          await this.translationValueRepository.delete(value.id);
+        }
 
         // Change Other values into Null
         const valuesToUpdate = await this.translationValueRepository.find({
@@ -181,6 +180,7 @@ export default class TranslationService {
       }
     }
     await this.translationKeyRepository.save(key);
+
     return await this.getKey(userId, projectId, keyId);
   }
 

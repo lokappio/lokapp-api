@@ -16,6 +16,7 @@ import GroupModule from "../../src/groups/group.module";
 import InvitationModule from "../../src/invitations/invitation.module";
 import TranslationModule from "../../src/translation/translation.module";
 import Role from "../../src/roles/role.enum";
+import QuantityString from "../../src/translation/quantity_string.enum";
 
 export default class TestsHelpers {
   public static getTestingModule(): TestingModuleBuilder {
@@ -134,5 +135,55 @@ export default class TestsHelpers {
     const relation2 = await TestsHelpers.createProjectRelation(projects[0], users[1], Role.Manager, userProjectRepository);
     const relation3 = await TestsHelpers.createProjectRelation(projects[1], users[0], Role.Owner, userProjectRepository);
     return [relation1, relation2, relation3];
+  }
+
+  /**
+   * Insert a group in database
+   * */
+  public static async createGroup(name: string, project: Project, groupRepository: Repository<Group>): Promise<Group> {
+    const group = new Group();
+    group.name = name;
+    group.project = project;
+    return await groupRepository.save(group);
+  }
+
+  /**
+   * Insert a language in database
+   * */
+  public static async createLanguage(name: string, project: Project, languageRepository: Repository<Language>): Promise<Language> {
+    const language = new Language();
+    language.name = name;
+    language.project = project;
+    return await languageRepository.save(language);
+  }
+
+  /**
+   * Insert a translation key in database
+   * */
+  public static async createTranslationKey(name: string, group: Group, project: Project, isPlural: boolean, translationKeysRepository: Repository<TranslationKey>): Promise<TranslationKey> {
+    const key = new TranslationKey();
+    key.project = project;
+    key.group = group;
+    key.name = name;
+    key.is_plural = isPlural;
+    return await translationKeysRepository.save(key);
+  }
+
+  /**
+   * Insert a translation value in database
+   * */
+  public static async createTranslationValue(
+    value: string,
+    key: TranslationKey,
+    language: Language,
+    quantityString: QuantityString,
+    translationValuesRepository: Repository<TranslationValue>
+  ): Promise<TranslationValue> {
+    const translationValue = new TranslationValue();
+    translationValue.key = key;
+    translationValue.language = language;
+    translationValue.quantity_string = quantityString;
+    translationValue.name = value;
+    return await translationValuesRepository.save(translationValue);
   }
 }

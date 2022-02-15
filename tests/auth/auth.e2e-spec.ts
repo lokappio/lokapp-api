@@ -32,7 +32,6 @@ describe("Auth", () => {
   });
 
   afterAll(async () => {
-    await userRepository.clear();
     await app.close();
   });
 

@@ -44,22 +44,6 @@ describe("Translations keys E2E", () => {
     });
   }
 
-  async function insertGroup(name: string, project: Project): Promise<Group> {
-    const group = new Group();
-    group.name = name;
-    group.project = project;
-    return await groupRepository.save(group);
-  }
-
-  async function insertTranslationKey(name: string, group: Group, project: Project): Promise<TranslationKey> {
-    const key = new TranslationKey();
-    key.project = project;
-    key.group = group;
-    key.name = name;
-    key.is_plural = false;
-    return await translationKeysRepository.save(key);
-  }
-
   beforeAll(async () => {
     const moduleRef = await TestsHelpers.getTestingModule()
       .overrideGuard(JwtAuthUserGuard)
@@ -162,7 +146,7 @@ describe("Translations keys E2E", () => {
     });
 
     it("Group isn't linked to the project", async () => {
-      const createdGroup = await insertGroup("Group of project #2", populatedProjects[1]);
+      const createdGroup = await TestsHelpers.createGroup("Group of project #2", populatedProjects[1], groupRepository);
 
       const keyDto = new CreateKeyDto({
         name: "The translation key",
@@ -179,7 +163,7 @@ describe("Translations keys E2E", () => {
 
     it("Creating a new translation key", async () => {
       // Insert a group in database
-      const createdGroup = await insertGroup("Group #1", populatedProjects[0]);
+      const createdGroup = await TestsHelpers.createGroup("Group #1", populatedProjects[0], groupRepository);
 
       // Get the current count of keys
       const keysCountBeforeCreation = (await findTranslationKeys(populatedProjects[0].id)).length;
@@ -202,8 +186,8 @@ describe("Translations keys E2E", () => {
     });
 
     it("Duplicated translation key", async () => {
-      const firstGroup = await insertGroup("first_group", populatedProjects[0]);
-      const secondGroup = await insertGroup("second_group", populatedProjects[0]);
+      const firstGroup = await TestsHelpers.createGroup("first_group", populatedProjects[0], groupRepository);
+      const secondGroup = await TestsHelpers.createGroup("second_group", populatedProjects[0], groupRepository);
       const translationKey: string = "translation_key_to_duplicate";
 
       const okResponse = await request(app.getHttpServer())
@@ -277,8 +261,8 @@ describe("Translations keys E2E", () => {
       expect(emptyResp.status).toEqual(200);
       expect(emptyResp.body.length).toEqual(0);
 
-      const group = await insertGroup("group_name", populatedProjects[0]);
-      await insertTranslationKey("translation_key", group, populatedProjects[0]);
+      const group = await TestsHelpers.createGroup("group_name", populatedProjects[0], groupRepository);
+      await TestsHelpers.createTranslationKey("translation_key", group, populatedProjects[0], false, translationKeysRepository);
 
       const nonEmptyResp = await request(app.getHttpServer())
         .get(`/projects/${populatedProjects[0].id}/translations`)
@@ -295,8 +279,8 @@ describe("Translations keys E2E", () => {
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1);
       expect(nonExistingKeyResp.status).toEqual(404);
 
-      const group = await insertGroup("group_name", populatedProjects[0]);
-      const translationKey = await insertTranslationKey("translation_key", group, populatedProjects[0]);
+      const group = await TestsHelpers.createGroup("group_name", populatedProjects[0], groupRepository);
+      const translationKey = await TestsHelpers.createTranslationKey("translation_key", group, populatedProjects[0], false, translationKeysRepository);
 
       const response = await request(app.getHttpServer())
         .get(`/projects/${populatedProjects[0].id}/translations/${translationKey.id}`)
@@ -311,8 +295,8 @@ describe("Translations keys E2E", () => {
     let translationKey: TranslationKey;
 
     beforeEach(async () => {
-      const group = await insertGroup("group_name", populatedProjects[0]);
-      translationKey = await insertTranslationKey("translation_key", group, populatedProjects[0]);
+      const group = await TestsHelpers.createGroup("group_name", populatedProjects[0], groupRepository);
+      translationKey = await TestsHelpers.createTranslationKey("translation_key", group, populatedProjects[0], false, translationKeysRepository);
     });
 
     afterEach(async () => {
@@ -360,7 +344,7 @@ describe("Translations keys E2E", () => {
     });
 
     it("Group not linked to the project", async () => {
-      const group = await insertGroup("Group of project #2", populatedProjects[1]);
+      const group = await TestsHelpers.createGroup("Group of project #2", populatedProjects[1], groupRepository);
       const response = await request(app.getHttpServer())
         .patch(`/projects/${populatedProjects[0].id}/translations/${translationKey.id}`)
         .auth("mocked.jwt", {type: "bearer"})
@@ -388,9 +372,9 @@ describe("Translations keys E2E", () => {
     });
 
     it("Editing a translation key resulting in a duplication", async () => {
-      const group = await insertGroup("Group of first project", populatedProjects[0]);
-      const firstKey = await insertTranslationKey("translation_key_1", group, populatedProjects[0]);
-      const keyToEdit = await insertTranslationKey("translation_key_2", group, populatedProjects[0]);
+      const group = await TestsHelpers.createGroup("Group of first project", populatedProjects[0], groupRepository);
+      const firstKey = await TestsHelpers.createTranslationKey("translation_key_1", group, populatedProjects[0], false, translationKeysRepository);
+      const keyToEdit = await TestsHelpers.createTranslationKey("translation_key_2", group, populatedProjects[0], false, translationKeysRepository);
 
       // Try to edit key and set the same name as the one added before
       const editedResp = await request(app.getHttpServer())
@@ -406,8 +390,8 @@ describe("Translations keys E2E", () => {
     let translationKey: TranslationKey;
 
     beforeEach(async () => {
-      const group = await insertGroup("Name of the group", populatedProjects[0]);
-      translationKey = await insertTranslationKey("key_1", group, populatedProjects[0]);
+      const group = await TestsHelpers.createGroup("Name of the group", populatedProjects[0], groupRepository);
+      translationKey = await TestsHelpers.createTranslationKey("key_1", group, populatedProjects[0], false, translationKeysRepository);
     });
 
     afterEach(async () => {
@@ -465,11 +449,11 @@ describe("Translations keys E2E", () => {
       await userProjectRepository.save(relation);
 
       // Create group
-      const group = await insertGroup("Name of the group", createdProject);
+      const group = await TestsHelpers.createGroup("Name of the group", createdProject, groupRepository);
 
       // Create keys
-      const firstKey = await insertTranslationKey("first key", group, createdProject);
-      const secondKey = await insertTranslationKey("second key", group, createdProject);
+      const firstKey = await TestsHelpers.createTranslationKey("first key", group, createdProject, false, translationKeysRepository);
+      const secondKey = await TestsHelpers.createTranslationKey("second key", group, createdProject, false, translationKeysRepository);
 
       // Check current count of keys
       const beforeDeletionCount = (await findTranslationKeys(createdProject.id)).length;
