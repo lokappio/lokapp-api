@@ -151,7 +151,7 @@ export default class ProjectsService {
 
     const projectKeys: TranslationKey[] = await this.keyRepository.find({projectId: projectId});
 
-    projectKeys.map(async (key) => {
+    await Promise.all(projectKeys.map(async (key) => {
       if (key.is_plural) {
         await Promise.all(Object.values(QuantityString).map(async (quantity) => {
           const value = new TranslationValue();
@@ -170,7 +170,7 @@ export default class ProjectsService {
 
         return await this.valueRepository.save(value);
       }
-    });
+    }));
 
     return createdLanguage;
   }
