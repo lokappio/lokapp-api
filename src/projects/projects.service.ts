@@ -118,7 +118,7 @@ export default class ProjectsService {
     if (!projectFound) {
       throw new NotFoundException();
     } else if (!canAccessProject) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException();
     }
     return projectFound;
   }
@@ -160,7 +160,7 @@ export default class ProjectsService {
   public async getLanguage(userId: string, projectId: number, languageId: number): Promise<Language> {
     await this.getProject(userId, projectId);
     const language: Language = await this.languagesRepository.findOne(languageId);
-    if (!language) {
+    if (!language || language.projectId != projectId) {
       throw new NotFoundException();
     }
     return language;

@@ -50,7 +50,7 @@ describe("Invitations", () => {
     await app.init();
 
     const populatedUsers = await TestsHelpers.populateUsers(userRepository);
-    const populatedProjects = await TestsHelpers.populateProjects(projectRepository);
+    populatedProjects = await TestsHelpers.populateProjects(projectRepository);
     await TestsHelpers.populateDefaultRelations(populatedUsers, populatedProjects, userProjectRepository);
   });
 
@@ -134,19 +134,6 @@ describe("Invitations", () => {
           role: Role.Manager
         }));
       expect(invitationResp.status).toEqual(201);
-    });
-
-    it("Create an invitation as a guest", async () => {
-      const invitationResp = await request(app.getHttpServer())
-        .post("/invitations")
-        .auth("mocked.jwt", {type: "bearer"})
-        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_2)
-        .send(new CreateInvitationDto({
-          email: "user_c@lokapp.io",
-          project_id: populatedProjects[0].id,
-          role: Role.Manager
-        }));
-      expect(invitationResp.status).toEqual(403);
     });
   });
 
@@ -312,6 +299,7 @@ describe("Invitations", () => {
   describe("Deleting invitations", () => {
     afterEach(async () => {
       await invitationRepository.clear();
+      await removeProjectsRelations(TestsHelpers.MOCKED_USER_ID_2, userProjectRepository);
     });
 
     it("As the owner, cancel invitation", async () => {
@@ -375,6 +363,8 @@ describe("Invitations", () => {
           role: Role.Translator
         });
       expect(invitationResp.status).toEqual(201);
+
+      console.log(invitationResp.body);
 
       // Try to delete invitation as user 2
       const deleteInvitationResp = await request(app.getHttpServer())

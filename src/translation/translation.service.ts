@@ -11,6 +11,7 @@ import UpdateValueDto from "./dto/update-value.dto";
 import UpdateKeyDto from "./dto/update-key.dto";
 import GroupService from "../groups/group.service";
 import QuantityString from "./quantity_string.enum";
+import {create} from "domain";
 
 @Injectable()
 export default class TranslationService {
@@ -24,50 +25,72 @@ export default class TranslationService {
   ) {
   }
 
-  public async createKey(userId: string, projectId: number, createKeyDto: CreateKeyDto): Promise<TranslationKey> {
-    // Check if project already exists and if key already exists
-    const projectFound = await this.projectsService.getProject(userId, projectId);
+  private async translationKeyAlreadyExists(keyName: string, projectId: number, groupId: number): Promise<boolean> {
     const sameKeys = await this.translationKeyRepository.find({
       where: {
-        name: createKeyDto.name,
-        project: {id: projectId},
-        group_id: createKeyDto.group_id
+        name: keyName,
+        project: {
+          id: projectId
+        },
+        group_id: groupId
       }
     });
-    if (sameKeys.length > 0) {
+    return sameKeys.length > 0;
+  }
+
+  private async findDuplicatedKeys(translationKeyId: number, keyName: string, projectId: number, groupId: number): Promise<TranslationKey[]> {
+    return await this.translationKeyRepository.find({
+      where: {
+        id: Not(translationKeyId),
+        name: keyName,
+        project: {
+          id: projectId
+        },
+        group_id: groupId
+      }
+    });
+  }
+
+  public async createTranslationKey(userId: string, projectId: number, createKeyDto: CreateKeyDto): Promise<TranslationKey> {
+    // Check if project already exists
+    const project = await this.projectsService.getProject(userId, projectId);
+
+    // Check if the translation key already exists
+    const keyAlreadyExists = await this.translationKeyAlreadyExists(createKeyDto.name, projectId, createKeyDto.group_id);
+    if (keyAlreadyExists) {
       throw new UnprocessableEntityException(QueryFailedErrorType.KEY_ALREADY_EXISTS);
     }
 
-    // Create my key
-    const key = new TranslationKey();
-    key.name = createKeyDto.name;
-    key.project = projectFound;
-    key.is_plural = createKeyDto.is_plural;
-
-    const groupFound = await this.groupsService.getGroup(userId, projectId, createKeyDto.group_id);
-
-    if (!groupFound) {
+    // Check if the group exists
+    const group = await this.groupsService.getGroup(userId, projectId, createKeyDto.group_id);
+    if (!group) {
       throw new NotFoundException();
     }
-    key.group = groupFound;
 
-    const createdKey = await this.translationKeyRepository.save(key);
+    // Create the new translation key
+    const key = new TranslationKey();
+    key.name = createKeyDto.name;
+    key.project = project;
+    key.is_plural = createKeyDto.is_plural;
+    key.group = group;
 
-    return this.getKey(userId, projectId, createdKey.id);
+    return await this.translationKeyRepository.save(key);
   }
 
-  public async getKey(userId: string, projectId: number, keyId: number): Promise<TranslationKey> {
+  public async getTranslationKey(userId: string, projectId: number, keyId: number): Promise<TranslationKey> {
     await this.projectsService.getProject(userId, projectId);
 
     const key: TranslationKey = await this.translationKeyRepository.findOne(keyId);
-    if (!key) {
+    if (!key || key.projectId != projectId) {
       throw new NotFoundException();
     }
     return key;
   }
 
-  public async getAllKeys(userId: string, projectId: number): Promise<TranslationKey[]> {
+  public async getTranslationKeys(userId: string, projectId: number): Promise<TranslationKey[]> {
+    // Check the project exists and the user's access
     await this.projectsService.getProject(userId, projectId);
+    // Then find all translation keys of the project
     return this.translationKeyRepository.find({
       where: {
         project: {
@@ -78,181 +101,139 @@ export default class TranslationService {
   }
 
   public async deleteKey(userId: string, projectId: number, keyId: number): Promise<void> {
-    await this.getKey(userId, projectId, keyId);
+    // Check the translation key exists
+    await this.getTranslationKey(userId, projectId, keyId);
+    // Then delete it
     await this.translationKeyRepository.delete(keyId);
   }
 
-  private async getSameKeys(name: string, projectId: number, groupId: number, baseKeyID: number): Promise<TranslationKey[]> {
-    return await this.translationKeyRepository.find({
-      where: {
-        name: name,
-        project: {
-          id: projectId,
-        },
-        group_id: groupId,
-        id: Not(baseKeyID)
-      }
-    });
-  }
+  public async updateKey(userId: string, projectId: number, keyId: number, updateKeyDto: UpdateKeyDto): Promise<TranslationKey> {
+    // Get the translation key to update
+    const key = await this.getTranslationKey(userId, projectId, keyId);
 
-  public async updateKey(
-    userId: string,
-    projectId: number,
-    keyId: number,
-    updateKeyDto: UpdateKeyDto): Promise<TranslationKey> {
-
-    // Check if key exist
-    const key = await this.getKey(userId, projectId, keyId);
-
+    // Updating the name
     if (updateKeyDto.name !== undefined) {
-      //Check if name already exists in group
-      if ((await this.getSameKeys(updateKeyDto.name, projectId, key.group_id, keyId)).length > 0) {
+      // Check if a key already exists in the group
+      const duplicatedKeys = await this.findDuplicatedKeys(keyId, updateKeyDto.name, projectId, key.group_id);
+      if (duplicatedKeys.length > 0) {
         throw new UnprocessableEntityException(QueryFailedErrorType.KEY_ALREADY_EXISTS);
       }
       key.name = updateKeyDto.name;
     }
 
+    // Updating the group
     if (updateKeyDto.group_id !== undefined) {
-      //Check if group exists in project
-      const groupFound = await this.groupsService.getGroup(userId, projectId, updateKeyDto.group_id);
-      if (!groupFound) {
+      // Check if the group already exists in project
+      const group = await this.groupsService.getGroup(userId, projectId, updateKeyDto.group_id);
+      if (!group) {
         throw new NotFoundException();
       }
-      //Check if name already exists in new group
-      if ((await this.getSameKeys(key.name, projectId, updateKeyDto.group_id, keyId)).length > 0) {
+      // Check there isn't any key with the same name in the targeted group
+      const duplicatedKeys = await this.findDuplicatedKeys(keyId, key.name, projectId, updateKeyDto.group_id);
+      if (duplicatedKeys.length > 0) {
         throw new UnprocessableEntityException(QueryFailedErrorType.KEY_ALREADY_EXISTS);
       }
-      key.group = groupFound;
+      key.group = group;
     }
 
+    // Updating the isPlural boolean
     if (updateKeyDto.is_plural !== undefined && updateKeyDto.is_plural !== key.is_plural) {
-      // If previous was SINGULAR and current is PLURAL
+      // Transforming the singular key into a plural one
       if (updateKeyDto.is_plural) {
         key.is_plural = true;
 
-        //CHANGE CURRENT QUANTITY FROM NULL TO OTHER
-        const singularValues = await this.translationValueRepository.find({where: {key: key}});
-        singularValues.forEach((value: TranslationValue) => {
-          value.quantity_string = QuantityString.OTHER;
-          this.translationValueRepository.save(value);
+        // Search for a translation value
+        const singularValue = await this.translationValueRepository.findOne({
+          where: {
+            key: key
+          }
         });
 
-        //add values [ONE and ZERO] and Give them the value of OTHER quantity
-        [QuantityString.ONE, QuantityString.ZERO].forEach((quantity) => {
-          singularValues.forEach((value) => {
+        // In case there is a value for this key, update its quantity_string from `null` to `OTHER`.
+        // And create ONE and ZERO values
+        if (singularValue != undefined) {
+          singularValue.quantity_string = QuantityString.OTHER;
+          for (const quantity of [QuantityString.ONE, QuantityString.ZERO]) {
             const quantityValue = new TranslationValue();
             quantityValue.key = key;
-            quantityValue.language_id = value.language_id;
+            quantityValue.language_id = singularValue.language_id;
             quantityValue.quantity_string = quantity;
-            quantityValue.name = value.name
-
-            this.translationValueRepository.save(quantityValue);
-          })
-        })
-      }
-      // If previous was PLURAL and current is SINGULAR
-      else {
+            quantityValue.name = singularValue.name;
+            await this.translationValueRepository.save(quantityValue);
+          }
+        }
+      } else { // Transforming the plural key into a singular one
         key.is_plural = false;
 
-        // Delete One and Zero values of key
-        const valuesToDelete = await this.translationValueRepository.find({
+        // Find the translation values if they exist
+        const values = await this.translationValueRepository.find({
           where: {
-            key: key,
-            quantity_string: In([QuantityString.ONE, QuantityString.ZERO])
+            key_id: key.id
           }
-        });
-        for (const value of valuesToDelete) {
-          await this.translationValueRepository.delete(value.id);
+        })
+
+        // Delete ONE and ZERO values and keep the OTHER one as the singular value
+        for (const value of values) {
+          if (value.quantity_string == QuantityString.ONE || value.quantity_string == QuantityString.ZERO) {
+            await this.translationValueRepository.delete(value.id);
+          } else if (value.quantity_string == QuantityString.OTHER) {
+            value.quantity_string = null;
+            await this.translationValueRepository.save(value);
+          }
         }
-
-        // Change Other values into Null
-        const valuesToUpdate = await this.translationValueRepository.find({
-          where: {
-            key: key,
-            quantity_string: QuantityString.OTHER
-          }
-        });
-
-        valuesToUpdate.forEach((value: TranslationValue) => {
-          value.quantity_string = null;
-          this.translationValueRepository.save(value);
-        });
       }
     }
-    await this.translationKeyRepository.save(key);
-
-    return await this.getKey(userId, projectId, keyId);
+    return await this.translationKeyRepository.save(key);
   }
 
-  public async createValue(
-    userId: string,
-    projectId: number,
-    translationId: number,
-    createValueDto: CreateValueDto): Promise<TranslationValue> {
+  private async translationValuesAlreadyExists(translationKeyId: number, languageId: number, quantityString: string|null) {
+    const sameValues = await this.translationValueRepository.find({
+      where: {
+        key: {
+          id: translationKeyId
+        },
+        language: {
+          id: languageId
+        },
+        quantity_string: quantityString
+      }
+    });
+    return sameValues.length > 0;
+  }
 
-    const languageFound = await this.projectsService.getLanguage(userId, projectId, createValueDto.language_id);
-    const key = await this.getKey(userId, projectId, translationId);
-    if (key.is_plural == false) {
-      // Check if quantity_string is valid. Should be null for a singular translation key
-      if (createValueDto.quantity_string != null || createValueDto.quantity_string != undefined) {
-        throw new UnprocessableEntityException(QueryFailedErrorType.QUANTITY_STRING_NOT_VALID);
-      }
+  public async createValue(userId: string, projectId: number, translationKeyId: number, createValueDto: CreateValueDto): Promise<TranslationValue> {
+    const language = await this.projectsService.getLanguage(userId, projectId, createValueDto.language_id);
+    const key = await this.getTranslationKey(userId, projectId, translationKeyId);
 
-      // Check if value already exists
-      const sameValues = await this.translationValueRepository.find({
-        where: {
-          key: {
-            id: translationId
-          },
-          language: {
-            id: createValueDto.language_id
-          }
-        }
-      });
-      if (sameValues.length > 0) {
-        throw new UnprocessableEntityException(QueryFailedErrorType.VALUE_ALREADY_EXISTS);
-      }
-    } else {
-      // Check if quantity_string is valid. Shouldn't be null for plural key
-      if (createValueDto.quantity_string === null) {
-        throw new UnprocessableEntityException(QueryFailedErrorType.QUANTITY_STRING_NOT_VALID);
-      }
+    // If no quantityString provided, assume it should be null.
+    const quantityString = createValueDto.quantity_string == undefined ? null : createValueDto.quantity_string;
 
-      // Check if value already exists
-      const sameValues = await this.translationValueRepository.find({
-        where: {
-          key: {
-            id: translationId
-          },
-          language: {
-            id: createValueDto.language_id
-          },
-          quantity_string: createValueDto.quantity_string
-        }
-      });
-      if (sameValues.length > 0) {
-        throw new UnprocessableEntityException(QueryFailedErrorType.VALUE_ALREADY_EXISTS);
-      }
+    // Check if value already exists for this language and quantity
+    const valueExists = await this.translationValuesAlreadyExists(translationKeyId, language.id, quantityString);
+    if (valueExists) {
+      throw new UnprocessableEntityException(QueryFailedErrorType.VALUE_ALREADY_EXISTS);
     }
 
+    // Check quantity is correct
+    if (key.is_plural == false && quantityString !== null) {
+      // Quantity should be null for a singular translation key
+      throw new UnprocessableEntityException(QueryFailedErrorType.QUANTITY_STRING_NOT_VALID);
+    } else if (key.is_plural == true && quantityString === null) {
+      // Quantity shouldn't be null for plural key
+      throw new UnprocessableEntityException(QueryFailedErrorType.QUANTITY_STRING_NOT_VALID);
+    }
+
+    // Create a new translation value
     const value = new TranslationValue();
     value.key = key;
-    value.language = languageFound;
+    value.language = language;
     value.name = createValueDto.name;
-    if (key.is_plural === true) {
-      value.quantity_string = createValueDto.quantity_string;
-    } else {
-      value.quantity_string = null;
-    }
+    value.quantity_string = quantityString;
     return await this.translationValueRepository.save(value);
   }
 
-  public async getAllValues(
-    userId: string,
-    projectId: number,
-    translationId: number): Promise<TranslationValue[]> {
-
-    await this.getKey(userId, projectId, translationId);
+  public async getAllValues(userId: string, projectId: number, translationId: number): Promise<TranslationValue[]> {
+    await this.getTranslationKey(userId, projectId, translationId);
     return this.translationValueRepository.find({
       where: {
         key: {
@@ -267,10 +248,9 @@ export default class TranslationService {
     projectId: number,
     translationId: number,
     valueId: number,
-    updateValueDto: UpdateValueDto): Promise<TranslationValue> {
-
+    updateValueDto: UpdateValueDto
+  ): Promise<TranslationValue> {
     const value = await this.getValue(userId, projectId, translationId, valueId);
-
     value.name = updateValueDto.name;
     return await this.translationValueRepository.save(value);
   }
@@ -279,8 +259,8 @@ export default class TranslationService {
     userId: string,
     projectId: number,
     translationId: number,
-    valueId: number): Promise<void> {
-
+    valueId: number
+  ): Promise<void> {
     await this.getValue(userId, projectId, translationId, valueId);
     await this.translationValueRepository.delete(valueId);
   }
@@ -289,9 +269,9 @@ export default class TranslationService {
     userId: string,
     projectId: number,
     translationId: number,
-    languageId: number): Promise<TranslationValue[]> {
-
-    await this.getKey(userId, projectId, translationId);
+    languageId: number
+  ): Promise<TranslationValue[]> {
+    await this.getTranslationKey(userId, projectId, translationId);
     const language = await this.projectsService.getLanguage(userId, projectId, languageId);
     return this.translationValueRepository.find({
       where: {
@@ -301,12 +281,8 @@ export default class TranslationService {
     });
   }
 
-  public async getEveryValuesOfProject(
-    userId: string,
-    projectId: number): Promise<any[]> {
-
+  public async getEveryValuesOfProject(userId: string, projectId: number): Promise<any[]> {
     await this.projectsService.getProject(userId, projectId);
-
     return await getManager()
       .createQueryBuilder()
       .select(["t_keys.id AS key_id", "t_keys.name AS key_name", "t_keys.is_plural AS is_plural", "t_values.id AS value_id", "t_values.name AS value_name", "t_values.quantity_string AS quantity", "lang.id AS language_id", "lang.name AS language_name", "group.id AS group_id", "group.name AS group_name"])
@@ -320,13 +296,8 @@ export default class TranslationService {
       .getRawMany();
   }
 
-  public async getValue(
-    userId: string,
-    projectId: number,
-    translationId: number,
-    valueId: number): Promise<TranslationValue> {
-
-    await this.getKey(userId, projectId, translationId);
+  public async getValue(userId: string, projectId: number, translationId: number, valueId: number): Promise<TranslationValue> {
+    await this.getTranslationKey(userId, projectId, translationId);
     const value = await this.translationValueRepository.findOne(valueId);
     if (!value || value.key_id !== translationId) {
       throw new NotFoundException();

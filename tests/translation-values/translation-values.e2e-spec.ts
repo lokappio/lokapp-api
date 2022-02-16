@@ -211,7 +211,7 @@ describe("Translations values E2E", () => {
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
         .send({name: "Content of the translation value", language_id: proj2Language.id, quantity_string: null});
-      expect(wrongProjectResp.status).toEqual(403);
+      expect(wrongProjectResp.status).toEqual(404);
     });
 
     it("Creating a new translation singular value with a plural Quantity", async () => {
@@ -332,7 +332,7 @@ describe("Translations values E2E", () => {
         .get(`/projects/${populatedProjects[0].id}/translations/${populatedTranslationKeys[0].id}/values`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_3);
-      expect(response.status).toEqual(401);
+      expect(response.status).toEqual(403);
     });
 
     it("Translation key not found", async () => {

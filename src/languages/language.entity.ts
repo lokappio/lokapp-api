@@ -1,4 +1,4 @@
-import {Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn} from "typeorm";
+import {Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn} from "typeorm";
 import {ApiProperty} from "@nestjs/swagger";
 import Project from "../projects/project.entity";
 import {PostgresUniqueKeys} from "../data/database/postgres-unique-keys.enum";
@@ -16,7 +16,11 @@ export default class Language {
   @ApiProperty()
   public name: string;
 
+  @Column("int")
+  projectId: number;
+
   @ManyToOne(() => Project, {onDelete: "CASCADE"})
+  @JoinColumn({name: "project_id"})
   public project: Project;
 
   @CreateDateColumn()

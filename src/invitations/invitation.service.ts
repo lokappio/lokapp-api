@@ -1,4 +1,4 @@
-import {Injectable, NotFoundException, UnauthorizedException} from "@nestjs/common";
+import {Injectable, NotFoundException, UnauthorizedException, UnprocessableEntityException} from "@nestjs/common";
 import {InjectRepository} from "@nestjs/typeorm";
 import ProjectsService from "../projects/projects.service";
 import {getManager, Repository} from "typeorm";
@@ -9,6 +9,7 @@ import Project, { ProjectsTableName } from "../projects/project.entity";
 import CreateInvitationDto from "./dto/create-invitation.dto";
 import Role from "../roles/role.enum";
 import UserInvitation from "./model/user-invitation.model";
+import {QueryFailedErrorType} from "../common/query-error.filter";
 
 @Injectable()
 export default class InvitationService {
@@ -27,7 +28,7 @@ export default class InvitationService {
 
     const relation = await this.projectsService.doesRelationAlreadyExists(guest.id, project.id);
     if (relation) {
-      throw new UnauthorizedException();
+      throw new UnprocessableEntityException(QueryFailedErrorType.INVITATION_ALREADY_EXISTS);
     }
 
     const invitation = new Invitation();

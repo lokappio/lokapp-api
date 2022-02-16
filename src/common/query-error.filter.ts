@@ -8,6 +8,7 @@ export enum QueryFailedErrorType {
   UNKNOWN = "unknown",
   LANGUAGE_NAME_ALREADY_EXISTS = "language_name_already_exists",
   USER_ALREADY_EXISTS = "user_already_exists",
+  INVITATION_ALREADY_EXISTS = "invitation_already_exists",
   KEY_ALREADY_EXISTS = "key_already_exists",
   VALUE_ALREADY_EXISTS = "value_already_exists",
   GROUP_ALREADY_EXISTS = "group_already_exists",

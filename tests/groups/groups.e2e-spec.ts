@@ -171,7 +171,7 @@ describe("Groups E2E", () => {
         .get(`/projects/${populatedProjects[0].id}/groups`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_3);
-      expect(response.status).toEqual(401);
+      expect(response.status).toEqual(403);
     });
 
     it("Non existing group", async () => {

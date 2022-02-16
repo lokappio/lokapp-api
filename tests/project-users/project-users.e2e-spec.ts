@@ -93,7 +93,7 @@ describe("Users of a project E2E", () => {
         .get(`/projects/${populatedProjects[0].id}/users/me`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1);
-      expect(noAccessResp.status).toEqual(401);
+      expect(noAccessResp.status).toEqual(403);
 
       // Grant user1 access to the project1
       await createRelation(populatedProjects[0], TestsHelpers.MOCKED_USER_ID_1, Role.Owner);
@@ -374,7 +374,7 @@ describe("Users of a project E2E", () => {
         .post(`/projects/${populatedProjects[0].id}/leave`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1);
-      expect(noAccessResp.status).toEqual(401);
+      expect(noAccessResp.status).toEqual(403);
     });
 
     it("Leaving the project as a user (not owner)", async () => {

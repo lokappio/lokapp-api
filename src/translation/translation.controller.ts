@@ -31,14 +31,14 @@ export default class TranslationController {
     @UserId() userId: string,
     @Param("project_id", ParseIntPipe) projectId: number,
     @Body(new JoiValidationPipe(CreateKeyDto.schema)) createKeyDto: CreateKeyDto): Promise<TranslationKey> {
-    return this.translationService.createKey(userId, projectId, createKeyDto);
+    return this.translationService.createTranslationKey(userId, projectId, createKeyDto);
   }
 
   @Get()
   public getKeys(
     @UserId() userId: string,
     @Param("project_id", ParseIntPipe) projectId: number): Promise<TranslationKey[]> {
-    return this.translationService.getAllKeys(userId, projectId);
+    return this.translationService.getTranslationKeys(userId, projectId);
   }
 
   @Get("/all")
@@ -53,7 +53,7 @@ export default class TranslationController {
     @UserId() userId: string,
     @Param("project_id", ParseIntPipe) projectId: number,
     @Param("translation_id", ParseIntPipe) keyId: number): Promise<TranslationKey> {
-    return this.translationService.getKey(userId, projectId, keyId);
+    return this.translationService.getTranslationKey(userId, projectId, keyId);
   }
 
   @Delete(":translation_id")

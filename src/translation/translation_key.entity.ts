@@ -32,7 +32,11 @@ export default class TranslationKey {
   @Column("int", {nullable: true})
   group_id: number;
 
+  @Column("int")
+  projectId: number;
+
   @ManyToOne(() => Project, {onDelete: "CASCADE"})
+  @JoinColumn({name: "project_id"})
   public project: Project;
 
   @ManyToOne(() => Group, {onDelete: "CASCADE"})

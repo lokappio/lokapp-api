@@ -291,7 +291,7 @@ describe("Projects E2E", () => {
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_2);
 
-      expect(projectResp.status).toEqual(401);
+      expect(projectResp.status).toEqual(403);
     });
 
     afterAll(async () => {
