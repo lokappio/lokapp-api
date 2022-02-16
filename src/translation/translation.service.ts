@@ -2,7 +2,7 @@ import {Injectable, NotFoundException, UnprocessableEntityException} from "@nest
 import {InjectRepository} from "@nestjs/typeorm";
 import {QueryFailedErrorType} from "../common/query-error.filter";
 import ProjectsService from "../projects/projects.service";
-import {getManager, In, Not, Repository} from "typeorm";
+import {getManager, Not, Repository} from "typeorm";
 import CreateKeyDto from "./dto/create-key.dto";
 import TranslationKey from "./translation_key.entity";
 import TranslationValue from "./translation_value.entity";
@@ -11,7 +11,6 @@ import UpdateValueDto from "./dto/update-value.dto";
 import UpdateKeyDto from "./dto/update-key.dto";
 import GroupService from "../groups/group.service";
 import QuantityString from "./quantity_string.enum";
-import {create} from "domain";
 
 @Injectable()
 export default class TranslationService {
@@ -52,19 +51,14 @@ export default class TranslationService {
   }
 
   public async createTranslationKey(userId: string, projectId: number, createKeyDto: CreateKeyDto): Promise<TranslationKey> {
-    // Check if project already exists
+    // Check if project and group exist
     const project = await this.projectsService.getProject(userId, projectId);
+    const group = await this.groupsService.getGroup(userId, projectId, createKeyDto.group_id);
 
     // Check if the translation key already exists
     const keyAlreadyExists = await this.translationKeyAlreadyExists(createKeyDto.name, projectId, createKeyDto.group_id);
     if (keyAlreadyExists) {
       throw new UnprocessableEntityException(QueryFailedErrorType.KEY_ALREADY_EXISTS);
-    }
-
-    // Check if the group exists
-    const group = await this.groupsService.getGroup(userId, projectId, createKeyDto.group_id);
-    if (!group) {
-      throw new NotFoundException();
     }
 
     // Create the new translation key
@@ -78,10 +72,9 @@ export default class TranslationService {
   }
 
   public async getTranslationKey(userId: string, projectId: number, keyId: number): Promise<TranslationKey> {
-    await this.projectsService.getProject(userId, projectId);
-
+    const project = await this.projectsService.getProject(userId, projectId);
     const key: TranslationKey = await this.translationKeyRepository.findOne(keyId);
-    if (!key || key.projectId != projectId) {
+    if (!key || key.projectId != project.id) {
       throw new NotFoundException();
     }
     return key;
@@ -89,12 +82,12 @@ export default class TranslationService {
 
   public async getTranslationKeys(userId: string, projectId: number): Promise<TranslationKey[]> {
     // Check the project exists and the user's access
-    await this.projectsService.getProject(userId, projectId);
+    const project = await this.projectsService.getProject(userId, projectId);
     // Then find all translation keys of the project
     return this.translationKeyRepository.find({
       where: {
         project: {
-          id: projectId
+          id: project.id
         }
       }
     });
@@ -102,9 +95,9 @@ export default class TranslationService {
 
   public async deleteKey(userId: string, projectId: number, keyId: number): Promise<void> {
     // Check the translation key exists
-    await this.getTranslationKey(userId, projectId, keyId);
+    const key = await this.getTranslationKey(userId, projectId, keyId);
     // Then delete it
-    await this.translationKeyRepository.delete(keyId);
+    await this.translationKeyRepository.delete(key.id);
   }
 
   public async updateKey(userId: string, projectId: number, keyId: number, updateKeyDto: UpdateKeyDto): Promise<TranslationKey> {
@@ -170,7 +163,7 @@ export default class TranslationService {
           where: {
             key_id: key.id
           }
-        })
+        });
 
         // Delete ONE and ZERO values and keep the OTHER one as the singular value
         for (const value of values) {
@@ -186,7 +179,7 @@ export default class TranslationService {
     return await this.translationKeyRepository.save(key);
   }
 
-  private async translationValuesAlreadyExists(translationKeyId: number, languageId: number, quantityString: string|null) {
+  private async translationValuesAlreadyExists(translationKeyId: number, languageId: number, quantityString: string | null) {
     const sameValues = await this.translationValueRepository.find({
       where: {
         key: {
@@ -232,12 +225,12 @@ export default class TranslationService {
     return await this.translationValueRepository.save(value);
   }
 
-  public async getAllValues(userId: string, projectId: number, translationId: number): Promise<TranslationValue[]> {
-    await this.getTranslationKey(userId, projectId, translationId);
+  public async getAllValues(userId: string, projectId: number, translationKeyId: number): Promise<TranslationValue[]> {
+    const key = await this.getTranslationKey(userId, projectId, translationKeyId);
     return this.translationValueRepository.find({
       where: {
         key: {
-          id: translationId
+          id: key.id
         }
       }
     });
@@ -246,11 +239,11 @@ export default class TranslationService {
   public async updateValue(
     userId: string,
     projectId: number,
-    translationId: number,
+    translationKeyId: number,
     valueId: number,
     updateValueDto: UpdateValueDto
   ): Promise<TranslationValue> {
-    const value = await this.getValue(userId, projectId, translationId, valueId);
+    const value = await this.getValue(userId, projectId, translationKeyId, valueId);
     value.name = updateValueDto.name;
     return await this.translationValueRepository.save(value);
   }
@@ -261,28 +254,28 @@ export default class TranslationService {
     translationId: number,
     valueId: number
   ): Promise<void> {
-    await this.getValue(userId, projectId, translationId, valueId);
-    await this.translationValueRepository.delete(valueId);
+    const value = await this.getValue(userId, projectId, translationId, valueId);
+    await this.translationValueRepository.delete(value.id);
   }
 
   public async getValuesWithLanguage(
     userId: string,
     projectId: number,
-    translationId: number,
+    translationKeyId: number,
     languageId: number
   ): Promise<TranslationValue[]> {
-    await this.getTranslationKey(userId, projectId, translationId);
+    const key = await this.getTranslationKey(userId, projectId, translationKeyId);
     const language = await this.projectsService.getLanguage(userId, projectId, languageId);
     return this.translationValueRepository.find({
       where: {
-        key_id: translationId,
+        key_id: key.id,
         language_id: language.id
       }
     });
   }
 
   public async getEveryValuesOfProject(userId: string, projectId: number): Promise<any[]> {
-    await this.projectsService.getProject(userId, projectId);
+    const project = await this.projectsService.getProject(userId, projectId);
     return await getManager()
       .createQueryBuilder()
       .select(["t_keys.id AS key_id", "t_keys.name AS key_name", "t_keys.is_plural AS is_plural", "t_values.id AS value_id", "t_values.name AS value_name", "t_values.quantity_string AS quantity", "lang.id AS language_id", "lang.name AS language_name", "group.id AS group_id", "group.name AS group_name"])
@@ -291,15 +284,15 @@ export default class TranslationService {
       .leftJoin("translation_values", "t_values", "t_keys.id = t_values.key_id AND t_values.language_id = lang.id")
       .leftJoin("groups", "group", "t_keys.project_id = group.project_id AND t_keys.group_id = group.id")
       .where("t_keys.project_id = :project_id")
-      .setParameters({project_id: projectId})
+      .setParameters({project_id: project.id})
       .orderBy("t_keys.id, lang.id")
       .getRawMany();
   }
 
-  public async getValue(userId: string, projectId: number, translationId: number, valueId: number): Promise<TranslationValue> {
-    await this.getTranslationKey(userId, projectId, translationId);
+  public async getValue(userId: string, projectId: number, translationKeyId: number, valueId: number): Promise<TranslationValue> {
+    const key = await this.getTranslationKey(userId, projectId, translationKeyId);
     const value = await this.translationValueRepository.findOne(valueId);
-    if (!value || value.key_id !== translationId) {
+    if (!value || value.key_id !== key.id) {
       throw new NotFoundException();
     }
     return value;

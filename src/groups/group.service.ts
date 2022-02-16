@@ -33,8 +33,8 @@ export default class GroupService {
   }
 
   public async createGroup(userId: string, projectId: number, createGroupDto: CreateGroupDto): Promise<Group> {
-    const projectFound = await this.projectsService.getProject(userId, projectId);
-    const sameGroup = await this.groupRepository.find({
+    const project = await this.projectsService.getProject(userId, projectId);
+    const sameGroups = await this.groupRepository.find({
       where: {
         name: createGroupDto.name,
         project: {
@@ -42,16 +42,14 @@ export default class GroupService {
         }
       }
     });
-    if (sameGroup.length > 0) {
+    if (sameGroups.length > 0) {
       throw new UnprocessableEntityException(QueryFailedErrorType.GROUP_ALREADY_EXISTS);
     }
 
     const group = new Group();
     group.name = createGroupDto.name;
-    group.project = projectFound;
-    const createdGroup = await this.groupRepository.save(group);
-
-    return this.getGroup(userId, projectId, createdGroup.id);
+    group.project = project;
+    return await this.groupRepository.save(group);
   }
 
   public async getAllGroups(userId: string, projectId: number): Promise<Group[]> {
@@ -65,14 +63,9 @@ export default class GroupService {
     });
   }
 
-  public async updateGroup(
-    userId: string,
-    projectId: number,
-    groupId: number,
-    updateGroupDto: UpdateGroupDto): Promise<Group> {
-
+  public async updateGroup(userId: string, projectId: number, groupId: number, updateGroupDto: UpdateGroupDto): Promise<Group> {
     const group = await this.getGroup(userId, projectId, groupId);
-    const sameGroup = await this.groupRepository.find({
+    const sameGroups = await this.groupRepository.find({
       where: {
         name: updateGroupDto.name,
         id: Not(groupId),
@@ -81,7 +74,7 @@ export default class GroupService {
         }
       }
     });
-    if (sameGroup.length > 0) {
+    if (sameGroups.length > 0) {
       throw new UnprocessableEntityException(QueryFailedErrorType.GROUP_ALREADY_EXISTS);
     }
     group.name = updateGroupDto.name;

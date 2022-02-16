@@ -278,14 +278,14 @@ describe("Invitations", () => {
         .post(`/invitations/${invitationResp.body.id}/accept`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_2);
-      expect(acceptInvitation.status).toEqual(401);
+      expect(acceptInvitation.status).toEqual(403);
 
       // Try to decline invitation as user2
       const declineInvitation = await request(app.getHttpServer())
         .post(`/invitations/${invitationResp.body.id}/decline`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_2);
-      expect(declineInvitation.status).toEqual(401);
+      expect(declineInvitation.status).toEqual(403);
 
       const remainingInvitations = await invitationRepository.find({
         where: {
@@ -341,7 +341,7 @@ describe("Invitations", () => {
         .delete(`/invitations/${invitationResp.body.id}`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_3);
-      expect(deleteInvitationResp.status).toEqual(401);
+      expect(deleteInvitationResp.status).toEqual(403);
     });
 
     it("As another member of the project, try to delete invitation", async () => {
@@ -364,14 +364,12 @@ describe("Invitations", () => {
         });
       expect(invitationResp.status).toEqual(201);
 
-      console.log(invitationResp.body);
-
       // Try to delete invitation as user 2
       const deleteInvitationResp = await request(app.getHttpServer())
         .delete(`/invitations/${invitationResp.body.id}`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_2);
-      expect(deleteInvitationResp.status).toEqual(401);
+      expect(deleteInvitationResp.status).toEqual(403);
     });
   });
 });

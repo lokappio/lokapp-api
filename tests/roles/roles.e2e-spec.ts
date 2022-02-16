@@ -749,7 +749,7 @@ describe("Roles E2E", () => {
           .delete(`/invitations/${invitationResp.body.id}`)
           .auth("mocked.jwt", {type: "bearer"})
           .set("mocked_user_id", EditorID);
-        expect(deleteInvitation.status).toEqual(401);
+        expect(deleteInvitation.status).toEqual(403);
       });
     });
 
@@ -1015,7 +1015,7 @@ describe("Roles E2E", () => {
           .delete(`/invitations/${invitationResp.body.id}`)
           .auth("mocked.jwt", {type: "bearer"})
           .set("mocked_user_id", TranslatorID);
-        expect(deleteInvitation.status).toEqual(401);
+        expect(deleteInvitation.status).toEqual(403);
       });
     });
 

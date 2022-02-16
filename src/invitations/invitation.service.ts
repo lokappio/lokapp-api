@@ -1,11 +1,11 @@
-import {Injectable, NotFoundException, UnauthorizedException, UnprocessableEntityException} from "@nestjs/common";
+import {ForbiddenException, Injectable, NotFoundException, UnauthorizedException, UnprocessableEntityException} from "@nestjs/common";
 import {InjectRepository} from "@nestjs/typeorm";
 import ProjectsService from "../projects/projects.service";
 import {getManager, Repository} from "typeorm";
-import Invitation, { InvitationTableName } from "./invitation.entity";
+import Invitation, {InvitationTableName} from "./invitation.entity";
 import UsersService from "../users/users.service";
-import User, { UsersTableName } from "../users/user.entity";
-import Project, { ProjectsTableName } from "../projects/project.entity";
+import User, {UsersTableName} from "../users/user.entity";
+import Project, {ProjectsTableName} from "../projects/project.entity";
 import CreateInvitationDto from "./dto/create-invitation.dto";
 import Role from "../roles/role.enum";
 import UserInvitation from "./model/user-invitation.model";
@@ -40,7 +40,7 @@ export default class InvitationService {
   }
 
   public async getInvitationsForUser(userId: string): Promise<UserInvitation[]> {
-    const invitations = await getManager()
+    return await getManager()
       .createQueryBuilder()
       .select(["invitations.role AS role", "invitations.id AS id", "owner.email AS owner_email", "owner.username AS owner_username", "project.name AS project_name"])
       .from(InvitationTableName, "invitations")
@@ -49,19 +49,6 @@ export default class InvitationService {
       .where("invitations.guestId = :guest_id")
       .setParameters({guest_id: userId})
       .getRawMany();
-
-    const res = [];
-    invitations.forEach((invitation: any) => {
-      res.push({
-        role: invitation.role,
-        id: invitation.id,
-        owner_email: invitation.owner_email,
-        owner_username: invitation.owner_username,
-        project_name: invitation.project_name
-      });
-    });
-    
-    return invitations;
   }
 
   public async acceptInvitation(userId: string, invitationId: number): Promise<void> {
@@ -70,7 +57,7 @@ export default class InvitationService {
       throw new NotFoundException();
     }
     if (userId !== invitation.guestId) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException(null, "Can't accept invitation for someone else");
     }
     await this.projectsService.createUserProjectRelation(userId, invitation.projectId, invitation.role);
     await this.invitationRepository.delete(invitationId);
@@ -82,7 +69,7 @@ export default class InvitationService {
       throw new NotFoundException();
     }
     if (userId !== invitation.guestId) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException(null, "Can't decline invitation for someone else");
     }
     await this.invitationRepository.delete(invitationId);
   }
@@ -95,10 +82,10 @@ export default class InvitationService {
     const userRole = await this.projectsService.getRoleOfUserInProject(userId, invitation.projectId);
     const rolesAllowedToDelete: Role[] = [Role.Owner, Role.Manager];
     if (!rolesAllowedToDelete.includes(userRole)) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException(null, "User isn't allowed to delete the invitation (role)");
     }
     if (userId !== invitation.ownerId) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException(null, "User isn't the owner of the invitation");
     }
     await this.invitationRepository.delete(invitationId);
   }
