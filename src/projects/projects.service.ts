@@ -149,14 +149,7 @@ export default class ProjectsService {
 
     const createdLanguage = await this.languagesRepository.save(language);
 
-    const groups: Group[] = await this.groupRepository.find({project: {id: projectId}});
-
-    const projectKeys: TranslationKey[] = [];
-
-    await Promise.all(groups.map(async (group) => {
-      const result: TranslationKey[] = await this.keyRepository.find({group_id: group.id});
-      result.forEach((key) => projectKeys.push(key));
-    }));
+    const projectKeys: TranslationKey[] = await this.keyRepository.find({projectId: projectId});
 
     projectKeys.map(async (key) => {
       if (key.is_plural) {
