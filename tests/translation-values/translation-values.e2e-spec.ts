@@ -623,6 +623,38 @@ describe("Translations values E2E", () => {
       expect(allValues.filter(v => v.id == value.id).length).toEqual(0);
     });
 
+    it("Deleting a language", async () => {
+      // Create a project
+      const project = new Project();
+      project.name = "Project";
+      project.color = "123123";
+      const createdProject = await projectRepository.save(project);
+      await TestsHelpers.createProjectRelation(createdProject, populatedUsers[0], Role.Owner, userProjectRepository);
+
+      // Create a group and a language
+      const group = await TestsHelpers.createGroup("Group", createdProject, groupRepository);
+      const language = await TestsHelpers.createLanguage("Language1", createdProject, languageRepository);
+
+      // Create a key and a value
+      const key = await TestsHelpers.createTranslationKey("translation key 1", group, createdProject, false, translationKeysRepository);
+      await TestsHelpers.createTranslationValue("Translation value", key, language, null, translationValuesRepository);
+
+      // Check value has been inserted
+      const values = await findTranslationValues(key.id);
+      expect(values.length).toEqual(1);
+
+      // Delete the language
+      const deleteResp = await request(app.getHttpServer())
+        .delete(`/projects/${createdProject.id}/languages/${language.id}`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1);
+      expect(deleteResp.status).toBe(204);
+
+      // Check values have been deleted
+      const valuesAfterDeletion = await findTranslationValues(key.id);
+      expect(valuesAfterDeletion.length).toEqual(0);
+    });
+
     it("Deleting a translation key", async () => {
       const deleteResp = await request(app.getHttpServer())
         .delete(`/projects/${populatedProjects[0].id}/translations/${populatedTranslationKeys[0].id}`)
