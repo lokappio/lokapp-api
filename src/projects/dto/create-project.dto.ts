@@ -18,7 +18,7 @@ export default class CreateProjectDto extends BaseDto {
       .allow(null, ''),
     language: Joi
       .string()
-      .required()
+      .optional()
   });
 
   public name: string;

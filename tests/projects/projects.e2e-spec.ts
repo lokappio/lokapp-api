@@ -12,12 +12,14 @@ import CreateProjectDto from "../../src/projects/dto/create-project.dto";
 import TestsHelpers from "../helpers/tests.helpers";
 import * as request from "supertest";
 import Role from "../../src/roles/role.enum";
+import Language from "../../src/languages/language.entity";
 
 describe("Projects E2E", () => {
   let app: INestApplication;
   let userRepository: Repository<User>;
   let projectRepository: Repository<Project>;
   let userProjectRepository: Repository<UserProject>;
+  let languageRepository: Repository<Language>;
 
   beforeAll(async () => {
     const moduleRef = await TestsHelpers.getTestingModule()
@@ -28,6 +30,7 @@ describe("Projects E2E", () => {
     userRepository = moduleRef.get<Repository<User>>(getRepositoryToken(User));
     projectRepository = moduleRef.get<Repository<Project>>(getRepositoryToken(Project));
     userProjectRepository = moduleRef.get<Repository<UserProject>>(getRepositoryToken(UserProject));
+    languageRepository = moduleRef.get<Repository<Language>>(getRepositoryToken(Language));
 
     app = moduleRef.createNestApplication();
     app.useGlobalFilters(new HttpExceptionFilter(), new TestQueryExceptionFilter());
@@ -44,6 +47,12 @@ describe("Projects E2E", () => {
   });
 
   describe("Creating project", () => {
+    afterEach(async () => {
+      await projectRepository.clear();
+      await userProjectRepository.clear();
+      await languageRepository.clear();
+    });
+
     it("Unauthenticated user (without JWT)", async () => {
       const response = await request(app.getHttpServer())
         .post("/projects")
@@ -70,14 +79,6 @@ describe("Projects E2E", () => {
         .send({color: "123456", language: "fr"});
       expect(noNameResp.status).toEqual(400);
       expect(noNameResp.body.message).toBe("Validation failed");
-
-      const noLanguageResp = await request(app.getHttpServer())
-        .post("/projects")
-        .auth("mocked.jwt", {type: "bearer"})
-        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({name: "Project without language", color: "123456"});
-      expect(noLanguageResp.status).toEqual(400);
-      expect(noLanguageResp.body.message).toBe("Validation failed");
 
       const noDataResp = await request(app.getHttpServer())
         .post("/projects")
@@ -113,7 +114,7 @@ describe("Projects E2E", () => {
       expect(colorLengthResp.status).toEqual(400);
     });
 
-    it("Creating project", async () => {
+    it("Creating project with a language", async () => {
       const projectsCount = (await projectRepository.find()).length;
 
       const dto = new CreateProjectDto({
@@ -128,7 +129,6 @@ describe("Projects E2E", () => {
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
         .send(dto);
-
       expect(createdProjectResp.status).toBe(201);
       expect(createdProjectResp.body.id).not.toBeNull();
       expect(createdProjectResp.body.name).toEqual(dto.name);
@@ -138,6 +138,14 @@ describe("Projects E2E", () => {
       const updatedProjectsCount = (await projectRepository.find()).length;
       expect(updatedProjectsCount).toEqual(projectsCount + 1);
 
+      const languages = await languageRepository.find({
+        where: {
+          projectId: createdProjectResp.body.id
+        }
+      });
+      expect(languages.length).toEqual(1);
+      expect(languages[0].name).toEqual(dto.language);
+
       const relations = await userProjectRepository.find();
       expect(relations.length).toEqual(1);
       expect(relations[0].role).toEqual(Role.Owner);
@@ -145,8 +153,46 @@ describe("Projects E2E", () => {
       expect(relations[0].projectId).toEqual(createdProjectResp.body.id);
     });
 
+    it("Creating project without language", async () => {
+      const projectsCount = (await projectRepository.find()).length;
+
+      const dto = new CreateProjectDto({
+        name: "New project name",
+        description: "Lorem ipsum dolor sit amet",
+        color: "112233"
+      });
+
+      const createdProjectResp = await request(app.getHttpServer())
+        .post("/projects")
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send(dto);
+      expect(createdProjectResp.status).toBe(201);
+
+      const updatedProjectsCount = (await projectRepository.find()).length;
+      expect(updatedProjectsCount).toEqual(projectsCount + 1);
+
+      const languages = await languageRepository.find({
+        where: {
+          projectId: createdProjectResp.body.id
+        }
+      });
+      expect(languages.length).toEqual(0);
+
+      const relation = await userProjectRepository.findOne({
+        where: {
+          projectId: createdProjectResp.body.id,
+          userId: TestsHelpers.MOCKED_USER_ID_1
+        }
+      });
+      expect(relation).not.toBeUndefined();
+      expect(relation.role).toEqual(Role.Owner);
+    });
+
     afterAll(async () => {
       await projectRepository.clear();
+      await userProjectRepository.clear();
+      await languageRepository.clear();
     });
   });
 
@@ -531,7 +577,7 @@ describe("Projects E2E", () => {
       const project = new Project();
       project.name = "Project of 2 users";
       project.description = "Project about to be deleted";
-      project.color = "654987"
+      project.color = "654987";
       await projectRepository.save(project);
 
       // Create relation for user1
