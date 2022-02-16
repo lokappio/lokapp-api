@@ -7,6 +7,8 @@ import Language from "../languages/language.entity";
 import UserProject from "../users-projects/user_project.entity";
 import Invitation from "../invitations/invitation.entity";
 import Group from "../groups/group.entity";
+import TranslationValue from "../translation/translation_value.entity";
+import TranslationKey from "../translation/translation_key.entity";
 
 @Module({
   imports: [
@@ -15,7 +17,9 @@ import Group from "../groups/group.entity";
       Language,
       UserProject,
       Invitation,
-      Group
+      Group,
+      TranslationValue,
+      TranslationKey
     ])
   ],
   controllers: [ProjectsController],
