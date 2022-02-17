@@ -210,6 +210,20 @@ export default class TranslationService {
     return await this.translationKeyRepository.save(key);
   }
 
+  public async getAllTranslationValues(userId: string, projectId: number, languageId: number): Promise<TranslationValue[]> {
+    if (languageId == undefined) {
+      throw new BadRequestException(null, "Query parameter `languageId` is missing");
+    }
+    return this.translationValueRepository.find({
+      where: {
+        key: {
+          projectId: projectId
+        },
+        languageId: languageId
+      }
+    });
+  }
+
   private async translationValuesAlreadyExists(translationKeyId: number, languageId: number, quantityString: string | null) {
     const sameValues = await this.translationValueRepository.find({
       where: {
