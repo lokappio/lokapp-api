@@ -19,11 +19,11 @@ export default class UserProject {
   userId: string;
 
   @ManyToOne(() => Project, (project) => project.id, {primary: true, onDelete: "CASCADE"})
-  @JoinColumn({name: "project_id"})
+  @JoinColumn({name: "projectId"})
   public project: Project;
 
   @ManyToOne(() => User, (user) => user.id, {primary: true, onDelete: "CASCADE"})
-  @JoinColumn({name: "user_id"})
+  @JoinColumn({name: "userId"})
   public user: User;
 
   @Column()

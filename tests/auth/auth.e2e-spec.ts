@@ -67,8 +67,8 @@ describe("Auth", () => {
       expect(registerResult.body).toEqual({
         ...createUserDto,
         id: expect.any(String),
-        created_at: expect.any(String),
-        updated_at: expect.any(String)
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String)
       });
 
       // Check user has been inserted
@@ -93,8 +93,8 @@ describe("Auth", () => {
         email: createUserDto.email,
         username: null,
         id: expect.any(String),
-        created_at: expect.any(String),
-        updated_at: expect.any(String)
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String)
       });
 
       // Check user has been inserted

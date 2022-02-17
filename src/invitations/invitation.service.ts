@@ -22,7 +22,7 @@ export default class InvitationService {
   }
 
   public async createInvitation(userId: string, createInvitationDto: CreateInvitationDto): Promise<Invitation> {
-    const project: Project = await this.projectsService.getProject(userId, createInvitationDto.project_id);
+    const project: Project = await this.projectsService.getProject(userId, createInvitationDto.projectId);
     const guest: User = await this.usersService.getUserByEmail(createInvitationDto.email);
     const owner: User = await this.usersService.getUser(userId);
 
@@ -44,10 +44,10 @@ export default class InvitationService {
       .createQueryBuilder()
       .select(["invitations.role AS role", "invitations.id AS id", "owner.email AS owner_email", "owner.username AS owner_username", "project.name AS project_name"])
       .from(InvitationTableName, "invitations")
-      .leftJoin(UsersTableName, "owner", "invitations.owner_id = owner.id")
-      .leftJoin(ProjectsTableName, "project", "invitations.project_id = project.id")
-      .where("invitations.guestId = :guest_id")
-      .setParameters({guest_id: userId})
+      .leftJoin(UsersTableName, "owner", "invitations.ownerId = owner.id")
+      .leftJoin(ProjectsTableName, "project", "invitations.projectId = project.id")
+      .where("invitations.guestId = :guestId")
+      .setParameters({guestId: userId})
       .getRawMany();
   }
 

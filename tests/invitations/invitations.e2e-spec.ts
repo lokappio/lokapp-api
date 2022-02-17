@@ -79,7 +79,7 @@ describe("Invitations", () => {
         .post("/invitations")
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({project_id: populatedProjects[0].id, role: Role.Manager});
+        .send({projectId: populatedProjects[0].id, role: Role.Manager});
       expect(noEmailResp.status).toEqual(400);
       expect(noEmailResp.body.message).toBe("Validation failed");
 
@@ -94,7 +94,7 @@ describe("Invitations", () => {
         .post("/invitations")
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({email: "user@lokapp.io", project_id: populatedProjects[0].id});
+        .send({email: "user@lokapp.io", projectId: populatedProjects[0].id});
       expect(noRoleResp.status).toEqual(400);
       expect(noRoleResp.body.message).toBe("Validation failed");
 
@@ -102,7 +102,7 @@ describe("Invitations", () => {
         .post("/invitations")
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({email: "user@lokapp.io", project_id: populatedProjects[0].id, role: Role.Owner});
+        .send({email: "user@lokapp.io", projectId: populatedProjects[0].id, role: Role.Owner});
       expect(inviteOwnerResp.status).toEqual(400);
       expect(inviteOwnerResp.body.message).toBe("Validation failed");
 
@@ -119,7 +119,7 @@ describe("Invitations", () => {
         .post("/invitations")
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({email: "not_found@lokapp.io", project_id: populatedProjects[0].id, role: Role.Manager});
+        .send({email: "not_found@lokapp.io", projectId: populatedProjects[0].id, role: Role.Manager});
       expect(notFoundEmailResp.status).toEqual(404);
     });
 
@@ -130,7 +130,7 @@ describe("Invitations", () => {
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
         .send(new CreateInvitationDto({
           email: "user_c@lokapp.io",
-          project_id: populatedProjects[0].id,
+          projectId: populatedProjects[0].id,
           role: Role.Manager
         }));
       expect(invitationResp.status).toEqual(201);
@@ -164,7 +164,7 @@ describe("Invitations", () => {
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
         .send(new CreateInvitationDto({
           email: "user_c@lokapp.io", // Email of mocked user 3
-          project_id: populatedProjects[0].id,
+          projectId: populatedProjects[0].id,
           role: Role.Manager
         }));
       expect(invitationResp.status).toEqual(201);
@@ -181,7 +181,7 @@ describe("Invitations", () => {
     it("As a guest, accept invitation", async () => {
       const dto = new CreateInvitationDto({
         email: "user_c@lokapp.io", // Email of mocked user 3
-        project_id: populatedProjects[0].id,
+        projectId: populatedProjects[0].id,
         role: Role.Editor
       });
 
@@ -203,7 +203,7 @@ describe("Invitations", () => {
       // Get project's relation and check the user 3 has access to the project
       const projectRelation = await userProjectRepository.findOne({
         where: {
-          projectId: dto.project_id,
+          projectId: dto.projectId,
           userId: TestsHelpers.MOCKED_USER_ID_3
         }
       });
@@ -222,7 +222,7 @@ describe("Invitations", () => {
     it("As a guest, decline invitation", async () => {
       const dto = new CreateInvitationDto({
         email: "user_c@lokapp.io",
-        project_id: populatedProjects[0].id,
+        projectId: populatedProjects[0].id,
         role: Role.Manager
       });
 
@@ -244,7 +244,7 @@ describe("Invitations", () => {
       // Get project's relation and check the user 3 hasn't access to the project
       const projectRelation = await userProjectRepository.findOne({
         where: {
-          projectId: dto.project_id,
+          projectId: dto.projectId,
           userId: TestsHelpers.MOCKED_USER_ID_3
         }
       });
@@ -261,7 +261,7 @@ describe("Invitations", () => {
     it("Only a guest can accept or decline an invitation", async () => {
       const dto = new CreateInvitationDto({
         email: "user_c@lokapp.io", // Email of mocked user 3
-        project_id: populatedProjects[0].id,
+        projectId: populatedProjects[0].id,
         role: Role.Translator
       });
 
@@ -310,7 +310,7 @@ describe("Invitations", () => {
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
         .send({
           email: "user_c@lokapp.io", // Email of mocked user 3
-          project_id: populatedProjects[0].id,
+          projectId: populatedProjects[0].id,
           role: Role.Translator
         });
       expect(invitationResp.status).toEqual(201);
@@ -331,7 +331,7 @@ describe("Invitations", () => {
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
         .send({
           email: "user_c@lokapp.io", // Email of mocked user 3
-          project_id: populatedProjects[0].id,
+          projectId: populatedProjects[0].id,
           role: Role.Translator
         });
       expect(invitationResp.status).toEqual(201);
@@ -359,7 +359,7 @@ describe("Invitations", () => {
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
         .send({
           email: "user_c@lokapp.io", // Email of mocked user 3
-          project_id: populatedProjects[0].id,
+          projectId: populatedProjects[0].id,
           role: Role.Translator
         });
       expect(invitationResp.status).toEqual(201);

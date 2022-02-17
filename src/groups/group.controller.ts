@@ -14,7 +14,7 @@ import Role from "../roles/role.enum";
 @ApiBearerAuth()
 @ApiTags("Groups")
 @UseGuards(JwtAuthUserGuard, RolesGuard)
-@Controller("projects/:project_id/groups")
+@Controller("projects/:projectId/groups")
 export default class GroupController {
   constructor(private readonly groupService: GroupService) {
   }
@@ -23,7 +23,7 @@ export default class GroupController {
   @Roles(Role.Owner, Role.Manager, Role.Editor)
   public createGroup(
     @UserId() userId: string,
-    @Param("project_id", ParseIntPipe) projectId: number,
+    @Param("projectId", ParseIntPipe) projectId: number,
     @Body(new JoiValidationPipe(CreateGroupDto.schema)) createGroupDto: CreateGroupDto): Promise<Group> {
     return this.groupService.createGroup(userId, projectId, createGroupDto);
   }
@@ -31,16 +31,16 @@ export default class GroupController {
   @Get()
   public getAllGroups(
     @UserId() userId: string,
-    @Param("project_id", ParseIntPipe) projectId: number): Promise<Group[]> {
+    @Param("projectId", ParseIntPipe) projectId: number): Promise<Group[]> {
     return this.groupService.getAllGroups(userId, projectId);
   }
 
-  @Patch(":group_id")
+  @Patch(":groupId")
   @Roles(Role.Owner, Role.Manager, Role.Editor)
   public updateGroup(
     @UserId() userId: string,
-    @Param("project_id", ParseIntPipe) projectId: number,
-    @Param("group_id", ParseIntPipe) groupId: number,
+    @Param("projectId", ParseIntPipe) projectId: number,
+    @Param("groupId", ParseIntPipe) groupId: number,
     @Body(new JoiValidationPipe(UpdateGroupDto.schema)) updateGroupDto: UpdateGroupDto): Promise<Group> {
     return this.groupService.updateGroup(userId, projectId, groupId, updateGroupDto);
   }

@@ -7,16 +7,16 @@ export default class CreateKeyDto extends BaseDto {
       .string()
       .required(),
 
-    group_id: Joi
+    groupId: Joi
       .number()
       .required(),
 
-    is_plural: Joi
+    isPlural: Joi
       .boolean()
       .required()
   });
 
   public name: string;
-  public group_id: number;
-  public is_plural: boolean;
+  public groupId: number;
+  public isPlural: boolean;
 }

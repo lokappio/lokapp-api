@@ -21,7 +21,7 @@ export default class Invitation {
   projectId: number;
 
   @ManyToOne(() => Project, (project) => project.id, {onDelete: "CASCADE"})
-  @JoinColumn({name: "project_id"})
+  @JoinColumn({name: "projectId"})
   project: Project;
 
   // Owner
@@ -30,7 +30,7 @@ export default class Invitation {
   ownerId: string;
 
   @ManyToOne(() => User, (user) => user.id, {onDelete: "CASCADE"})
-  @JoinColumn({name: "owner_id"})
+  @JoinColumn({name: "ownerId"})
   owner: User;
 
   // Invited user
@@ -39,7 +39,7 @@ export default class Invitation {
   guestId: string;
 
   @ManyToOne(() => User, (user) => user.id, {onDelete: "CASCADE"})
-  @JoinColumn({name: "guest_id"})
+  @JoinColumn({name: "guestId"})
   guest: User;
 
   // Role
@@ -49,5 +49,5 @@ export default class Invitation {
 
   @CreateDateColumn()
   @ApiProperty()
-  readonly created_at: Date;
+  readonly createdAt: Date;
 }

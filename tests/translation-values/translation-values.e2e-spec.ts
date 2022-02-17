@@ -150,7 +150,7 @@ describe("Translations values E2E", () => {
         .post(`/projects/${populatedProjects[0].id}/translations/${populatedTranslationKeys[0].id}/values`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({quantity: QuantityString.ONE, language_id: populatedLanguages[0]});
+        .send({quantity: QuantityString.ONE, languageId: populatedLanguages[0]});
       expect(missingNameResp.status).toEqual(400);
 
       // Missing quantity key
@@ -158,7 +158,7 @@ describe("Translations values E2E", () => {
         .post(`/projects/${populatedProjects[0].id}/translations/${populatedTranslationKeys[0].id}/values`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({name: "Content of the translation value", language_id: populatedLanguages[0]});
+        .send({name: "Content of the translation value", languageId: populatedLanguages[0]});
       expect(missingQuantityResp.status).toEqual(400);
 
       // Wrong quantity format
@@ -166,7 +166,7 @@ describe("Translations values E2E", () => {
         .post(`/projects/${populatedProjects[0].id}/translations/${populatedTranslationKeys[0].id}/values`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({name: "Content of the translation value", language_id: populatedLanguages[0], quantity_string: "quantity"});
+        .send({name: "Content of the translation value", languageId: populatedLanguages[0], quantityString: "quantity"});
       expect(wrongQuantityResp.status).toEqual(400);
     });
 
@@ -176,7 +176,7 @@ describe("Translations values E2E", () => {
         .post(`/projects/${populatedProjects[0].id}/translations/${populatedTranslationKeys[0].id}0123/values`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({name: "Content of the translation value", language_id: populatedLanguages[0], quantity_string: null});
+        .send({name: "Content of the translation value", languageId: populatedLanguages[0], quantityString: null});
       expect(keyNotFoundResp.status).toEqual(400);
 
       // Create a key for project2
@@ -189,7 +189,7 @@ describe("Translations values E2E", () => {
         .post(`/projects/${populatedProjects[0].id}/translations/${proj2Key.id}/values`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({name: "Content of the translation value", language_id: populatedLanguages[0], quantity_string: null});
+        .send({name: "Content of the translation value", languageId: populatedLanguages[0], quantityString: null});
       expect(wrongProjectResp.status).toEqual(400);
     });
 
@@ -199,7 +199,7 @@ describe("Translations values E2E", () => {
         .post(`/projects/${populatedProjects[0].id}/translations/${populatedTranslationKeys[0].id}/values`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({name: "Content of the translation value", language_id: 123456, quantity_string: null});
+        .send({name: "Content of the translation value", languageId: 123456, quantityString: null});
       expect(keyNotFoundResp.status).toEqual(404);
 
       // Create a language for project2
@@ -210,7 +210,7 @@ describe("Translations values E2E", () => {
         .post(`/projects/${populatedProjects[0].id}/translations/${populatedTranslationKeys[0].id}/values`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({name: "Content of the translation value", language_id: proj2Language.id, quantity_string: null});
+        .send({name: "Content of the translation value", languageId: proj2Language.id, quantityString: null});
       expect(wrongProjectResp.status).toEqual(404);
     });
 
@@ -219,7 +219,7 @@ describe("Translations values E2E", () => {
         .post(`/projects/${populatedProjects[0].id}/translations/${populatedTranslationKeys[0].id}/values`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({name: "Content of the translation value", language_id: populatedLanguages[0].id, quantity_string: QuantityString.OTHER});
+        .send({name: "Content of the translation value", languageId: populatedLanguages[0].id, quantityString: QuantityString.OTHER});
       expect(singularWithPluralQuantityResp.status).toEqual(422);
     });
 
@@ -228,14 +228,14 @@ describe("Translations values E2E", () => {
         .post(`/projects/${populatedProjects[0].id}/translations/${populatedTranslationKeys[0].id}/values`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({name: "Content of the translation value", language_id: populatedLanguages[0].id, quantity_string: null});
+        .send({name: "Content of the translation value", languageId: populatedLanguages[0].id, quantityString: null});
       expect(createResp.status).toEqual(201);
 
       const createWithoutQuantityResp = await request(app.getHttpServer())
         .post(`/projects/${populatedProjects[0].id}/translations/${populatedTranslationKeys[0].id}/values`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({name: "Content of the translation value", language_id: populatedLanguages[1].id});
+        .send({name: "Content of the translation value", languageId: populatedLanguages[1].id});
       expect(createWithoutQuantityResp.status).toEqual(201);
 
       const values = await findTranslationValues(populatedTranslationKeys[0].id);
@@ -249,15 +249,15 @@ describe("Translations values E2E", () => {
         .post(`/projects/${populatedProjects[0].id}/translations/${createdKey.id}/values`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({name: "Content of the translation value", language_id: populatedLanguages[0].id, quantity_string: null});
+        .send({name: "Content of the translation value", languageId: populatedLanguages[0].id, quantityString: null});
       expect(pluralWithSingularQuantityResp.status).toEqual(422);
 
       const pluralWithoutQuantityResp = await request(app.getHttpServer())
         .post(`/projects/${populatedProjects[0].id}/translations/${createdKey.id}/values`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({name: "Content of the translation value", language_id: populatedLanguages[0].id});
-      expect(pluralWithSingularQuantityResp.status).toEqual(422);
+        .send({name: "Content of the translation value", languageId: populatedLanguages[0].id});
+      expect(pluralWithoutQuantityResp.status).toEqual(422);
     });
 
     it("Creating a new translation value (plural)", async () => {
@@ -267,18 +267,18 @@ describe("Translations values E2E", () => {
         .post(`/projects/${populatedProjects[0].id}/translations/${createdKey.id}/values`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({name: "Content of the translation value", language_id: populatedLanguages[0].id, quantity_string: QuantityString.OTHER});
+        .send({name: "Content of the translation value", languageId: populatedLanguages[0].id, quantityString: QuantityString.OTHER});
       expect(createResp.status).toEqual(201);
 
       const values = await findTranslationValues(createdKey.id);
       expect(values.length).toEqual(1);
     });
 
-    it("Duplicated key (combination between key, quantity_string, and language already exists)", async () => {
+    it("Duplicated key (combination between key, quantityString, and language already exists)", async () => {
       const dto = new CreateValueDto({
         name: "Content of the translation value",
-        language_id: populatedLanguages[0].id,
-        quantity_string: null
+        languageId: populatedLanguages[0].id,
+        quantityString: null
       });
       const createResp = await request(app.getHttpServer())
         .post(`/projects/${populatedProjects[0].id}/translations/${populatedTranslationKeys[0].id}/values`)
@@ -291,7 +291,7 @@ describe("Translations values E2E", () => {
         .post(`/projects/${populatedProjects[0].id}/translations/${populatedTranslationKeys[0].id}/values`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({name: "Content of the translation value", language_id: populatedLanguages[1].id, quantity_string: null});
+        .send({name: "Content of the translation value", languageId: populatedLanguages[1].id, quantityString: null});
       expect(createSameValueButOtherLanguageResp.status).toEqual(201);
 
       let values = await findTranslationValues(populatedTranslationKeys[0].id);
@@ -360,7 +360,7 @@ describe("Translations values E2E", () => {
         .get(`/projects/${populatedProjects[0].id}/translations/${populatedTranslationKeys[0].id}/values`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .query({language_id: populatedLanguages[1].id});
+        .query({languageId: populatedLanguages[1].id});
       expect(language2Resp.status).toEqual(200);
       expect(language2Resp.body.length).toEqual(1);
       expect(language2Resp.body[0].id).toEqual(value2.id);
@@ -460,7 +460,7 @@ describe("Translations values E2E", () => {
         .patch(`/projects/${populatedProjects[0].id}/translations/${populatedTranslationKeys[0].id}/values/${translationValue.id}`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({quantity_string: "quantity"});
+        .send({quantityString: "quantity"});
       expect(quantityFormatResp.status).toEqual(400);
 
       // Wrong singular quantity string
@@ -469,7 +469,7 @@ describe("Translations values E2E", () => {
         .patch(`/projects/${populatedProjects[0].id}/translations/${populatedTranslationKeys[0].id}/values/${singularValue.id}`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({quantity_string: QuantityString.OTHER});
+        .send({quantityString: QuantityString.OTHER});
       expect(singularResp.status).toEqual(400);
 
       // Wrong plural quantity string
@@ -478,7 +478,7 @@ describe("Translations values E2E", () => {
         .patch(`/projects/${populatedProjects[0].id}/translations/${populatedTranslationKeys[0].id}/values/${pluralValue.id}`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({quantity_string: null});
+        .send({quantityString: null});
       expect(pluralResp.status).toEqual(400);
     });
 
@@ -487,12 +487,12 @@ describe("Translations values E2E", () => {
         .patch(`/projects/${populatedProjects[0].id}/translations/${populatedTranslationKeys[0].id}/values/${translationValue.id}`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({language_id: populatedLanguages[1].id});
+        .send({languageId: populatedLanguages[1].id});
       expect(changingLanguageResp.status).toEqual(400);
 
       const valuesForKey = await findTranslationValues(populatedTranslationKeys[0].id);
-      expect(valuesForKey.filter(values => values.language_id == populatedLanguages[0].id).length).toEqual(1);
-      expect(valuesForKey.filter(values => values.language_id == populatedLanguages[1].id).length).toEqual(0);
+      expect(valuesForKey.filter(values => values.languageId == populatedLanguages[0].id).length).toEqual(1);
+      expect(valuesForKey.filter(values => values.languageId == populatedLanguages[1].id).length).toEqual(0);
     });
 
     it("Converting plural into singular", async () => {
@@ -508,7 +508,7 @@ describe("Translations values E2E", () => {
         .patch(`/projects/${populatedProjects[0].id}/translations/${pluralKey.id}`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({is_plural: false});
+        .send({isPlural: false});
       expect(changingToSingularResp.status).toEqual(200);
 
       const values = await findTranslationValues(pluralKey.id);
@@ -527,7 +527,7 @@ describe("Translations values E2E", () => {
         .patch(`/projects/${populatedProjects[0].id}/translations/${singularKey.id}`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({is_plural: true});
+        .send({isPlural: true});
       expect(changingToPluralResp.status).toEqual(200);
 
       const values = await findTranslationValues(singularKey.id);
@@ -543,7 +543,7 @@ describe("Translations values E2E", () => {
       expect(editingValueResp.status).toEqual(200);
 
       const valuesForKey = await findTranslationValues(populatedTranslationKeys[0].id);
-      expect(valuesForKey.filter(values => values.language_id == populatedLanguages[0].id).length).toEqual(1);
+      expect(valuesForKey.filter(values => values.languageId == populatedLanguages[0].id).length).toEqual(1);
       const foundValue = valuesForKey[0];
       expect(foundValue.id).toEqual(translationValue.id);
       expect(foundValue.name).toEqual("updated content");

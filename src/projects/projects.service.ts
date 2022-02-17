@@ -102,8 +102,8 @@ export default class ProjectsService {
   public async getUserProjects(userId: string): Promise<Project[]> {
     const usersProjectsSubQuery = getManager()
       .createQueryBuilder(UsersProjectsTableName, UsersProjectsTableName)
-      .select("project_id")
-      .where("user_id = :id", {id: userId});
+      .select("projectId")
+      .where("userId = :id", {id: userId});
 
     return await this.projectsRepository
       .createQueryBuilder("project")
@@ -147,7 +147,7 @@ export default class ProjectsService {
     const rawLanguages = await this.languagesRepository.find({where: {project: {id: project.id}}});
     const rawGroups = await this.groupRepository.find({where: {project: {id: project.id}}});
     const rawKeys = await this.keyRepository.find({where: {project: {id: project.id}}});
-    const rawValues = await this.valueRepository.find({where: {key_id: In(rawKeys.map(k => k.id))}});
+    const rawValues = await this.valueRepository.find({where: {keyId: In(rawKeys.map(k => k.id))}});
     return DetailedProject.map(project, rawLanguages, rawGroups, rawKeys, rawValues);
   }
 
@@ -156,19 +156,20 @@ export default class ProjectsService {
     const language = new Language();
     language.name = createLanguageDto.name;
     language.project = project;
-
     const createdLanguage = await this.languagesRepository.save(language);
 
+    // Find all translation keys of the project
     const projectKeys: TranslationKey[] = await this.keyRepository.find({projectId: projectId});
 
+    // For each key, automatically create values in the new added language
     await Promise.all(projectKeys.map(async (key) => {
-      if (key.is_plural) {
+      if (key.isPlural) {
         await Promise.all(Object.values(QuantityString).map(async (quantity) => {
           const value = new TranslationValue();
           value.name = "";
           value.key = key;
-          value.quantity_string= quantity;
-          value.language= language;
+          value.quantityString = quantity;
+          value.language = language;
 
           return await this.valueRepository.save(value);
         }));
@@ -176,7 +177,7 @@ export default class ProjectsService {
         const value = new TranslationValue();
         value.name = "";
         value.key = key;
-        value.language= language;
+        value.language = language;
 
         return await this.valueRepository.save(value);
       }
@@ -224,24 +225,24 @@ export default class ProjectsService {
     const project = await this.getProject(userId, projectId);
     const relations = await getManager()
       .createQueryBuilder()
-      .select(["relations.user_id AS user_id", "relations.role AS role", "users.username AS username", "users.email AS email"])
+      .select(["relations.userId AS userId", "relations.role AS role", "users.username AS username", "users.email AS email"])
       .from(UsersProjectsTableName, "relations")
-      .leftJoin(UsersTableName, "users", "relations.user_id = users.id")
-      .where("relations.project_id = :project_id")
-      .setParameters({project_id: project.id})
+      .leftJoin(UsersTableName, "users", "relations.userId = users.id")
+      .where("relations.projectId = :projectId")
+      .setParameters({projectId: project.id})
       .getRawMany();
 
     const invitations = await getManager()
       .createQueryBuilder()
-      .select(["invitations.guest_id AS guest_id", "invitations.id AS id", "invitations.role AS role", "users.email AS email", "users.username AS username"])
+      .select(["invitations.guestId AS guestId", "invitations.id AS id", "invitations.role AS role", "users.email AS email", "users.username AS username"])
       .from(InvitationTableName, "invitations")
-      .leftJoin(UsersTableName, "users", "invitations.guest_id = users.id")
-      .where("invitations.project_id = :project_id")
-      .setParameters({project_id: project.id})
+      .leftJoin(UsersTableName, "users", "invitations.guestId = users.id")
+      .where("invitations.projectId = :projectId")
+      .setParameters({projectId: project.id})
       .getRawMany();
 
     const usersFromRelations = relations.map(relation => new ProjectUser(
-      relation.user_id,
+      relation.userId,
       relation.username,
       relation.email,
       relation.role,
@@ -250,7 +251,7 @@ export default class ProjectsService {
     ));
 
     const usersFromInvitations = invitations.map(invitation => new ProjectUser(
-      invitation.guest_id,
+      invitation.guestId,
       invitation.username,
       invitation.email,
       invitation.role,
@@ -312,8 +313,8 @@ export default class ProjectsService {
       .createQueryBuilder()
       .select(["users.id AS id", "users.username AS username", "users.email AS email"])
       .from(UsersTableName, "users")
-      .where("users.id = :user_id")
-      .setParameters({user_id: userIdToUpdate})
+      .where("users.id = :userId")
+      .setParameters({userId: userIdToUpdate})
       .getRawOne();
     return new ProjectUser(
       userIdToUpdate,

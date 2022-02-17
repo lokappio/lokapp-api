@@ -111,7 +111,7 @@ describe("Translations keys E2E", () => {
         .post(`/projects/${populatedProjects[0].id}/translations`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({name: "Name of the translation key", is_plural: false});
+        .send({name: "Name of the translation key", isPlural: false});
       expect(missingGroupResp.status).toEqual(400);
 
       // Missing name
@@ -119,7 +119,7 @@ describe("Translations keys E2E", () => {
         .post(`/projects/${populatedProjects[0].id}/translations`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({group: 1, is_plural: false});
+        .send({groupId: 1, isPlural: false});
       expect(missingNameResp.status).toEqual(400);
 
       // Missing plural key
@@ -127,15 +127,15 @@ describe("Translations keys E2E", () => {
         .post(`/projects/${populatedProjects[0].id}/translations`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({name: "Name of the translation key", group: 1});
+        .send({name: "Name of the translation key", groupId: 1});
       expect(missingPluralResp.status).toEqual(400);
     });
 
     it("Group doesn't exist", async () => {
       const keyDto = new CreateKeyDto({
         name: "The translation key",
-        group_id: 123,
-        is_plural: false
+        groupId: 123,
+        isPlural: false
       });
       const response = await request(app.getHttpServer())
         .post(`/projects/${populatedProjects[0].id}/translations`)
@@ -150,8 +150,8 @@ describe("Translations keys E2E", () => {
 
       const keyDto = new CreateKeyDto({
         name: "The translation key",
-        group_id: createdGroup.id,
-        is_plural: false
+        groupId: createdGroup.id,
+        isPlural: false
       });
       const response = await request(app.getHttpServer())
         .post(`/projects/${populatedProjects[0].id}/translations`)
@@ -171,8 +171,8 @@ describe("Translations keys E2E", () => {
       // Create a new singular key
       const keyDto = new CreateKeyDto({
         name: "New translation key",
-        group_id: createdGroup.id,
-        is_plural: false
+        groupId: createdGroup.id,
+        isPlural: false
       });
       const response = await request(app.getHttpServer())
         .post(`/projects/${populatedProjects[0].id}/translations`)
@@ -196,8 +196,8 @@ describe("Translations keys E2E", () => {
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
         .send({
           name: translationKey,
-          group_id: firstGroup.id,
-          is_plural: false
+          groupId: firstGroup.id,
+          isPlural: false
         });
       expect(okResponse.status).toEqual(201);
 
@@ -208,8 +208,8 @@ describe("Translations keys E2E", () => {
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
         .send({
           name: translationKey,
-          group_id: firstGroup.id,
-          is_plural: false
+          groupId: firstGroup.id,
+          isPlural: false
         });
       expect(duplicatedResp.status).toEqual(422);
 
@@ -220,8 +220,8 @@ describe("Translations keys E2E", () => {
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
         .send({
           name: translationKey,
-          group_id: secondGroup.id,
-          is_plural: false
+          groupId: secondGroup.id,
+          isPlural: false
         });
       expect(otherGroupResp.status).toEqual(201);
     });
@@ -339,7 +339,7 @@ describe("Translations keys E2E", () => {
         .patch(`/projects/${populatedProjects[0].id}/translations/${translationKey.id}`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({group_id: 123456});
+        .send({groupId: 123456});
       expect(response.status).toEqual(404);
     });
 
@@ -349,7 +349,7 @@ describe("Translations keys E2E", () => {
         .patch(`/projects/${populatedProjects[0].id}/translations/${translationKey.id}`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({group_id: group.id});
+        .send({groupId: group.id});
       expect(response.status).toEqual(404);
     });
 

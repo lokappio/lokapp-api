@@ -20,16 +20,16 @@ export default class User {
 
   @CreateDateColumn()
   @ApiProperty()
-  readonly created_at: Date;
+  readonly createdAt: Date;
 
   @UpdateDateColumn()
   @ApiProperty()
-  readonly updated_at: Date;
+  readonly updatedAt: Date;
 
   constructor(id: string, username: string) {
     this.id = id;
     this.username = username;
-    this.created_at = new Date();
-    this.updated_at = new Date();
+    this.createdAt = new Date();
+    this.updatedAt = new Date();
   }
 }

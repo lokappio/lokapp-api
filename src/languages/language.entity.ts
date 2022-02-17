@@ -17,17 +17,18 @@ export default class Language {
   public name: string;
 
   @Column("int")
+  @ApiProperty()
   projectId: number;
 
   @ManyToOne(() => Project, {onDelete: "CASCADE"})
-  @JoinColumn({name: "project_id"})
+  @JoinColumn({name: "projectId"})
   public project: Project;
 
   @CreateDateColumn()
   @ApiProperty()
-  readonly created_at: Date;
+  readonly createdAt: Date;
 
   @UpdateDateColumn()
   @ApiProperty()
-  readonly updated_at: Date;
+  readonly updatedAt: Date;
 }
