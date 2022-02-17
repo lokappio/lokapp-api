@@ -102,8 +102,8 @@ export default class ProjectsService {
   public async getUserProjects(userId: string): Promise<Project[]> {
     const usersProjectsSubQuery = getManager()
       .createQueryBuilder(UsersProjectsTableName, UsersProjectsTableName)
-      .select("projectId")
-      .where("userId = :id", {id: userId});
+      .select('"projectId"')
+      .where('"userId" = :id', {id: userId});
 
     return await this.projectsRepository
       .createQueryBuilder("project")
@@ -225,20 +225,20 @@ export default class ProjectsService {
     const project = await this.getProject(userId, projectId);
     const relations = await getManager()
       .createQueryBuilder()
-      .select(["relations.userId AS userId", "relations.role AS role", "users.username AS username", "users.email AS email"])
+      .select(['"relations"."userId" AS "userId"', '"relations"."role" AS "role"', '"users"."username" AS "username"', '"users"."email" AS "email"'])
       .from(UsersProjectsTableName, "relations")
-      .leftJoin(UsersTableName, "users", "relations.userId = users.id")
-      .where("relations.projectId = :projectId")
+      .leftJoin(UsersTableName, "users", '"relations"."userId" = users.id')
+      .where('"relations"."projectId" = :projectId')
       .setParameters({projectId: project.id})
       .getRawMany();
 
     const invitations = await getManager()
       .createQueryBuilder()
-      .select(["invitations.guestId AS guestId", "invitations.id AS id", "invitations.role AS role", "users.email AS email", "users.username AS username"])
+      .select(['invitations."guestId" AS "guestId"', 'invitations.id AS id', 'invitations.role AS role', 'users.email AS email', 'users.username AS username'])
       .from(InvitationTableName, "invitations")
-      .leftJoin(UsersTableName, "users", "invitations.guestId = users.id")
-      .where("invitations.projectId = :projectId")
-      .setParameters({projectId: project.id})
+      .leftJoin(UsersTableName, "users", 'invitations."guestId" = users.id')
+      .where('invitations."projectId" = :projectId')
+      .setParameters({"projectId": project.id})
       .getRawMany();
 
     const usersFromRelations = relations.map(relation => new ProjectUser(
