@@ -63,7 +63,7 @@ export default class GroupService {
       }
     });
     if (existingGroup != undefined) {
-      return existingGroup[0];
+      return existingGroup;
     }
 
     const group = new Group();
