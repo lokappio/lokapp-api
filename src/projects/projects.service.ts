@@ -2,7 +2,7 @@ import {ForbiddenException, Injectable, MethodNotAllowedException, NotFoundExcep
 import CreateProjectDto from "./dto/create-project.dto";
 import Project from "./project.entity";
 import {InjectRepository} from "@nestjs/typeorm";
-import {getManager, Repository} from "typeorm";
+import {getManager, In, Repository} from "typeorm";
 import Language from "../languages/language.entity";
 import CreateLanguageDto from "./dto/create-language.dto";
 import UpdateProjectDto from "./dto/update-project.dto";
@@ -13,8 +13,9 @@ import Invitation, {InvitationTableName} from "../invitations/invitation.entity"
 import UpdateRoleDto from "./dto/update-role.dto";
 import {UsersTableName} from "../users/user.entity";
 import Group, {DefaultGroupName} from "../groups/group.entity";
-import TranslationKey from "../translation/translation_key.entity";
 import TranslationValue from "../translation/translation_value.entity";
+import TranslationKey from "../translation/translation_key.entity";
+import DetailedProject from "./detailed-model/detailed-project.model";
 import QuantityString from "../translation/quantity_string.enum";
 
 @Injectable()
@@ -139,6 +140,15 @@ export default class ProjectsService {
   public async deleteProject(userId: string, projectId: number): Promise<void> {
     const project = await this.getProject(userId, projectId);
     await this.projectsRepository.delete(project.id);
+  }
+
+  public async getWholeProjectDetails(userId: string, projectId: number): Promise<DetailedProject> {
+    const project = await this.getProject(userId, projectId);
+    const rawLanguages = await this.languagesRepository.find({where: {project: {id: project.id}}});
+    const rawGroups = await this.groupRepository.find({where: {project: {id: project.id}}});
+    const rawKeys = await this.keyRepository.find({where: {project: {id: project.id}}});
+    const rawValues = await this.valueRepository.find({where: {key_id: In(rawKeys.map(k => k.id))}});
+    return DetailedProject.map(project, rawLanguages, rawGroups, rawKeys, rawValues);
   }
 
   public async createLanguage(userId: string, projectId: number, createLanguageDto: CreateLanguageDto): Promise<Language> {

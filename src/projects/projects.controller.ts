@@ -14,6 +14,7 @@ import {Roles} from "../roles/role.decorator";
 import {RolesGuard} from "../roles/roles.guard";
 import ProjectUser from "./model/project-user.model";
 import UpdateRoleDto from "./dto/update-role.dto";
+import DetailedProject from "./detailed-model/detailed-project.model";
 
 @ApiBearerAuth()
 @ApiTags("Projects")
@@ -50,6 +51,11 @@ export default class ProjectsController {
   @HttpCode(204)
   public deleteProject(@UserId() userId: string, @Param("project_id", ParseIntPipe) projectId: number): Promise<void> {
     return this.projectsService.deleteProject(userId, projectId);
+  }
+
+  @Get(":project_id/details")
+  public getProjectDetails(@UserId() userId: string, @Param("project_id", ParseIntPipe) projectId: number): Promise<DetailedProject> {
+    return this.projectsService.getWholeProjectDetails(userId, projectId);
   }
 
   @Post(":project_id/languages")
