@@ -20,7 +20,7 @@ import GetTranslationValueDto from "./dto/get-value.dto";
 @ApiBearerAuth()
 @ApiTags("Translation")
 @UseGuards(JwtAuthUserGuard, RolesGuard)
-@Controller("projects/:project_id/translations")
+@Controller("projects/:projectId/translations")
 export default class TranslationController {
   constructor(private readonly translationService: TranslationService) {
   }
@@ -29,7 +29,7 @@ export default class TranslationController {
   @Roles(Role.Owner, Role.Manager, Role.Editor)
   public createKey(
     @UserId() userId: string,
-    @Param("project_id", ParseIntPipe) projectId: number,
+    @Param("projectId", ParseIntPipe) projectId: number,
     @Body(new JoiValidationPipe(CreateKeyDto.schema)) createKeyDto: CreateKeyDto): Promise<TranslationKey> {
     return this.translationService.createTranslationKey(userId, projectId, createKeyDto);
   }
@@ -37,85 +37,85 @@ export default class TranslationController {
   @Get()
   public getKeys(
     @UserId() userId: string,
-    @Param("project_id", ParseIntPipe) projectId: number): Promise<TranslationKey[]> {
+    @Param("projectId", ParseIntPipe) projectId: number): Promise<TranslationKey[]> {
     return this.translationService.getTranslationKeys(userId, projectId);
   }
 
-  @Get(":translation_id")
+  @Get(":translationId")
   public getKey(
     @UserId() userId: string,
-    @Param("project_id", ParseIntPipe) projectId: number,
-    @Param("translation_id", ParseIntPipe) keyId: number): Promise<TranslationKey> {
+    @Param("projectId", ParseIntPipe) projectId: number,
+    @Param("translationId", ParseIntPipe) keyId: number): Promise<TranslationKey> {
     return this.translationService.getTranslationKey(userId, projectId, keyId);
   }
 
-  @Delete(":translation_id")
+  @Delete(":translationId")
   @Roles(Role.Owner, Role.Manager, Role.Editor)
   @HttpCode(204)
   public deleteKey(
     @UserId() userId: string,
-    @Param("project_id", ParseIntPipe) projectId: number,
-    @Param("translation_id", ParseIntPipe) keyId: number): Promise<void> {
+    @Param("projectId", ParseIntPipe) projectId: number,
+    @Param("translationId", ParseIntPipe) keyId: number): Promise<void> {
     return this.translationService.deleteKey(userId, projectId, keyId);
   }
 
-  @Patch(":translation_id")
+  @Patch(":translationId")
   @Roles(Role.Owner, Role.Manager, Role.Editor)
   public updateKey(
     @UserId() userId: string,
-    @Param("project_id", ParseIntPipe) projectId: number,
-    @Param("translation_id", ParseIntPipe) keyId: number,
+    @Param("projectId", ParseIntPipe) projectId: number,
+    @Param("translationId", ParseIntPipe) keyId: number,
     @Body(new JoiValidationPipe(UpdateKeyDto.schema)) updateKeyDto: UpdateKeyDto): Promise<TranslationKey> {
     return this.translationService.updateKey(userId, projectId, keyId, updateKeyDto);
   }
 
   // Values
-  @Post(":translation_id/values")
+  @Post(":translationId/values")
   @Roles(Role.Owner, Role.Manager, Role.Editor, Role.Translator)
   @ApiProperty({enum: QuantityString})
   public createValue(
     @UserId() userId: string,
-    @Param("project_id", ParseIntPipe) projectId: number,
-    @Param("translation_id", ParseIntPipe) translationId: number,
+    @Param("projectId", ParseIntPipe) projectId: number,
+    @Param("translationId", ParseIntPipe) translationId: number,
     @Body(new JoiValidationPipe(CreateValueDto.schema)) createValueDto: CreateValueDto): Promise<TranslationValue> {
     return this.translationService.createValue(userId, projectId, translationId, createValueDto);
   }
 
   @ApiImplicitQueries([
-    {name: "language_id", required: false, type: Number}
+    {name: "languageId", required: false, type: Number}
   ])
-  @Get(":translation_id/values")
+  @Get(":translationId/values")
   public getValues(
     @UserId() userId: string,
-    @Param("project_id", ParseIntPipe) projectId: number,
-    @Param("translation_id", ParseIntPipe) translationId: number,
+    @Param("projectId", ParseIntPipe) projectId: number,
+    @Param("translationId", ParseIntPipe) translationId: number,
     @Query() query: GetTranslationValueDto): Promise<TranslationValue[]> {
-    if (query.language_id) {
-      return this.translationService.getValuesWithLanguage(userId, projectId, translationId, query.language_id);
+    if (query.languageId) {
+      return this.translationService.getValuesOfLanguage(userId, projectId, translationId, query.languageId);
     }
     return this.translationService.getAllValues(userId, projectId, translationId);
   }
 
-  @Patch(":translation_id/values/:value_id")
+  @Patch(":translationId/values/:valueId")
   @Roles(Role.Owner, Role.Manager, Role.Editor, Role.Translator)
   @ApiProperty({enum: QuantityString})
   public updateValue(
     @UserId() userId: string,
-    @Param("project_id", ParseIntPipe) projectId: number,
-    @Param("translation_id", ParseIntPipe) translationId: number,
-    @Param("value_id", ParseIntPipe) valueId: number,
+    @Param("projectId", ParseIntPipe) projectId: number,
+    @Param("translationId", ParseIntPipe) translationId: number,
+    @Param("valueId", ParseIntPipe) valueId: number,
     @Body(new JoiValidationPipe(UpdateValueDto.schema)) updateValueDto: UpdateValueDto): Promise<TranslationValue> {
     return this.translationService.updateValue(userId, projectId, translationId, valueId, updateValueDto);
   }
 
-  @Delete(":translation_id/values/:value_id")
+  @Delete(":translationId/values/:valueId")
   @Roles(Role.Owner, Role.Manager, Role.Editor, Role.Translator)
   @HttpCode(204)
   public deleteValue(
     @UserId() userId: string,
-    @Param("project_id", ParseIntPipe) projectId: number,
-    @Param("translation_id", ParseIntPipe) translationId: number,
-    @Param("value_id", ParseIntPipe) valueId: number): Promise<void> {
+    @Param("projectId", ParseIntPipe) projectId: number,
+    @Param("translationId", ParseIntPipe) translationId: number,
+    @Param("valueId", ParseIntPipe) valueId: number): Promise<void> {
     return this.translationService.deleteValue(userId, projectId, translationId, valueId);
   }
 }

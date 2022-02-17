@@ -1,3 +1,3 @@
 export default class GetTranslationValueDto {
-  language_id: number;
+  languageId: number;
 }

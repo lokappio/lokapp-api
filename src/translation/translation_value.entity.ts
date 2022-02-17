@@ -7,7 +7,7 @@ import {PostgresUniqueKeys} from "../data/database/postgres-unique-keys.enum";
 export const TranslationValuesTableName: string = "translation_values";
 
 @Entity(TranslationValuesTableName)
-@Unique(PostgresUniqueKeys.TranslationValueInProject, ["key", "quantity_string", "language"])
+@Unique(PostgresUniqueKeys.TranslationValueInProject, ["key", "quantityString", "language"])
 export default class TranslationValue {
   @PrimaryGeneratedColumn()
   @ApiProperty()
@@ -19,27 +19,27 @@ export default class TranslationValue {
 
   @Column({nullable: true})
   @ApiProperty()
-  public quantity_string: string;
+  public quantityString: string;
 
   @CreateDateColumn()
   @ApiProperty()
-  readonly created_at: Date;
+  readonly createdAt: Date;
 
   @UpdateDateColumn()
   @ApiProperty()
-  readonly updated_at: Date;
+  readonly updatedAt: Date;
 
   @Column("int", {nullable: false})
-  key_id: number;
+  keyId: number;
 
   @Column("int", {nullable: false})
-  language_id: number;
+  languageId: number;
 
   @ManyToOne(() => TranslationKey, {onDelete: "CASCADE"})
-  @JoinColumn({name: "key_id"})
+  @JoinColumn({name: "keyId"})
   public key: TranslationKey;
 
   @ManyToOne(() => Language, {onDelete: "CASCADE"})
-  @JoinColumn({name: "language_id"})
+  @JoinColumn({name: "languageId"})
   public language: Language;
 }

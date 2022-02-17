@@ -35,104 +35,104 @@ export default class ProjectsController {
     return this.projectsService.getUserProjects(userId);
   }
 
-  @Get(":project_id")
-  public getProject(@UserId() userId: string, @Param("project_id", ParseIntPipe) projectId: number): Promise<Project> {
+  @Get(":projectId")
+  public getProject(@UserId() userId: string, @Param("projectId", ParseIntPipe) projectId: number): Promise<Project> {
     return this.projectsService.getProject(userId, projectId);
   }
 
-  @Put(":project_id")
+  @Put(":projectId")
   @Roles(Role.Owner, Role.Manager)
-  public updateProject(@UserId() userId: string, @Param("project_id", ParseIntPipe) projectId: number, @Body(new JoiValidationPipe(UpdateProjectDto.schema)) updateProjectDto: UpdateProjectDto): Promise<Project> {
+  public updateProject(@UserId() userId: string, @Param("projectId", ParseIntPipe) projectId: number, @Body(new JoiValidationPipe(UpdateProjectDto.schema)) updateProjectDto: UpdateProjectDto): Promise<Project> {
     return this.projectsService.updateProject(userId, projectId, updateProjectDto);
   }
 
-  @Delete(":project_id")
+  @Delete(":projectId")
   @Roles(Role.Owner)
   @HttpCode(204)
-  public deleteProject(@UserId() userId: string, @Param("project_id", ParseIntPipe) projectId: number): Promise<void> {
+  public deleteProject(@UserId() userId: string, @Param("projectId", ParseIntPipe) projectId: number): Promise<void> {
     return this.projectsService.deleteProject(userId, projectId);
   }
 
-  @Get(":project_id/details")
-  public getProjectDetails(@UserId() userId: string, @Param("project_id", ParseIntPipe) projectId: number): Promise<DetailedProject> {
+  @Get(":projectId/details")
+  public getProjectDetails(@UserId() userId: string, @Param("projectId", ParseIntPipe) projectId: number): Promise<DetailedProject> {
     return this.projectsService.getWholeProjectDetails(userId, projectId);
   }
 
-  @Post(":project_id/languages")
+  @Post(":projectId/languages")
   @Roles(Role.Owner, Role.Manager, Role.Editor)
   public createLanguage(
     @UserId() userId: string,
-    @Param("project_id", ParseIntPipe) projectId: number,
+    @Param("projectId", ParseIntPipe) projectId: number,
     @Body(new JoiValidationPipe(CreateLanguageDto.schema)) createLanguageDto: CreateLanguageDto): Promise<Language> {
     return this.projectsService.createLanguage(userId, projectId, createLanguageDto);
   }
 
-  @Get(":project_id/languages")
-  public getLanguages(@UserId() userId: string, @Param("project_id", ParseIntPipe) projectId: number): Promise<Language[]> {
+  @Get(":projectId/languages")
+  public getLanguages(@UserId() userId: string, @Param("projectId", ParseIntPipe) projectId: number): Promise<Language[]> {
     return this.projectsService.getAllLanguages(userId, projectId);
   }
 
-  @Get(":project_id/languages/:language_id")
-  public getLanguage(@UserId() userId: string, @Param("project_id", ParseIntPipe) projectId: number, @Param("language_id", ParseIntPipe) languageId: number): Promise<Language> {
+  @Get(":projectId/languages/:languageId")
+  public getLanguage(@UserId() userId: string, @Param("projectId", ParseIntPipe) projectId: number, @Param("languageId", ParseIntPipe) languageId: number): Promise<Language> {
     return this.projectsService.getLanguage(userId, projectId, languageId);
   }
 
-  @Put(":project_id/languages/:language_id")
+  @Put(":projectId/languages/:languageId")
   @Roles(Role.Owner, Role.Manager, Role.Editor)
   public updateLanguage(
     @UserId() userId: string,
-    @Param("project_id", ParseIntPipe) projectId: number,
-    @Param("language_id", ParseIntPipe) languageId: number,
+    @Param("projectId", ParseIntPipe) projectId: number,
+    @Param("languageId", ParseIntPipe) languageId: number,
     @Body(new JoiValidationPipe(CreateLanguageDto.schema)) createLanguageDto: CreateLanguageDto): Promise<Language> {
     return this.projectsService.updateLanguage(userId, projectId, languageId, createLanguageDto);
   }
 
-  @Delete(":project_id/languages/:language_id")
+  @Delete(":projectId/languages/:languageId")
   @Roles(Role.Owner, Role.Manager, Role.Editor)
   @HttpCode(204)
-  public deleteLanguage(@UserId() userId: string, @Param("project_id", ParseIntPipe) projectId: number, @Param("language_id", ParseIntPipe) languageId: number): Promise<void> {
+  public deleteLanguage(@UserId() userId: string, @Param("projectId", ParseIntPipe) projectId: number, @Param("languageId", ParseIntPipe) languageId: number): Promise<void> {
     return this.projectsService.deleteLanguage(userId, projectId, languageId);
   }
 
   // Control users of projects
-  @Get(":project_id/users")
+  @Get(":projectId/users")
   public getUsersOfProject(
     @UserId() userId: string,
-    @Param("project_id", ParseIntPipe) projectId: number): Promise<ProjectUser[]> {
+    @Param("projectId", ParseIntPipe) projectId: number): Promise<ProjectUser[]> {
     return this.projectsService.getUsersOfProject(userId, projectId);
   }
 
-  @Get(":project_id/users/me")
+  @Get(":projectId/users/me")
   public getMyselfOnProject(
     @UserId() userId: string,
-    @Param("project_id", ParseIntPipe) projectId: number): Promise<ProjectUser> {
+    @Param("projectId", ParseIntPipe) projectId: number): Promise<ProjectUser> {
     return this.projectsService.getProjectUser(userId, projectId);
   }
 
-  @Patch(":project_id/users/:target_user_id")
+  @Patch(":projectId/users/:targetUserId")
   @Roles(Role.Owner, Role.Manager)
   public updateRoleOfUser(
     @UserId() userId: string,
-    @Param("project_id", ParseIntPipe) projectId: number,
-    @Param("target_user_id") userIdToUpdate: string,
+    @Param("projectId", ParseIntPipe) projectId: number,
+    @Param("targetUserId") userIdToUpdate: string,
     @Body(new JoiValidationPipe(UpdateRoleDto.schema)) updateRoleDto: UpdateRoleDto): Promise<ProjectUser> {
     return this.projectsService.updateRoleOfUser(userId, projectId, userIdToUpdate, updateRoleDto);
   }
 
-  @Delete(":project_id/users/:target_user_id")
+  @Delete(":projectId/users/:targetUserId")
   @Roles(Role.Owner, Role.Manager)
   @HttpCode(204)
   public removeUserFromProject(
     @UserId() userId: string,
-    @Param("project_id", ParseIntPipe) projectId: number,
-    @Param("target_user_id") userIdToUpdate: string): Promise<void> {
+    @Param("projectId", ParseIntPipe) projectId: number,
+    @Param("targetUserId") userIdToUpdate: string): Promise<void> {
     return this.projectsService.removeUserFromProject(userId, projectId, userIdToUpdate);
   }
 
-  @Post(":project_id/leave")
+  @Post(":projectId/leave")
   public leaveProject(
     @UserId() userId: string,
-    @Param("project_id", ParseIntPipe) projectId: number): Promise<void> {
+    @Param("projectId", ParseIntPipe) projectId: number): Promise<void> {
     return this.projectsService.leaveProject(userId, projectId);
   }
 }

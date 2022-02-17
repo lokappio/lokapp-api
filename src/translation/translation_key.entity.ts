@@ -19,27 +19,27 @@ export default class TranslationKey {
 
   @Column()
   @ApiProperty()
-  public is_plural: boolean;
+  public isPlural: boolean;
 
   @CreateDateColumn()
   @ApiProperty()
-  readonly created_at: Date;
+  readonly createdAt: Date;
 
   @UpdateDateColumn()
   @ApiProperty()
-  readonly updated_at: Date;
+  readonly updatedAt: Date;
 
   @Column("int", {nullable: true})
-  group_id: number;
+  groupId: number;
 
   @Column("int")
   projectId: number;
 
   @ManyToOne(() => Project, {onDelete: "CASCADE"})
-  @JoinColumn({name: "project_id"})
+  @JoinColumn({name: "projectId"})
   public project: Project;
 
   @ManyToOne(() => Group, {onDelete: "CASCADE"})
-  @JoinColumn({name: "group_id"})
+  @JoinColumn({name: "groupId"})
   public group: Group;
 }

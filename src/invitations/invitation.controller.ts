@@ -32,25 +32,25 @@ export default class InvitationController {
     return this.invitationService.getInvitationsForUser(userId);
   }
 
-  @Post(":invitation_id/accept")
+  @Post(":invitationId/accept")
   public acceptInvitation(
     @UserId() userId: string,
-    @Param("invitation_id", ParseIntPipe) invitationId: number): Promise<void> {
+    @Param("invitationId", ParseIntPipe) invitationId: number): Promise<void> {
     return this.invitationService.acceptInvitation(userId, invitationId);
   }
 
-  @Post(":invitation_id/decline")
+  @Post(":invitationId/decline")
   public declineInvitation(
     @UserId() userId: string,
-    @Param("invitation_id", ParseIntPipe) invitationId: number): Promise<void> {
+    @Param("invitationId", ParseIntPipe) invitationId: number): Promise<void> {
     return this.invitationService.declineInvitation(userId, invitationId);
   }
 
-  @Delete(":invitation_id")
+  @Delete(":invitationId")
   @HttpCode(204)
   public deleteInvitation(
     @UserId() userId: string,
-    @Param("invitation_id", ParseIntPipe) invitationId: number): Promise<void> {
+    @Param("invitationId", ParseIntPipe) invitationId: number): Promise<void> {
     return this.invitationService.deleteInvitation(userId, invitationId);
   }
 }

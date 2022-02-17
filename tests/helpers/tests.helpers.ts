@@ -165,7 +165,7 @@ export default class TestsHelpers {
     key.project = project;
     key.group = group;
     key.name = name;
-    key.is_plural = isPlural;
+    key.isPlural = isPlural;
     return await translationKeysRepository.save(key);
   }
 
@@ -182,7 +182,7 @@ export default class TestsHelpers {
     const translationValue = new TranslationValue();
     translationValue.key = key;
     translationValue.language = language;
-    translationValue.quantity_string = quantityString;
+    translationValue.quantityString = quantityString;
     translationValue.name = value;
     return await translationValuesRepository.save(translationValue);
   }

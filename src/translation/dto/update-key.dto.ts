@@ -6,15 +6,15 @@ export default class UpdateKeyDto extends BaseDto {
     name: Joi
       .string(),
 
-    group_id: Joi
+    groupId: Joi
       .number(),
 
-    is_plural: Joi
+    isPlural: Joi
       .boolean()
 
-  }).or("name", "group_id", "is_plural");
+  }).or("name", "groupId", "isPlural");
 
   public name?: string;
-  public group_id?: number;
-  public is_plural?: boolean;
+  public groupId?: number;
+  public isPlural?: boolean;
 }

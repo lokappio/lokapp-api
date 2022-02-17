@@ -9,17 +9,17 @@ export default class CreateValueDto extends BaseDto {
       .allow('')
       .required(),
 
-    language_id: Joi
+    languageId: Joi
       .number()
       .required(),
 
-    quantity_string: Joi
+    quantityString: Joi
       .string()
       .valid(QuantityString.OTHER, QuantityString.ONE, QuantityString.ZERO, null)
       .optional()
   });
 
   public name: string;
-  public language_id: number;
-  public quantity_string: string;
+  public languageId: number;
+  public quantityString: string;
 }

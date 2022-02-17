@@ -19,11 +19,11 @@ export default class Group {
 
   @CreateDateColumn()
   @ApiProperty()
-  readonly created_at: Date;
+  readonly createdAt: Date;
 
   @UpdateDateColumn()
   @ApiProperty()
-  readonly updated_at: Date;
+  readonly updatedAt: Date;
 
   @ManyToOne(() => Project, {onDelete: "CASCADE"})
   public project: Project;

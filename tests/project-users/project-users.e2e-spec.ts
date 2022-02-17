@@ -129,7 +129,7 @@ describe("Users of a project E2E", () => {
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
         .send(new CreateInvitationDto({
           email: (await userRepository.findOne(TestsHelpers.MOCKED_USER_ID_2)).email,
-          project_id: populatedProjects[0].id,
+          projectId: populatedProjects[0].id,
           role: Role.Manager
         }));
       expect(invitationResp.status).toEqual(201);

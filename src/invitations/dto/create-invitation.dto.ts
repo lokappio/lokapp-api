@@ -14,12 +14,12 @@ export default class CreateInvitationDto extends BaseDto {
       .valid(Role.Manager, Role.Translator, Role.Editor)
       .required(),
 
-    project_id: Joi
+    projectId: Joi
       .number()
       .required()
   });
 
-  public project_id: number;
+  public projectId: number;
   public email: string;
   public role: string;
 }

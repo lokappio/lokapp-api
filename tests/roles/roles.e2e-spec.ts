@@ -82,7 +82,7 @@ describe("Roles E2E", () => {
     key.project = project;
     key.group = group;
     key.name = name;
-    key.is_plural = false;
+    key.isPlural = false;
     return await translationKeysRepository.save(key);
   }
 
@@ -90,7 +90,7 @@ describe("Roles E2E", () => {
     const value = new TranslationValue();
     value.key = key;
     value.language = language;
-    value.quantity_string = null;
+    value.quantityString = null;
     value.name = name;
     return await translationValueRepository.save(value);
   }
@@ -230,7 +230,7 @@ describe("Roles E2E", () => {
           .set("mocked_user_id", OwnerID)
           .send(new CreateInvitationDto({
             email: "guest@lokapp.io",
-            project_id: project.id,
+            projectId: project.id,
             role: Role.Manager
           }));
         expect(invitationResp.status).toEqual(201);
@@ -325,8 +325,8 @@ describe("Roles E2E", () => {
           .set("mocked_user_id", OwnerID)
           .send({
             name: "Translation key",
-            group_id: groupEntity.id,
-            is_plural: false
+            groupId: groupEntity.id,
+            isPlural: false
           });
         expect(translationKeyResp.status).toEqual(201);
       });
@@ -365,8 +365,8 @@ describe("Roles E2E", () => {
           .set("mocked_user_id", OwnerID)
           .send({
             name: "Translated value",
-            language_id: language.id,
-            quantity_string: null
+            languageId: language.id,
+            quantityString: null
           });
         expect(translationValueResp.status).toEqual(201);
       });
@@ -474,7 +474,7 @@ describe("Roles E2E", () => {
           .set("mocked_user_id", ManagerID)
           .send(new CreateInvitationDto({
             email: "guest@lokapp.io",
-            project_id: project.id,
+            projectId: project.id,
             role: Role.Manager
           }));
         expect(invitationResp.status).toEqual(201);
@@ -576,8 +576,8 @@ describe("Roles E2E", () => {
           .set("mocked_user_id", ManagerID)
           .send({
             name: "Translation key",
-            group_id: groupEntity.id,
-            is_plural: false
+            groupId: groupEntity.id,
+            isPlural: false
           });
         expect(translationKeyResp.status).toEqual(201);
       });
@@ -616,8 +616,8 @@ describe("Roles E2E", () => {
           .set("mocked_user_id", ManagerID)
           .send({
             name: "Translated value",
-            language_id: language.id,
-            quantity_string: null
+            languageId: language.id,
+            quantityString: null
           });
         expect(translationValueResp.status).toEqual(201);
       });
@@ -725,7 +725,7 @@ describe("Roles E2E", () => {
           .set("mocked_user_id", EditorID)
           .send(new CreateInvitationDto({
             email: "guest@lokapp.io",
-            project_id: project.id,
+            projectId: project.id,
             role: Role.Manager
           }));
         expect(invitationResp.status).toEqual(403);
@@ -739,7 +739,7 @@ describe("Roles E2E", () => {
           .set("mocked_user_id", OwnerID)
           .send(new CreateInvitationDto({
             email: "guest@lokapp.io",
-            project_id: project.id,
+            projectId: project.id,
             role: Role.Manager
           }));
         expect(invitationResp.status).toEqual(201);
@@ -842,8 +842,8 @@ describe("Roles E2E", () => {
           .set("mocked_user_id", EditorID)
           .send({
             name: "Translation key",
-            group_id: groupEntity.id,
-            is_plural: false
+            groupId: groupEntity.id,
+            isPlural: false
           });
         expect(translationKeyResp.status).toEqual(201);
       });
@@ -882,8 +882,8 @@ describe("Roles E2E", () => {
           .set("mocked_user_id", EditorID)
           .send({
             name: "Translated value",
-            language_id: language.id,
-            quantity_string: null
+            languageId: language.id,
+            quantityString: null
           });
         expect(translationValueResp.status).toEqual(201);
       });
@@ -991,7 +991,7 @@ describe("Roles E2E", () => {
           .set("mocked_user_id", TranslatorID)
           .send(new CreateInvitationDto({
             email: "guest@lokapp.io",
-            project_id: project.id,
+            projectId: project.id,
             role: Role.Manager
           }));
         expect(invitationResp.status).toEqual(403);
@@ -1005,7 +1005,7 @@ describe("Roles E2E", () => {
           .set("mocked_user_id", OwnerID)
           .send(new CreateInvitationDto({
             email: "guest@lokapp.io",
-            project_id: project.id,
+            projectId: project.id,
             role: Role.Manager
           }));
         expect(invitationResp.status).toEqual(201);
@@ -1107,8 +1107,8 @@ describe("Roles E2E", () => {
           .set("mocked_user_id", TranslatorID)
           .send({
             name: "Translation key",
-            group_id: groupEntity.id,
-            is_plural: false
+            groupId: groupEntity.id,
+            isPlural: false
           });
         expect(translationKeyResp.status).toEqual(403);
       });
@@ -1147,8 +1147,8 @@ describe("Roles E2E", () => {
           .set("mocked_user_id", TranslatorID)
           .send({
             name: "Translated value",
-            language_id: language.id,
-            quantity_string: null
+            languageId: language.id,
+            quantityString: null
           });
         expect(translationValueResp.status).toEqual(201);
       });
