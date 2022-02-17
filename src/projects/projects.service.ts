@@ -13,6 +13,9 @@ import Invitation, {InvitationTableName} from "../invitations/invitation.entity"
 import UpdateRoleDto from "./dto/update-role.dto";
 import {UsersTableName} from "../users/user.entity";
 import Group, {DefaultGroupName} from "../groups/group.entity";
+import TranslationKey from "../translation/translation_key.entity";
+import TranslationValue from "../translation/translation_value.entity";
+import QuantityString from "../translation/quantity_string.enum";
 
 @Injectable()
 export default class ProjectsService {
@@ -25,6 +28,10 @@ export default class ProjectsService {
     private readonly usersProjectsRepository: Repository<UserProject>,
     @InjectRepository(Group)
     private readonly groupRepository: Repository<Group>,
+    @InjectRepository(TranslationValue)
+    private readonly valueRepository: Repository<TranslationValue>,
+    @InjectRepository(TranslationKey)
+    private readonly keyRepository: Repository<TranslationKey>,
     @InjectRepository(Invitation)
     private readonly invitationRepository: Repository<Invitation>) {
   }
@@ -139,7 +146,33 @@ export default class ProjectsService {
     const language = new Language();
     language.name = createLanguageDto.name;
     language.project = project;
-    return await this.languagesRepository.save(language);
+
+    const createdLanguage = await this.languagesRepository.save(language);
+
+    const projectKeys: TranslationKey[] = await this.keyRepository.find({projectId: projectId});
+
+    await Promise.all(projectKeys.map(async (key) => {
+      if (key.is_plural) {
+        await Promise.all(Object.values(QuantityString).map(async (quantity) => {
+          const value = new TranslationValue();
+          value.name = "";
+          value.key = key;
+          value.quantity_string= quantity;
+          value.language= language;
+
+          return await this.valueRepository.save(value);
+        }));
+      } else {
+        const value = new TranslationValue();
+        value.name = "";
+        value.key = key;
+        value.language= language;
+
+        return await this.valueRepository.save(value);
+      }
+    }));
+
+    return createdLanguage;
   }
 
   public async getAllLanguages(userId: string, projectId: number): Promise<Language[]> {
