@@ -308,6 +308,30 @@ describe("Translations values E2E", () => {
       values = await findTranslationValues(populatedTranslationKeys[0].id);
       expect(values.length).toEqual(2);
     });
+
+    it("Creating a new translation key automatically create values", async () => {
+      const languagesCount = populatedLanguages.filter(p => p.projectId == populatedProjects[0].id).length;
+
+      const createKeyResp = await request(app.getHttpServer())
+        .post(`/projects/${populatedProjects[0].id}/translations`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({name: "New singular translation key", groupId: populatedGroups[0].id, isPlural: false});
+      expect(createKeyResp.status).toEqual(201);
+
+      const withValueCount = await findTranslationValues(createKeyResp.body.id);
+      expect(withValueCount.length).toEqual(languagesCount);
+
+      const createPluralKeyResp = await request(app.getHttpServer())
+        .post(`/projects/${populatedProjects[0].id}/translations`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({name: "New plural translation key", groupId: populatedGroups[0].id, isPlural: true});
+      expect(createPluralKeyResp.status).toEqual(201);
+
+      const withPluralValueCount = await findTranslationValues(createPluralKeyResp.body.id);
+      expect(withPluralValueCount.length).toEqual(Object.values(QuantityString).length * languagesCount);
+    });
   });
 
   describe("Getting translation values", () => {
@@ -368,7 +392,6 @@ describe("Translations values E2E", () => {
 
     it("Getting translation values details", async () => {
       const value = await TestsHelpers.createTranslationValue("translated content", populatedTranslationKeys[0], populatedLanguages[0], null, translationValuesRepository);
-
       const allValuesResp = await request(app.getHttpServer())
         .get(`/projects/${populatedProjects[0].id}/translations/${populatedTranslationKeys[0].id}/values/${value.id}`)
         .auth("mocked.jwt", {type: "bearer"})

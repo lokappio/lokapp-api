@@ -2,7 +2,7 @@ import {Injectable, NotFoundException, UnprocessableEntityException} from "@nest
 import {InjectRepository} from "@nestjs/typeorm";
 import {QueryFailedErrorType} from "../common/query-error.filter";
 import ProjectsService from "../projects/projects.service";
-import {getManager, Not, Repository} from "typeorm";
+import {Not, Repository} from "typeorm";
 import CreateKeyDto from "./dto/create-key.dto";
 import TranslationKey from "./translation_key.entity";
 import TranslationValue from "./translation_value.entity";
@@ -11,6 +11,7 @@ import UpdateValueDto from "./dto/update-value.dto";
 import UpdateKeyDto from "./dto/update-key.dto";
 import GroupService from "../groups/group.service";
 import QuantityString from "./quantity_string.enum";
+import {create} from "domain";
 
 @Injectable()
 export default class TranslationService {
@@ -67,8 +68,25 @@ export default class TranslationService {
     key.project = project;
     key.isPlural = createKeyDto.isPlural;
     key.group = group;
+    const createdKey = await this.translationKeyRepository.save(key);
 
-    return await this.translationKeyRepository.save(key);
+    // Create all default values for this key
+    const languages = await this.projectsService.getAllLanguages(userId, projectId);
+    for (const language of languages) {
+      if (key.isPlural) {
+        // For plural key, create all 3 values by default
+        await Promise.all(
+          Object.values(QuantityString).map(async (quantity) => {
+            return this.createValue(userId, projectId, createdKey.id, new CreateValueDto({name: "", languageId: language.id, quantityString: quantity}));
+          })
+        );
+      } else {
+        // For singular key, create a default value with an empty name
+        await this.createValue(userId, projectId, createdKey.id, new CreateValueDto({name: "", languageId: language.id, quantityString: null}));
+      }
+    }
+
+    return createdKey;
   }
 
   public async getTranslationKey(userId: string, projectId: number, keyId: number): Promise<TranslationKey> {
