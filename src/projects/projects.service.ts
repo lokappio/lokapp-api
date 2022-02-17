@@ -156,19 +156,20 @@ export default class ProjectsService {
     const language = new Language();
     language.name = createLanguageDto.name;
     language.project = project;
-
     const createdLanguage = await this.languagesRepository.save(language);
 
+    // Find all translation keys of the project
     const projectKeys: TranslationKey[] = await this.keyRepository.find({projectId: projectId});
 
+    // For each key, automatically create values in the new added language
     await Promise.all(projectKeys.map(async (key) => {
-      if (key.is_plural) {
+      if (key.isPlural) {
         await Promise.all(Object.values(QuantityString).map(async (quantity) => {
           const value = new TranslationValue();
           value.name = "";
           value.key = key;
-          value.quantity_string= quantity;
-          value.language= language;
+          value.quantityString = quantity;
+          value.language = language;
 
           return await this.valueRepository.save(value);
         }));
@@ -176,7 +177,7 @@ export default class ProjectsService {
         const value = new TranslationValue();
         value.name = "";
         value.key = key;
-        value.language= language;
+        value.language = language;
 
         return await this.valueRepository.save(value);
       }
