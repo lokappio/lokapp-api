@@ -120,6 +120,7 @@ describe("ProjectsController", function () {
     const mockedLanguage: Language = {
       id: 456,
       name: "FR",
+      projectId: mockedProject.id,
       project: mockedProject,
       created_at: new Date(),
       updated_at: new Date()
