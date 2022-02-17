@@ -15,6 +15,7 @@ import {RolesGuard} from "../roles/roles.guard";
 import ProjectUser from "./model/project-user.model";
 import UpdateRoleDto from "./dto/update-role.dto";
 import DetailedProject from "./detailed-model/detailed-project.model";
+import TranslationValue from "../translation/translation_value.entity";
 
 @ApiBearerAuth()
 @ApiTags("Projects")
@@ -63,7 +64,7 @@ export default class ProjectsController {
   public createLanguage(
     @UserId() userId: string,
     @Param("projectId", ParseIntPipe) projectId: number,
-    @Body(new JoiValidationPipe(CreateLanguageDto.schema)) createLanguageDto: CreateLanguageDto): Promise<Language> {
+    @Body(new JoiValidationPipe(CreateLanguageDto.schema)) createLanguageDto: CreateLanguageDto): Promise<{language: Language, values: TranslationValue[]}> {
     return this.projectsService.createLanguage(userId, projectId, createLanguageDto);
   }
 

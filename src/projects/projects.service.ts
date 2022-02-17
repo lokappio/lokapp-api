@@ -151,8 +151,9 @@ export default class ProjectsService {
     return DetailedProject.map(project, rawLanguages, rawGroups, rawKeys, rawValues);
   }
 
-  public async createLanguage(userId: string, projectId: number, createLanguageDto: CreateLanguageDto): Promise<Language> {
+  public async createLanguage(userId: string, projectId: number, createLanguageDto: CreateLanguageDto): Promise<{language: Language, values: TranslationValue[]}> {
     const project = await this.getProject(userId, projectId);
+
     const language = new Language();
     language.name = createLanguageDto.name;
     language.project = project;
@@ -162,9 +163,9 @@ export default class ProjectsService {
     const projectKeys: TranslationKey[] = await this.keyRepository.find({projectId: projectId});
 
     // For each key, automatically create values in the new added language
-    await Promise.all(projectKeys.map(async (key) => {
+    const values: (TranslationValue[] | TranslationValue)[] = await Promise.all(projectKeys.map(async (key) => {
       if (key.isPlural) {
-        await Promise.all(Object.values(QuantityString).map(async (quantity) => {
+        return await Promise.all(Object.values(QuantityString).map(async (quantity) => {
           const value = new TranslationValue();
           value.name = "";
           value.key = key;
@@ -183,7 +184,7 @@ export default class ProjectsService {
       }
     }));
 
-    return createdLanguage;
+    return {language: createdLanguage, values: values.flat()};
   }
 
   public async getAllLanguages(userId: string, projectId: number): Promise<Language[]> {
