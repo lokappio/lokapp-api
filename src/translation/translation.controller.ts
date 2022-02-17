@@ -41,13 +41,6 @@ export default class TranslationController {
     return this.translationService.getTranslationKeys(userId, projectId);
   }
 
-  @Get("/all")
-  public getEveryValuesOfProject(
-    @UserId() userId: string,
-    @Param("project_id", ParseIntPipe) projectId: number): Promise<any[]> {
-    return this.translationService.getEveryValuesOfProject(userId, projectId);
-  }
-
   @Get(":translation_id")
   public getKey(
     @UserId() userId: string,

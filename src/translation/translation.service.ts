@@ -274,21 +274,6 @@ export default class TranslationService {
     });
   }
 
-  public async getEveryValuesOfProject(userId: string, projectId: number): Promise<any[]> {
-    const project = await this.projectsService.getProject(userId, projectId);
-    return await getManager()
-      .createQueryBuilder()
-      .select(["t_keys.id AS key_id", "t_keys.name AS key_name", "t_keys.is_plural AS is_plural", "t_values.id AS value_id", "t_values.name AS value_name", "t_values.quantity_string AS quantity", "lang.id AS language_id", "lang.name AS language_name", "group.id AS group_id", "group.name AS group_name"])
-      .from("translation_keys", "t_keys")
-      .leftJoin("project_languages", "lang", "t_keys.project_id = lang.project_id")
-      .leftJoin("translation_values", "t_values", "t_keys.id = t_values.key_id AND t_values.language_id = lang.id")
-      .leftJoin("groups", "group", "t_keys.project_id = group.project_id AND t_keys.group_id = group.id")
-      .where("t_keys.project_id = :project_id")
-      .setParameters({project_id: project.id})
-      .orderBy("t_keys.id, lang.id")
-      .getRawMany();
-  }
-
   public async getValue(userId: string, projectId: number, translationKeyId: number, valueId: number): Promise<TranslationValue> {
     const key = await this.getTranslationKey(userId, projectId, translationKeyId);
     const value = await this.translationValueRepository.findOne(valueId);
