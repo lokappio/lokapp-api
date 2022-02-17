@@ -52,6 +52,26 @@ export default class GroupService {
     return await this.groupRepository.save(group);
   }
 
+  public async findOrCreateGroup(userId: string, projectId: number, createGroupDto: CreateGroupDto): Promise<Group> {
+    const project = await this.projectsService.getProject(userId, projectId);
+    const existingGroup = await this.groupRepository.findOne({
+      where: {
+        name: createGroupDto.name,
+        project: {
+          id: projectId
+        }
+      }
+    });
+    if (existingGroup != undefined) {
+      return existingGroup[0];
+    }
+
+    const group = new Group();
+    group.name = createGroupDto.name;
+    group.project = project;
+    return await this.groupRepository.save(group);
+  }
+
   public async getAllGroups(userId: string, projectId: number): Promise<Group[]> {
     await this.projectsService.getProject(userId, projectId);
     return this.groupRepository.find({

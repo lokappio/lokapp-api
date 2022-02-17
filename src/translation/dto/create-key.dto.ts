@@ -9,7 +9,11 @@ export default class CreateKeyDto extends BaseDto {
 
     groupId: Joi
       .number()
-      .required(),
+      .optional(),
+
+    groupName: Joi
+      .string()
+      .optional(),
 
     isPlural: Joi
       .boolean()
@@ -17,6 +21,7 @@ export default class CreateKeyDto extends BaseDto {
   });
 
   public name: string;
-  public groupId: number;
+  public groupId?: number;
+  public groupName?: string;
   public isPlural: boolean;
 }

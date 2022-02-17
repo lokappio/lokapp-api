@@ -185,6 +185,61 @@ describe("Translations keys E2E", () => {
       expect(keysCountAfterCreation).toEqual(keysCountBeforeCreation + 1);
     });
 
+    it("Creating a new translation key with a new group", async () => {
+      // Get the current count of keys
+      const keysCountBeforeCreation = (await findTranslationKeys(populatedProjects[0].id)).length;
+
+      // Create a new singular key
+      const keyDto = new CreateKeyDto({
+        name: "New translation key",
+        groupName: "NewGroup",
+        isPlural: false
+      });
+      const creatingKeyResp = await request(app.getHttpServer())
+        .post(`/projects/${populatedProjects[0].id}/translations`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send(keyDto);
+      expect(creatingKeyResp.status).toEqual(201);
+
+      // Check group has been created
+      let groups = await groupRepository.find({
+        where: {
+          project: {
+            id: populatedProjects[0].id
+          },
+          name: "NewGroup"
+        }
+      });
+      expect(groups.length).toEqual(1);
+
+      // Add another key with the new group name shouldn't create another group
+      const creatingAnotherKeyResp = await request(app.getHttpServer())
+        .post(`/projects/${populatedProjects[0].id}/translations`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send({
+          name: "New translation key again",
+          groupName: "NewGroup",
+          isPlural: false
+        });
+      expect(creatingAnotherKeyResp.status).toEqual(201);
+
+      const keysCountAfterCreation = (await findTranslationKeys(populatedProjects[0].id)).length;
+      expect(keysCountAfterCreation).toEqual(keysCountBeforeCreation + 2);
+
+      groups = await groupRepository.find({
+        where: {
+          project: {
+            id: populatedProjects[0].id
+          },
+          name: "NewGroup"
+        }
+      });
+      expect(groups.length).not.toEqual(2);
+      expect(groups.length).toEqual(1);
+    });
+
     it("Duplicated translation key", async () => {
       const firstGroup = await TestsHelpers.createGroup("first_group", populatedProjects[0], groupRepository);
       const secondGroup = await TestsHelpers.createGroup("second_group", populatedProjects[0], groupRepository);

@@ -1,4 +1,4 @@
-import {Injectable, NotFoundException, UnprocessableEntityException} from "@nestjs/common";
+import {BadRequestException, Injectable, NotFoundException, UnprocessableEntityException} from "@nestjs/common";
 import {InjectRepository} from "@nestjs/typeorm";
 import {QueryFailedErrorType} from "../common/query-error.filter";
 import ProjectsService from "../projects/projects.service";
@@ -11,7 +11,8 @@ import UpdateValueDto from "./dto/update-value.dto";
 import UpdateKeyDto from "./dto/update-key.dto";
 import GroupService from "../groups/group.service";
 import QuantityString from "./quantity_string.enum";
-import {create} from "domain";
+import Group from "../groups/group.entity";
+import CreateGroupDto from "../groups/dto/create-group.dto";
 
 @Injectable()
 export default class TranslationService {
@@ -52,9 +53,21 @@ export default class TranslationService {
   }
 
   public async createTranslationKey(userId: string, projectId: number, createKeyDto: CreateKeyDto): Promise<TranslationKey> {
-    // Check if project and group exist
+    // Check if project exists
     const project = await this.projectsService.getProject(userId, projectId);
-    const group = await this.groupsService.getGroup(userId, projectId, createKeyDto.groupId);
+
+    // Check DTO as groupId or groupName
+    if (createKeyDto.groupId == null && createKeyDto.groupName == null) {
+      throw new BadRequestException(null, "Must have a groupId or a groupName");
+    }
+
+    // Find or create the group
+    let group: Group;
+    if (createKeyDto.groupId != null) {
+      group = await this.groupsService.getGroup(userId, projectId, createKeyDto.groupId);
+    } else if (createKeyDto.groupName != null) {
+      group = await this.groupsService.findOrCreateGroup(userId, projectId, new CreateGroupDto({name: createKeyDto.groupName}));
+    }
 
     // Check if the translation key already exists
     const keyAlreadyExists = await this.translationKeyAlreadyExists(createKeyDto.name, projectId, createKeyDto.groupId);
