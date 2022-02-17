@@ -13,6 +13,9 @@ import CreateLanguageDto from "../../src/projects/dto/create-language.dto";
 import * as request from "supertest";
 import TestsHelpers from "../helpers/tests.helpers";
 import CreateProjectDto from "../../src/projects/dto/create-project.dto";
+import TranslationValue from "../../src/translation/translation_value.entity";
+import TranslationKey from "../../src/translation/translation_key.entity";
+import Group, {DefaultGroupName} from "../../src/groups/group.entity";
 
 describe("Languages of a project E2E", () => {
   let app: INestApplication;
@@ -20,6 +23,9 @@ describe("Languages of a project E2E", () => {
   let projectRepository: Repository<Project>;
   let userProjectRepository: Repository<UserProject>;
   let languageRepository: Repository<Language>;
+  let valuesRepository: Repository<TranslationValue>;
+  let keysRepository: Repository<TranslationKey>;
+  let groupRepository: Repository<Group>;
 
   let populatedProjects: Project[];
 
@@ -33,6 +39,9 @@ describe("Languages of a project E2E", () => {
     projectRepository = moduleRef.get<Repository<Project>>(getRepositoryToken(Project));
     userProjectRepository = moduleRef.get<Repository<UserProject>>(getRepositoryToken(UserProject));
     languageRepository = moduleRef.get<Repository<Language>>(getRepositoryToken(Language));
+    valuesRepository = moduleRef.get<Repository<TranslationValue>>(getRepositoryToken(TranslationValue));
+    keysRepository = moduleRef.get<Repository<TranslationKey>>(getRepositoryToken(TranslationKey));
+    groupRepository = moduleRef.get<Repository<Group>>(getRepositoryToken(Group));
 
     app = moduleRef.createNestApplication();
     app.useGlobalFilters(new HttpExceptionFilter(), new TestQueryExceptionFilter());
@@ -48,6 +57,9 @@ describe("Languages of a project E2E", () => {
     await userRepository.clear();
     await languageRepository.clear();
     await projectRepository.clear();
+    await keysRepository.clear();
+    await valuesRepository.clear();
+    await groupRepository.clear();
     await app.close();
   });
 
@@ -59,6 +71,14 @@ describe("Languages of a project E2E", () => {
         }
       }
     });
+  }
+
+  async function populateProjectGroup(createdProject: Project): Promise<void> {
+    const group: Group = await TestsHelpers.createGroup(DefaultGroupName, createdProject, groupRepository);
+
+    //Populate with one plural key and one singular key
+    await TestsHelpers.createTranslationKey("singular_key", group, createdProject, false, keysRepository);
+    await TestsHelpers.createTranslationKey("plural_key", group, createdProject, true, keysRepository);
   }
 
   describe("Creating language", () => {
@@ -112,16 +132,28 @@ describe("Languages of a project E2E", () => {
     });
 
     it("Creating a language", async () => {
+      await populateProjectGroup(populatedProjects[0]);
+
       const languageResp = await request(app.getHttpServer())
         .post(`/projects/${populatedProjects[0].id}/languages`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send(new CreateLanguageDto({name: "English"}));
+        .send(new CreateLanguageDto({name: "EN"}));
+
       expect(languageResp.status).toEqual(201);
 
       const languages = await findLanguages(populatedProjects[0].id);
+
       expect(languages).not.toBeUndefined();
       expect(languages.length).toEqual(1);
+
+      const createdLanguage: Language = languages[0];
+
+      const values_singular = await valuesRepository.find({where: {language: createdLanguage, key_id: 1}});
+      const values_plural = await valuesRepository.find({where: {language: createdLanguage, key_id: 2}});
+
+      expect(values_singular.length).toBe(1);
+      expect(values_plural.length).toBe(3);
     });
 
     it("Already existing language", async () => {
