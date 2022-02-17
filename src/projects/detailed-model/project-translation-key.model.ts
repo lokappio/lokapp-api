@@ -10,16 +10,19 @@ export default class ProjectTranslationKey {
   name: string;
   values: ProjectTranslationValue[];
   groupId: number;
+  isPlural: boolean;
 
   constructor(
     id: number,
     name: string,
     values: ProjectTranslationValue[],
-    groupId: number
+    groupId: number,
+    isPlural: boolean
   ) {
     this.id = id;
     this.name = name;
     this.values = values;
     this.groupId = groupId;
+    this.isPlural = isPlural
   }
 }

@@ -1,4 +1,4 @@
-import TranslationKeyLite from "./project-translation-key.model";
+import ProjectTranslationKey from "./project-translation-key.model";
 
 /**
  * Group of a project.
@@ -8,12 +8,12 @@ import TranslationKeyLite from "./project-translation-key.model";
 export default class ProjectGroup {
   id: number;
   name: string;
-  keys: TranslationKeyLite[];
+  keys: ProjectTranslationKey[];
 
   constructor(
     id: number,
     name: string,
-    keys: TranslationKeyLite[]
+    keys: ProjectTranslationKey[]
   ) {
     this.id = id;
     this.name = name;

@@ -51,15 +51,15 @@ export default class DetailedProject {
     const projectValues = values
       .sort((a, b) => (a.id > b.id) ? 1 : -1)
       .map(val => {
-        const lang = projectLanguages.find(lang => lang.id == val.language_id);
-        return new ProjectTranslationValue(val.id, val.name, val.quantity_string, lang.id, lang.name, val.key_id);
+        const lang = projectLanguages.find(lang => lang.id == val.languageId);
+        return new ProjectTranslationValue(val.id, val.name, val.quantityString, lang.id, lang.name, val.keyId);
       });
 
     const projectKeys = keys
       .sort((a, b) => (a.id > b.id) ? 1 : -1)
       .map(key => {
         const keyValues = projectValues.filter(val => val.keyId == key.id);
-        return new ProjectTranslationKey(key.id, key.name, keyValues, key.group_id);
+        return new ProjectTranslationKey(key.id, key.name, keyValues, key.groupId, key.isPlural);
       });
 
     const projectGroups = groups
