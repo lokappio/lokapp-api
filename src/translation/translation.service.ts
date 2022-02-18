@@ -2,10 +2,10 @@ import {BadRequestException, Injectable, NotFoundException, UnprocessableEntityE
 import {InjectRepository} from "@nestjs/typeorm";
 import {QueryFailedErrorType} from "../common/query-error.filter";
 import ProjectsService from "../projects/projects.service";
-import {Not, Repository} from "typeorm";
+import {getManager, Not, Repository} from "typeorm";
 import CreateKeyDto from "./dto/create-key.dto";
-import TranslationKey from "./translation_key.entity";
-import TranslationValue from "./translation_value.entity";
+import TranslationKey, {TranslationKeysTableName} from "./translation_key.entity";
+import TranslationValue, {TranslationValuesTableName} from "./translation_value.entity";
 import CreateValueDto from "./dto/create-value.dto";
 import UpdateValueDto from "./dto/update-value.dto";
 import UpdateKeyDto from "./dto/update-key.dto";
@@ -208,6 +208,19 @@ export default class TranslationService {
       }
     }
     return await this.translationKeyRepository.save(key);
+  }
+
+  public async getAllTranslationValues(userId: string, projectId: number, languageId: number): Promise<TranslationValue[]> {
+    if (languageId == undefined) {
+      throw new BadRequestException(null, "Query parameter `languageId` is missing");
+    }
+    await this.projectsService.getProject(userId, projectId);
+    await this.projectsService.getLanguage(userId, projectId, languageId);
+    return await this.translationValueRepository.find({
+      where: {
+        languageId: languageId
+      }
+    });
   }
 
   private async translationValuesAlreadyExists(translationKeyId: number, languageId: number, quantityString: string | null) {

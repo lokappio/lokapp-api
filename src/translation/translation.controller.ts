@@ -41,6 +41,17 @@ export default class TranslationController {
     return this.translationService.getTranslationKeys(userId, projectId);
   }
 
+  @Get("values")
+  @ApiImplicitQueries([
+    {name: "languageId", required: true, type: Number}
+  ])
+  public getAllTranslationValues(
+    @UserId() userId: string,
+    @Param("projectId", ParseIntPipe) projectId: number,
+    @Query() query: GetTranslationValueDto): Promise<TranslationValue[]> {
+    return this.translationService.getAllTranslationValues(userId, projectId, query.languageId);
+  }
+
   @Get(":translationId")
   public getKey(
     @UserId() userId: string,
@@ -70,6 +81,7 @@ export default class TranslationController {
   }
 
   // Values
+
   @Post(":translationId/values")
   @Roles(Role.Owner, Role.Manager, Role.Editor, Role.Translator)
   @ApiProperty({enum: QuantityString})
