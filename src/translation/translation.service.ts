@@ -2,10 +2,10 @@ import {BadRequestException, Injectable, NotFoundException, UnprocessableEntityE
 import {InjectRepository} from "@nestjs/typeorm";
 import {QueryFailedErrorType} from "../common/query-error.filter";
 import ProjectsService from "../projects/projects.service";
-import {getManager, Not, Repository} from "typeorm";
+import {IsNull, Not, Repository} from "typeorm";
 import CreateKeyDto from "./dto/create-key.dto";
-import TranslationKey, {TranslationKeysTableName} from "./translation_key.entity";
-import TranslationValue, {TranslationValuesTableName} from "./translation_value.entity";
+import TranslationKey from "./translation_key.entity";
+import TranslationValue from "./translation_value.entity";
 import CreateValueDto from "./dto/create-value.dto";
 import UpdateValueDto from "./dto/update-value.dto";
 import UpdateKeyDto from "./dto/update-key.dto";
@@ -166,27 +166,18 @@ export default class TranslationService {
       if (updateKeyDto.isPlural) {
         key.isPlural = true;
 
-        // Search for a translation value
-        const singularValue = await this.translationValueRepository.findOne({
+        // Search for singular translation values
+        const singularValues = await this.translationValueRepository.find({
           where: {
-            key: key
+            key: key,
+            quantityString: IsNull()
           }
         });
 
-        // In case there is a value for this key, update its quantityString from `null` to `OTHER`.
-        // And create ONE and ZERO values
-        if (singularValue != undefined) {
-          singularValue.quantityString = QuantityString.OTHER;
-          await this.translationValueRepository.save(singularValue);
-
-          for (const quantity of [QuantityString.ONE, QuantityString.ZERO]) {
-            const quantityValue = new TranslationValue();
-            quantityValue.key = key;
-            quantityValue.languageId = singularValue.languageId;
-            quantityValue.quantityString = quantity;
-            quantityValue.name = singularValue.name;
-            await this.translationValueRepository.save(quantityValue);
-          }
+        // Update their quantityString from `null` to `OTHER`.
+        // And then create ONE and ZERO values
+        for (const singularValue of singularValues) {
+          await this.transformValueIntoPlural(singularValue, key);
         }
       } else { // Transforming the plural key into a singular one
         key.isPlural = false;
@@ -210,6 +201,22 @@ export default class TranslationService {
       }
     }
     return await this.translationKeyRepository.save(key);
+  }
+
+  private async transformValueIntoPlural(singularValue: TranslationValue, translationKey: TranslationKey) {
+    // Edit the current singular value and make it as the OTHER plural value
+    singularValue.quantityString = QuantityString.OTHER;
+    await this.translationValueRepository.save(singularValue);
+
+    // Then create ONE and ZERO translation values
+    for (const quantity of [QuantityString.ONE, QuantityString.ZERO]) {
+      const quantityValue = new TranslationValue();
+      quantityValue.key = translationKey;
+      quantityValue.languageId = singularValue.languageId;
+      quantityValue.quantityString = quantity;
+      quantityValue.name = singularValue.name;
+      await this.translationValueRepository.save(quantityValue);
+    }
   }
 
   public async getAllTranslationValues(userId: string, projectId: number, languageId: number): Promise<TranslationValue[]> {
