@@ -40,7 +40,7 @@ export default class GroupController {
     @UserId() userId: string,
     @Param("projectId", ParseIntPipe) projectId: number,
     @Param("groupId", ParseIntPipe) groupId: number,): Promise<Group> {
-    return await this.groupService.getGroup(userId, projectId, groupId);
+    return this.groupService.getGroup(userId, projectId, groupId);
   }
 
   @Patch(":groupId")
