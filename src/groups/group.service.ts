@@ -83,18 +83,6 @@ export default class GroupService {
     });
   }
 
-  public async getGroupById(userId: string, projectId: number, groupId: number): Promise<Group> {
-    await this.projectsService.getProject(userId, projectId);
-    return this.groupRepository.findOne({
-      where: {
-        project: {
-          id: projectId
-        },
-        id: groupId
-      }
-    });
-  }
-
   public async updateGroup(userId: string, projectId: number, groupId: number, updateGroupDto: UpdateGroupDto): Promise<Group> {
     const group = await this.getGroup(userId, projectId, groupId);
     const sameGroups = await this.groupRepository.find({
