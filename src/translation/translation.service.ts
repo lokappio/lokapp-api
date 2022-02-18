@@ -177,6 +177,8 @@ export default class TranslationService {
         // And create ONE and ZERO values
         if (singularValue != undefined) {
           singularValue.quantityString = QuantityString.OTHER;
+          await this.translationValueRepository.save(singularValue);
+
           for (const quantity of [QuantityString.ONE, QuantityString.ZERO]) {
             const quantityValue = new TranslationValue();
             quantityValue.key = key;
