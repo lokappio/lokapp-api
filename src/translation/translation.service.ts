@@ -63,7 +63,7 @@ export default class TranslationService {
 
     // Find or create the group
     let group: Group;
-    if (createKeyDto.groupId != -1) {
+    if (createKeyDto.groupId != null) {
       group = await this.groupsService.getGroup(userId, projectId, createKeyDto.groupId);
     } else if (createKeyDto.groupName != null) {
       group = await this.groupsService.findOrCreateGroup(userId, projectId, new CreateGroupDto({name: createKeyDto.groupName}));
