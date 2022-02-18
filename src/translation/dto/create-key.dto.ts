@@ -9,10 +9,12 @@ export default class CreateKeyDto extends BaseDto {
 
     groupId: Joi
       .number()
+      .allow(null)
       .optional(),
 
     groupName: Joi
       .string()
+      .allow(null)
       .optional(),
 
     isPlural: Joi
