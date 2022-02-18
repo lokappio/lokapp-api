@@ -35,6 +35,14 @@ export default class GroupController {
     return this.groupService.getAllGroups(userId, projectId);
   }
 
+  @Get(":groupId")
+  public getGroupById(
+    @UserId() userId: string,
+    @Param("projectId", ParseIntPipe) projectId: number,
+    @Param("groupId", ParseIntPipe) groupId: number,): Promise<Group> {
+    return this.groupService.getGroupById(userId, projectId, groupId);
+  }
+
   @Patch(":groupId")
   @Roles(Role.Owner, Role.Manager, Role.Editor)
   public updateGroup(
