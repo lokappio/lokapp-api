@@ -214,14 +214,13 @@ export default class TranslationService {
     if (languageId == undefined) {
       throw new BadRequestException(null, "Query parameter `languageId` is missing");
     }
-    return await getManager()
-      .createQueryBuilder()
-      .select(["t_values.*"])
-      .from(TranslationValuesTableName, "t_values")
-      .leftJoin(TranslationKeysTableName, "t_keys", "\"t_values\".\"keyId\" = \"t_keys\".\"id\"")
-      .where("\"t_keys\".\"projectId\" = :projectId AND \"t_values\".\"languageId\" = :languageId")
-      .setParameters({projectId: projectId, languageId: languageId})
-      .getRawMany();
+    await this.projectsService.getProject(userId, projectId);
+    await this.projectsService.getLanguage(userId, projectId, languageId);
+    return await this.translationValueRepository.find({
+      where: {
+        languageId: languageId
+      }
+    });
   }
 
   private async translationValuesAlreadyExists(translationKeyId: number, languageId: number, quantityString: string | null) {
