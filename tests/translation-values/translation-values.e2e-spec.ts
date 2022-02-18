@@ -398,6 +398,26 @@ describe("Translations values E2E", () => {
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1);
       expect(allValuesResp.status).toEqual(404);
     });
+
+    it("Getting all translation values of a specific language", async () => {
+      await TestsHelpers.createTranslationValue("translated content", populatedTranslationKeys[0], populatedLanguages[0], null, translationValuesRepository);
+      await TestsHelpers.createTranslationValue("translated content", populatedTranslationKeys[0], populatedLanguages[1], null, translationValuesRepository);
+      await TestsHelpers.createTranslationValue("translated content", populatedTranslationKeys[1], populatedLanguages[1], null, translationValuesRepository);
+
+      const allValuesWithoutLangResp = await request(app.getHttpServer())
+        .get(`/projects/${populatedProjects[0].id}/translations/values`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1);
+      expect(allValuesWithoutLangResp.status).toEqual(400);
+
+      const allValuesResp = await request(app.getHttpServer())
+        .get(`/projects/${populatedProjects[0].id}/translations/values`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .query({languageId: populatedLanguages[1].id});
+      expect(allValuesResp.status).toEqual(200);
+      expect(allValuesResp.body.length).toEqual(2);
+    });
   });
 
   describe("Editing translation values", () => {
