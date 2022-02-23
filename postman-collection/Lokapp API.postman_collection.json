@@ -1,0 +1,1400 @@
+{
+	"info": {
+		"_postman_id": "c2755374-058f-4df0-9060-a58ac3fa87a6",
+		"name": "Lokapp API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health",
+			"item": [
+				{
+					"name": "Check health",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_url}}/api/v1/health",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"health"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"username_or_null\",\n    \"email\": \"example@email.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host_url}}/api/v1/auth/register",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get current user",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_url}}/api/v1/users/me",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Edit current user",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"new-username\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host_url}}/api/v1/users/me",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Projects",
+			"item": [
+				{
+					"name": "Create project",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Lorem ipsum\",\n    \"color\": \"083D77\",\n    \"description\": \"Lorem ipsum dolor sit amet\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get users' projects",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get specific project",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/:projectId",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								":projectId"
+							],
+							"variable": [
+								{
+									"key": "projectId",
+									"value": "1",
+									"description": "id of the project"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Edit project",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Project #1\",\n    \"color\": \"E49273\",\n    \"description\": \"Lorem ipsum dolor sit amet\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/:projectId",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								":projectId"
+							],
+							"variable": [
+								{
+									"key": "projectId",
+									"value": "1",
+									"description": "id of the project"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete project",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/:projectId",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								":projectId"
+							],
+							"variable": [
+								{
+									"key": "projectId",
+									"value": "1",
+									"description": "id of the project"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get whole project content",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/:projectId/details",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								":projectId",
+								"details"
+							],
+							"variable": [
+								{
+									"key": "projectId",
+									"value": "1",
+									"description": "id of the project"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Leave project",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/:projectId/leave",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								":projectId",
+								"leave"
+							],
+							"variable": [
+								{
+									"key": "projectId",
+									"value": "1",
+									"description": "id of the project"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Projects' users",
+			"item": [
+				{
+					"name": "Get users of the project",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/:projectId/users",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								":projectId",
+								"users"
+							],
+							"variable": [
+								{
+									"key": "projectId",
+									"value": "1",
+									"description": "id of the project"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get current user information on project",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/:projectId/users",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								":projectId",
+								"users"
+							],
+							"variable": [
+								{
+									"key": "projectId",
+									"value": "1",
+									"description": "id of the project"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Edit role of a user",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"role\": \"manager\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/:projectId/users/:userId",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								":projectId",
+								"users",
+								":userId"
+							],
+							"variable": [
+								{
+									"key": "projectId",
+									"value": "1",
+									"description": "id of the project"
+								},
+								{
+									"key": "userId",
+									"value": null,
+									"description": "id of the user to edit"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete user from the project",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/:projectId/users/:userId",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								":projectId",
+								"users",
+								":userId"
+							],
+							"variable": [
+								{
+									"key": "projectId",
+									"value": "1",
+									"description": "id of the project"
+								},
+								{
+									"key": "userId",
+									"value": null,
+									"description": "id of the user to delete"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Language",
+			"item": [
+				{
+					"name": "Create language",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"EN\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/:projectId/languages",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								":projectId",
+								"languages"
+							],
+							"variable": [
+								{
+									"key": "projectId",
+									"value": "1",
+									"description": "id of the project"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get languages",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/:projectId/languages",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								":projectId",
+								"languages"
+							],
+							"variable": [
+								{
+									"key": "projectId",
+									"value": "1",
+									"description": "id of the project"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get language",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/:projectId/languages/:languageId",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								":projectId",
+								"languages",
+								":languageId"
+							],
+							"variable": [
+								{
+									"key": "projectId",
+									"value": "1",
+									"description": "id of the project"
+								},
+								{
+									"key": "languageId",
+									"value": "1",
+									"description": "id of the language to get"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Edit language",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"FR\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/:projectId/languages/:languageId",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								":projectId",
+								"languages",
+								":languageId"
+							],
+							"variable": [
+								{
+									"key": "projectId",
+									"value": "1",
+									"description": "id of the project"
+								},
+								{
+									"key": "languageId",
+									"value": "1",
+									"description": "id of the language to edit"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete language",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/:projectId/languages/:languageId",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								":projectId",
+								"languages",
+								":languageId"
+							],
+							"variable": [
+								{
+									"key": "projectId",
+									"value": "1",
+									"description": "id of the project"
+								},
+								{
+									"key": "languageId",
+									"value": "1",
+									"description": "id of the language to delete"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Group",
+			"item": [
+				{
+					"name": "Create group",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Name of the group\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/:projectId/groups",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								":projectId",
+								"groups"
+							],
+							"variable": [
+								{
+									"key": "projectId",
+									"value": "1",
+									"description": "id of the project"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get groups",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/:projectId/groups",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								":projectId",
+								"groups"
+							],
+							"variable": [
+								{
+									"key": "projectId",
+									"value": "1",
+									"description": "id of the project"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get group details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/:projectId/groups/:groupId",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								":projectId",
+								"groups",
+								":groupId"
+							],
+							"variable": [
+								{
+									"key": "projectId",
+									"value": "1",
+									"description": "id of the project"
+								},
+								{
+									"key": "groupId",
+									"value": "1",
+									"description": "id of the group to get"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update group",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Lorem ipsum\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host_url}}/api/v1/projects/:projectId/groups/:groupId",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								":projectId",
+								"groups",
+								":groupId"
+							],
+							"variable": [
+								{
+									"key": "projectId",
+									"value": "1",
+									"description": "id of the project"
+								},
+								{
+									"key": "groupId",
+									"value": "1",
+									"description": "id of the group to edit"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Translation",
+			"item": [
+				{
+					"name": "Keys",
+					"item": [
+						{
+							"name": "Create translation key",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"first_translation_key\",\n    \"group_id\": 1,\n    \"is_plural\": false\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host_url}}/api/v1/projects/:projectId/translations",
+									"host": [
+										"{{host_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"projects",
+										":projectId",
+										"translations"
+									],
+									"variable": [
+										{
+											"key": "projectId",
+											"value": "1",
+											"description": "id of the project"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get translation keys",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host_url}}/api/v1/projects/:projectId/translations",
+									"host": [
+										"{{host_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"projects",
+										":projectId",
+										"translations"
+									],
+									"variable": [
+										{
+											"key": "projectId",
+											"value": "1",
+											"description": "id of the project"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get specific translation key",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host_url}}/api/v1/projects/:projectId/translations/:translationKeyId",
+									"host": [
+										"{{host_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"projects",
+										":projectId",
+										"translations",
+										":translationKeyId"
+									],
+									"variable": [
+										{
+											"key": "projectId",
+											"value": "1",
+											"description": "id of the project"
+										},
+										{
+											"key": "translationKeyId",
+											"value": "1",
+											"description": "id of the translation key to get"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete translation key",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{host_url}}/api/v1/projects/:projectId/translations/:translationKeyId",
+									"host": [
+										"{{host_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"projects",
+										":projectId",
+										"translations",
+										":translationKeyId"
+									],
+									"variable": [
+										{
+											"key": "projectId",
+											"value": "1",
+											"description": "id of the project"
+										},
+										{
+											"key": "translationKeyId",
+											"value": "1",
+											"description": "id of the translation key to delete"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Edit translation key",
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"edited_translation_key\",\n    \"group_id\": 1,\n    \"is_plural\": false\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host_url}}/api/v1/projects/:projectId/translations/:translationKeyId",
+									"host": [
+										"{{host_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"projects",
+										":projectId",
+										"translations",
+										":translationKeyId"
+									],
+									"variable": [
+										{
+											"key": "projectId",
+											"value": "1",
+											"description": "id of the project"
+										},
+										{
+											"key": "translationKeyId",
+											"value": "1",
+											"description": "id of the translation key to edit"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Values",
+					"item": [
+						{
+							"name": "Create translation value",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Content of the translation value\",\n    \"language_id\": 1,\n    \"quantity_string\": null\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host_url}}/api/v1/projects/:projectId/translations/:translationKeyId/values",
+									"host": [
+										"{{host_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"projects",
+										":projectId",
+										"translations",
+										":translationKeyId",
+										"values"
+									],
+									"variable": [
+										{
+											"key": "projectId",
+											"value": "1",
+											"description": "id of the project"
+										},
+										{
+											"key": "translationKeyId",
+											"value": "1",
+											"description": "id of the translation key"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get values of a translation key",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host_url}}/api/v1/projects/:projectId/translations/:translationKeyId/values",
+									"host": [
+										"{{host_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"projects",
+										":projectId",
+										"translations",
+										":translationKeyId",
+										"values"
+									],
+									"variable": [
+										{
+											"key": "projectId",
+											"value": "1",
+											"description": "id of the project"
+										},
+										{
+											"key": "translationKeyId",
+											"value": "1",
+											"description": "id of the translation key to get the value from"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get specific value",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host_url}}/api/v1/projects/:projectId/translations/:translationKeyId/values?languageId=1",
+									"host": [
+										"{{host_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"projects",
+										":projectId",
+										"translations",
+										":translationKeyId",
+										"values"
+									],
+									"query": [
+										{
+											"key": "languageId",
+											"value": "1",
+											"description": "id of the language"
+										}
+									],
+									"variable": [
+										{
+											"key": "projectId",
+											"value": "1",
+											"description": "id of the project"
+										},
+										{
+											"key": "translationKeyId",
+											"value": "1",
+											"description": "id of the translation key id"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update value",
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Edited content\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host_url}}/api/v1/projects/:projectId/translations/:translationKeyId/values/:translationValueId",
+									"host": [
+										"{{host_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"projects",
+										":projectId",
+										"translations",
+										":translationKeyId",
+										"values",
+										":translationValueId"
+									],
+									"variable": [
+										{
+											"key": "projectId",
+											"value": "1",
+											"description": "id of the project"
+										},
+										{
+											"key": "translationKeyId",
+											"value": "1",
+											"description": "id of the translation key"
+										},
+										{
+											"key": "translationValueId",
+											"value": "1",
+											"description": "id of the translation value to edit"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete value",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host_url}}/api/v1/projects/:projectId/translations/:translationKeyId/values/:translationValueId",
+									"host": [
+										"{{host_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"projects",
+										":projectId",
+										"translations",
+										":translationKeyId",
+										"values",
+										":translationValueId"
+									],
+									"variable": [
+										{
+											"key": "projectId",
+											"value": "1",
+											"description": "id of the project"
+										},
+										{
+											"key": "translationKeyId",
+											"value": "1",
+											"description": "id of the translation key"
+										},
+										{
+											"key": "translationValueId",
+											"value": "1",
+											"description": "id of the translation value to delete"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Invitations",
+			"item": [
+				{
+					"name": "Create invitation",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"projectId\": 1,\n    \"role\": \"manager\",\n    \"email\": \"test@test.fr\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host_url}}/api/v1/invitations",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"invitations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get invitations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_url}}/api/v1/invitations",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"invitations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Accept invitation",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host_url}}/api/v1/invitations/:invitationId/accept",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"invitations",
+								":invitationId",
+								"accept"
+							],
+							"variable": [
+								{
+									"key": "invitationId",
+									"value": null,
+									"description": "id of the invitation to accept"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Decline invitation",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host_url}}/api/v1/invitations/:invitationId/decline",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"invitations",
+								":invitationId",
+								"decline"
+							],
+							"variable": [
+								{
+									"key": "invitationId",
+									"value": null,
+									"description": "id of the invitation to decline"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete invitation",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host_url}}/api/v1/invitations/:invitationId",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"invitations",
+								":invitationId"
+							],
+							"variable": [
+								{
+									"key": "invitationId",
+									"value": null,
+									"description": "id of the invitation to delete"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{jwt_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
