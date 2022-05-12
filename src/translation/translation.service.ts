@@ -83,20 +83,27 @@ export default class TranslationService {
     key.group = group;
     const createdKey = await this.translationKeyRepository.save(key);
 
-    // Create all default values for this key
-    const languages = await this.projectsService.getAllLanguages(userId, projectId);
-    for (const language of languages) {
-      if (key.isPlural) {
-        // For plural key, create all 3 values by default
-        await Promise.all(
-          Object.values(QuantityString).map(async (quantity) => {
-            return this.createValue(userId, projectId, createdKey.id, new CreateValueDto({name: "", languageId: language.id, quantityString: quantity}));
-          })
-        );
-      } else {
-        // For singular key, create a default value with an empty name
-        await this.createValue(userId, projectId, createdKey.id, new CreateValueDto({name: "", languageId: language.id, quantityString: null}));
+    if(createKeyDto.values === null || createKeyDto.values.length === 0){
+      // Create all default values for this key
+      const languages = await this.projectsService.getAllLanguages(userId, projectId);
+      for (const language of languages) {
+        if (key.isPlural) {
+          // For plural key, create all 3 values by default
+          await Promise.all(
+            Object.values(QuantityString).map(async (quantity) => {
+              return this.createValue(userId, projectId, createdKey.id, new CreateValueDto({name: "", languageId: language.id, quantityString: quantity}));
+            })
+          );
+        } else {
+          // For singular key, create a default value with an empty name
+          await this.createValue(userId, projectId, createdKey.id, new CreateValueDto({name: "", languageId: language.id, quantityString: null}));
+        }
       }
+    } else {
+      //Create values from DTO
+      await Promise.all(createKeyDto.values.map(async (value) => {
+        await this.createValue(userId, projectId, createdKey.id, value);
+      }))
     }
 
     return createdKey;
