@@ -85,9 +85,11 @@ export default class ProjectsService {
     await this.createUserProjectRelation(userId, createdProject.id, Role.Owner);
 
     // Create the first language of the project if provided in the DTO
-    if (createProjectDto.language != null && createProjectDto.language != "") {
-      const createLanguageDto = new CreateLanguageDto({name: createProjectDto.language});
-      await this.createLanguage(userId, createdProject.id, createLanguageDto);
+    if (createProjectDto.languages != null && createProjectDto.languages.length > 0) {
+      await Promise.all(createProjectDto.languages.map(async (language: string) => {
+        const createLanguageDto = new CreateLanguageDto({name: language});
+        await this.createLanguage(userId, createdProject.id, createLanguageDto);
+      }))
     }
 
     // Create default group

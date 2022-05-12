@@ -16,13 +16,13 @@ export default class CreateProjectDto extends BaseDto {
       .string()
       .optional()
       .allow(null, ''),
-    language: Joi
-      .string()
+    languages: Joi
+      .array()
       .optional()
   });
 
   public name: string;
   public color: string;
   public description?: string;
-  public language?: string;
+  public languages?: string[];
 }
