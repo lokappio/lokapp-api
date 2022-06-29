@@ -16,6 +16,7 @@ import CreateProjectDto from "../../src/projects/dto/create-project.dto";
 import TranslationValue from "../../src/translation/translation_value.entity";
 import TranslationKey from "../../src/translation/translation_key.entity";
 import Group, {DefaultGroupName} from "../../src/groups/group.entity";
+import CreateValueDto from "../../src/translation/dto/create-value.dto";
 
 describe("Languages of a project E2E", () => {
   let app: INestApplication;
@@ -156,6 +157,56 @@ describe("Languages of a project E2E", () => {
       expect(values_plural.length).toBe(3);
     });
 
+    it("Creating a language with existing values", async () => {
+      await populateProjectGroup(populatedProjects[0]);
+
+      const languageResp = await request(app.getHttpServer())
+        .post(`/projects/${populatedProjects[0].id}/languages`)
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send(new CreateLanguageDto({
+          name: "en",
+          values: [
+            new CreateValueDto({
+              name: "singular_key_en",
+              keyId: 1,
+              quantityString: null
+            }), new CreateValueDto({
+              name: "plural_key_en_zero",
+              keyId: 2,
+              quantityString: "zero"
+            }), new CreateValueDto({
+              name: "plural_key_en_one",
+              keyId: 2,
+              quantityString: "one"
+            }), new CreateValueDto({
+              name: "plural_key_en_other",
+              keyId: 2,
+              quantityString: "other"
+            })
+          ]
+        }));
+
+      expect(languageResp.status).toEqual(201);
+
+      const languages = await findLanguages(populatedProjects[0].id);
+
+      expect(languages).not.toBeUndefined();
+      expect(languages.length).toEqual(1);
+
+      const createdLanguage: Language = languages[0];
+
+      const values_singular = await valuesRepository.find({where: {language: createdLanguage, keyId: 1}});
+      const values_plural = await valuesRepository.find({where: {language: createdLanguage, keyId: 2}});
+
+      expect(values_singular.length).toBe(1);
+      expect(values_singular[0].name).toBe("singular_key_en");
+      expect(values_plural.length).toBe(3);
+      values_plural.forEach(value => {
+        expect(value.name).toBe(`plural_key_en_${value.quantityString}`);
+      })
+    });
+
     it("Already existing language", async () => {
       const createLanguageResp = await request(app.getHttpServer())
         .post(`/projects/${populatedProjects[0].id}/languages`)
@@ -177,7 +228,7 @@ describe("Languages of a project E2E", () => {
         name: "New project",
         description: "Lorem ipsum dolor sit amet",
         color: "000000",
-        language: "French"
+        languages: ["fr"]
       });
 
       const createdProjectResp = await request(app.getHttpServer())
@@ -189,7 +240,7 @@ describe("Languages of a project E2E", () => {
 
       const languages = await findLanguages(createdProjectResp.body.id);
       expect(languages.length).toEqual(1);
-      expect(languages[0].name).toEqual("French");
+      expect(languages[0].name).toEqual("fr");
     });
   });
 
