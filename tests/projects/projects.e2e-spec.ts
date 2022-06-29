@@ -121,7 +121,7 @@ describe("Projects E2E", () => {
         name: "New project name",
         description: "Lorem ipsum dolor sit amet",
         color: "112233",
-        language: "fr"
+        languages: ["fr"]
       });
 
       const createdProjectResp = await request(app.getHttpServer())
@@ -144,7 +144,49 @@ describe("Projects E2E", () => {
         }
       });
       expect(languages.length).toEqual(1);
-      expect(languages[0].name).toEqual(dto.language);
+      expect(languages[0].name).toEqual(dto.languages[0]);
+
+      const relations = await userProjectRepository.find();
+      expect(relations.length).toEqual(1);
+      expect(relations[0].role).toEqual(Role.Owner);
+      expect(relations[0].userId).toEqual(TestsHelpers.MOCKED_USER_ID_1);
+      expect(relations[0].projectId).toEqual(createdProjectResp.body.id);
+    });
+
+    it("Creating project with multiple languages", async () => {
+      const projectsCount = (await projectRepository.find()).length;
+
+      const dto = new CreateProjectDto({
+        name: "New project name",
+        description: "Lorem ipsum dolor sit amet",
+        color: "112233",
+        languages: ["fr", "en"]
+      });
+
+      const createdProjectResp = await request(app.getHttpServer())
+        .post("/projects")
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send(dto);
+      expect(createdProjectResp.status).toBe(201);
+      expect(createdProjectResp.body.id).not.toBeNull();
+      expect(createdProjectResp.body.name).toEqual(dto.name);
+      expect(createdProjectResp.body.description).toEqual(dto.description);
+      expect(createdProjectResp.body.color).toEqual(dto.color);
+
+      const updatedProjectsCount = (await projectRepository.find()).length;
+      expect(updatedProjectsCount).toEqual(projectsCount + 1);
+
+      const languages = await languageRepository.find({
+        where: {
+          projectId: createdProjectResp.body.id
+        }
+      });
+      languages.sort((a, b) => a.name.localeCompare(b.name));
+
+      expect(languages.length).toEqual(2);
+      expect(languages[0].name).toEqual("en");
+      expect(languages[1].name).toEqual("fr");
 
       const relations = await userProjectRepository.find();
       expect(relations.length).toEqual(1);
