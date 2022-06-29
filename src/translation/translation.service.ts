@@ -83,7 +83,7 @@ export default class TranslationService {
     key.group = group;
     const createdKey = await this.translationKeyRepository.save(key);
 
-    if(createKeyDto.values === null || createKeyDto.values.length === 0){
+    if(createKeyDto.values === null || createKeyDto.values === undefined || createKeyDto.values.length === 0){
       // Create all default values for this key
       const languages = await this.projectsService.getAllLanguages(userId, projectId);
       for (const language of languages) {

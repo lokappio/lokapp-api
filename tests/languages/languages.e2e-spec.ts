@@ -158,29 +158,27 @@ describe("Languages of a project E2E", () => {
     });
 
     it("Creating a language with existing values", async () => {
-      await populateProjectGroup(populatedProjects[0]);
-
       const languageResp = await request(app.getHttpServer())
         .post(`/projects/${populatedProjects[0].id}/languages`)
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
         .send(new CreateLanguageDto({
-          name: "en",
+          name: "fr",
           values: [
             new CreateValueDto({
-              name: "singular_key_en",
+              name: "singular_key_fr",
               keyId: 1,
               quantityString: null
             }), new CreateValueDto({
-              name: "plural_key_en_zero",
+              name: "plural_key_fr_zero",
               keyId: 2,
               quantityString: "zero"
             }), new CreateValueDto({
-              name: "plural_key_en_one",
+              name: "plural_key_fr_one",
               keyId: 2,
               quantityString: "one"
             }), new CreateValueDto({
-              name: "plural_key_en_other",
+              name: "plural_key_fr_other",
               keyId: 2,
               quantityString: "other"
             })
@@ -200,10 +198,10 @@ describe("Languages of a project E2E", () => {
       const values_plural = await valuesRepository.find({where: {language: createdLanguage, keyId: 2}});
 
       expect(values_singular.length).toBe(1);
-      expect(values_singular[0].name).toBe("singular_key_en");
+      expect(values_singular[0].name).toBe("singular_key_fr");
       expect(values_plural.length).toBe(3);
       values_plural.forEach(value => {
-        expect(value.name).toBe(`plural_key_en_${value.quantityString}`);
+        expect(value.name).toBe(`plural_key_fr_${value.quantityString}`);
       })
     });
 
