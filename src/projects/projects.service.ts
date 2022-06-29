@@ -85,9 +85,11 @@ export default class ProjectsService {
     await this.createUserProjectRelation(userId, createdProject.id, Role.Owner);
 
     // Create the first language of the project if provided in the DTO
-    if (createProjectDto.language != null && createProjectDto.language != "") {
-      const createLanguageDto = new CreateLanguageDto({name: createProjectDto.language});
-      await this.createLanguage(userId, createdProject.id, createLanguageDto);
+    if (createProjectDto.languages != null && createProjectDto.languages.length > 0) {
+      await Promise.all(createProjectDto.languages.map(async (language: string) => {
+        const createLanguageDto = new CreateLanguageDto({name: language});
+        await this.createLanguage(userId, createdProject.id, createLanguageDto);
+      }))
     }
 
     // Create default group
@@ -161,27 +163,40 @@ export default class ProjectsService {
     // Find all translation keys of the project
     const projectKeys: TranslationKey[] = await this.keyRepository.find({projectId: projectId});
 
-    // For each key, automatically create values in the new added language
-    await Promise.all(projectKeys.map(async (key) => {
-      if (key.isPlural) {
-        await Promise.all(Object.values(QuantityString).map(async (quantity) => {
+    if(!createLanguageDto.values || createLanguageDto.values.length === 0) {
+      // For each key, automatically create values in the new added language
+      await Promise.all(projectKeys.map(async (key) => {
+        if (key.isPlural) {
+          await Promise.all(Object.values(QuantityString).map(async (quantity) => {
+            const value = new TranslationValue();
+            value.name = "";
+            value.key = key;
+            value.quantityString = quantity;
+            value.language = language;
+
+            return await this.valueRepository.save(value);
+          }));
+        } else {
           const value = new TranslationValue();
           value.name = "";
           value.key = key;
-          value.quantityString = quantity;
           value.language = language;
 
           return await this.valueRepository.save(value);
-        }));
-      } else {
-        const value = new TranslationValue();
-        value.name = "";
-        value.key = key;
-        value.language = language;
+        }
+      }));
+    } else {
+      //Create values from DTO
+      await Promise.all(createLanguageDto.values.map(async (value) => {
+        const translationValue = new TranslationValue();
+        translationValue.keyId = value.keyId;
+        translationValue.language = language;
+        translationValue.name = value.name;
+        translationValue.quantityString = value.quantityString;
 
-        return await this.valueRepository.save(value);
-      }
-    }));
+        return await this.valueRepository.save(translationValue);
+      }))
+    }
 
     return createdLanguage;
   }

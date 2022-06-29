@@ -95,6 +95,20 @@ To run all the end-to-end tests, executing the following command:
 npm run test:e2e
 ```
 
+#### Webstorm
+If you use Webstorm to run your tests individually, you need to set the jest configuration for each Run Configuration. You can set it as followed :
+
+1. First, right click on the launch icon to the left side of the IDE, and click on "Modify Run Configuration"
+
+![picture](documentation/jest-webstorm-first.png)
+
+
+2. On the configuration windows, select the file *./tests/jest-e2e.json*. Click on "Apply" button
+
+![picture](documentation/jest-webstorm-second.png)
+
+3. You can now launch the tests by clicking on the "Run" button
+
 ### Environment variables
 
 To make the API running, you need to specify your database URL in the `DATABASE_URL` variable.

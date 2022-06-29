@@ -137,7 +137,7 @@ describe("Groups E2E", () => {
           name: "New project",
           description: "Lorem ipsum dolor sit amet",
           color: "000000",
-          language: "EN"
+          languages: ["EN"]
         }));
       expect(createdProjectResp.status).toBe(201);
 

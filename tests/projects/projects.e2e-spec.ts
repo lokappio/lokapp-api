@@ -121,7 +121,7 @@ describe("Projects E2E", () => {
         name: "New project name",
         description: "Lorem ipsum dolor sit amet",
         color: "112233",
-        language: "fr"
+        languages: ["fr"]
       });
 
       const createdProjectResp = await request(app.getHttpServer())
@@ -144,7 +144,49 @@ describe("Projects E2E", () => {
         }
       });
       expect(languages.length).toEqual(1);
-      expect(languages[0].name).toEqual(dto.language);
+      expect(languages[0].name).toEqual(dto.languages[0]);
+
+      const relations = await userProjectRepository.find();
+      expect(relations.length).toEqual(1);
+      expect(relations[0].role).toEqual(Role.Owner);
+      expect(relations[0].userId).toEqual(TestsHelpers.MOCKED_USER_ID_1);
+      expect(relations[0].projectId).toEqual(createdProjectResp.body.id);
+    });
+
+    it("Creating project with multiple languages", async () => {
+      const projectsCount = (await projectRepository.find()).length;
+
+      const dto = new CreateProjectDto({
+        name: "New project name",
+        description: "Lorem ipsum dolor sit amet",
+        color: "112233",
+        languages: ["fr", "en"]
+      });
+
+      const createdProjectResp = await request(app.getHttpServer())
+        .post("/projects")
+        .auth("mocked.jwt", {type: "bearer"})
+        .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
+        .send(dto);
+      expect(createdProjectResp.status).toBe(201);
+      expect(createdProjectResp.body.id).not.toBeNull();
+      expect(createdProjectResp.body.name).toEqual(dto.name);
+      expect(createdProjectResp.body.description).toEqual(dto.description);
+      expect(createdProjectResp.body.color).toEqual(dto.color);
+
+      const updatedProjectsCount = (await projectRepository.find()).length;
+      expect(updatedProjectsCount).toEqual(projectsCount + 1);
+
+      const languages = await languageRepository.find({
+        where: {
+          projectId: createdProjectResp.body.id
+        }
+      });
+      languages.sort((a, b) => a.name.localeCompare(b.name));
+
+      expect(languages.length).toEqual(2);
+      expect(languages[0].name).toEqual("en");
+      expect(languages[1].name).toEqual("fr");
 
       const relations = await userProjectRepository.find();
       expect(relations.length).toEqual(1);
@@ -218,7 +260,7 @@ describe("Projects E2E", () => {
           name: "Project",
           description: "Lorem ipsum dolor sit amet",
           color: "987654",
-          language: "de"
+          languages: ["de"]
         });
       expect(createdProject.status).toEqual(201);
 
@@ -258,7 +300,7 @@ describe("Projects E2E", () => {
           name: "New project name",
           description: "Lorem ipsum dolor sit amet",
           color: "112233",
-          language: "fr"
+          languages: ["fr"]
         });
       expect(firstProject.status).toEqual(201);
 
@@ -270,7 +312,7 @@ describe("Projects E2E", () => {
           name: "New project name",
           description: "Lorem ipsum dolor sit amet",
           color: "112233",
-          language: "fr"
+          languages: ["fr"]
         });
       expect(secondProject.status).toEqual(201);
 
@@ -304,7 +346,7 @@ describe("Projects E2E", () => {
           name: "A new project",
           description: "This is a new project",
           color: "000000",
-          language: "en"
+          languages: ["en"]
         });
       expect(createdProject.status).toEqual(201);
 
@@ -327,7 +369,7 @@ describe("Projects E2E", () => {
           name: "A new project",
           description: "This project belongs to MOCKED_USER_ID_1",
           color: "000000",
-          language: "en"
+          languages: ["en"]
         });
       expect(createdProject.status).toEqual(201);
 
@@ -362,7 +404,7 @@ describe("Projects E2E", () => {
           name: "Project about to be edited",
           description: "Lorem ipsum dolor sit amet",
           color: "123456",
-          language: "fr"
+          languages: ["fr"]
         });
       expect(createdProject.status).toEqual(201);
 
@@ -383,7 +425,7 @@ describe("Projects E2E", () => {
           name: "Project about to be edited by MOCKED_USER_ID_2",
           description: "Lorem ipsum",
           color: "112233",
-          language: "fr"
+          languages: ["fr"]
         });
       expect(createdProject.status).toEqual(201);
 
@@ -415,7 +457,7 @@ describe("Projects E2E", () => {
           name: "Editable project",
           description: "The description of this project",
           color: "654321",
-          language: "en"
+          languages: ["en"]
         });
       expect(projectResp.status).toEqual(201);
 
@@ -458,7 +500,7 @@ describe("Projects E2E", () => {
           name: "Project about to be edited",
           description: "Lorem ipsum dolor sit amet",
           color: "123456",
-          language: "fr"
+          languages: ["fr"]
         });
       expect(createdProject.status).toEqual(201);
 
@@ -512,7 +554,7 @@ describe("Projects E2E", () => {
         .post("/projects")
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({name: "Will be deleted", color: "123456", language: "fr"});
+        .send({name: "Will be deleted", color: "123456", languages: ["fr"]});
       expect(createdProject.status).toEqual(201);
 
       // Then check the project can't be deleted if no JWT
@@ -551,7 +593,7 @@ describe("Projects E2E", () => {
         .post("/projects")
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
-        .send({name: "Will be deleted", color: "123456", language: "fr"});
+        .send({name: "Will be deleted", color: "123456", languages: ["fr"]});
 
       // Delete this project
       const deleteResp = await request(app.getHttpServer())
