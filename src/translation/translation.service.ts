@@ -52,6 +52,12 @@ export default class TranslationService {
     });
   }
 
+  public async createTranslationKeys(userId: string, projectId: number, createKeysDto: CreateKeyDto[]): Promise<TranslationKey[]> {
+    return await Promise.all(createKeysDto.map(async (createKeyDto) =>
+      this.createTranslationKey(userId, projectId, createKeyDto)
+    ));
+  }
+
   public async createTranslationKey(userId: string, projectId: number, createKeyDto: CreateKeyDto): Promise<TranslationKey> {
     // Check if project exists
     const project = await this.projectsService.getProject(userId, projectId);

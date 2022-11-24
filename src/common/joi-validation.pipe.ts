@@ -1,9 +1,9 @@
 import {ArgumentMetadata, BadRequestException, Injectable, PipeTransform} from "@nestjs/common";
-import {ObjectSchema} from "@hapi/joi";
+import {AnySchema} from "@hapi/joi";
 
 @Injectable()
 export class JoiValidationPipe implements PipeTransform {
-  constructor(private schema: ObjectSchema) {
+  constructor(private schema: AnySchema) {
   }
 
   transform(value: any, metadata: ArgumentMetadata) {
