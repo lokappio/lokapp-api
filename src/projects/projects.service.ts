@@ -9,7 +9,7 @@ import UpdateProjectDto from "./dto/update-project.dto";
 import UserProject, {UsersProjectsTableName} from "../users-projects/user_project.entity";
 import Role from "../roles/role.enum";
 import ProjectUser from "./model/project-user.model";
-import Invitation, {InvitationTableName} from "../invitations/invitation.entity";
+import {InvitationTableName} from "../invitations/invitation.entity";
 import UpdateRoleDto from "./dto/update-role.dto";
 import {UsersTableName} from "../users/user.entity";
 import Group, {DefaultGroupName} from "../groups/group.entity";
@@ -32,9 +32,8 @@ export default class ProjectsService {
     @InjectRepository(TranslationValue)
     private readonly valueRepository: Repository<TranslationValue>,
     @InjectRepository(TranslationKey)
-    private readonly keyRepository: Repository<TranslationKey>,
-    @InjectRepository(Invitation)
-    private readonly invitationRepository: Repository<Invitation>) {
+    private readonly keyRepository: Repository<TranslationKey>
+    ) {
   }
 
   public async createUserProjectRelation(userId: string, projectId: number, role: Role): Promise<any> {

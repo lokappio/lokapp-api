@@ -1,4 +1,5 @@
 import * as Joi from "@hapi/joi";
+import CreateKeyDto from "src/translation/dto/create-key.dto";
 import BaseDto from "../../data/base.dto";
 
 export default class CreateProjectDto extends BaseDto {
@@ -18,6 +19,9 @@ export default class CreateProjectDto extends BaseDto {
       .allow(null, ''),
     languages: Joi
       .array()
+      .optional(),
+    keys: Joi
+      .array()
       .optional()
   });
 
@@ -25,4 +29,5 @@ export default class CreateProjectDto extends BaseDto {
   public color: string;
   public description?: string;
   public languages?: string[];
+  public keys?: CreateKeyDto[];
 }

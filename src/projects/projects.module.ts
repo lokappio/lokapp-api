@@ -1,14 +1,13 @@
 import {Module} from "@nestjs/common";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import Group from "src/groups/group.entity";
+import Language from "src/languages/language.entity";
+import TranslationKey from "src/translation/translation_key.entity";
+import TranslationValue from "src/translation/translation_value.entity";
+import UserProject from "src/users-projects/user_project.entity";
+import Project from "./project.entity";
 import ProjectsController from "./projects.controller";
 import ProjectsService from "./projects.service";
-import {TypeOrmModule} from "@nestjs/typeorm";
-import Project from "./project.entity";
-import Language from "../languages/language.entity";
-import UserProject from "../users-projects/user_project.entity";
-import Invitation from "../invitations/invitation.entity";
-import Group from "../groups/group.entity";
-import TranslationValue from "../translation/translation_value.entity";
-import TranslationKey from "../translation/translation_key.entity";
 
 @Module({
   imports: [
@@ -16,10 +15,9 @@ import TranslationKey from "../translation/translation_key.entity";
       Project,
       Language,
       UserProject,
-      Invitation,
       Group,
+      TranslationKey,
       TranslationValue,
-      TranslationKey
     ])
   ],
   controllers: [ProjectsController],

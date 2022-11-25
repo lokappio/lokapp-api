@@ -1,23 +1,24 @@
 import {Module} from "@nestjs/common";
-import {TypeOrmModule} from "@nestjs/typeorm";
 import TranslationController from "./translation.controller";
-import TranslationKey from "./translation_key.entity";
-import TranslationValue from "./translation_value.entity";
 import TranslationService from "./translation.service";
 import ProjectsModule from "../projects/projects.module";
 import GroupModule from "../groups/group.module";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import TranslationKey from "./translation_key.entity";
+import TranslationValue from "./translation_value.entity";
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       TranslationKey,
-      TranslationValue
+      TranslationValue,
     ]),
     ProjectsModule,
     GroupModule
   ],
   controllers: [TranslationController],
-  providers: [TranslationService]
+  providers: [TranslationService],
+  exports: [TranslationService]
 })
 export default class TranslationModule {
 }

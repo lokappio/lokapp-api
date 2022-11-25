@@ -1,4 +1,5 @@
 import {NestFactory} from "@nestjs/core";
+import * as bodyParser from 'body-parser';
 import {DocumentBuilder, SwaggerCustomOptions, SwaggerModule} from "@nestjs/swagger";
 import AppModule from "./app.module";
 import {WINSTON_MODULE_NEST_PROVIDER} from "nest-winston";
@@ -11,6 +12,11 @@ async function bootstrap() {
   app.setGlobalPrefix("api/v1");
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
   app.enableCors();
+
+  // Increase the default body size limit to 50MB
+  app.use(bodyParser.json({limit: '50mb'}));
+  app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+
 
   app.useGlobalFilters(
     new HttpExceptionFilter(),

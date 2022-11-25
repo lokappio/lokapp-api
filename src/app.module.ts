@@ -12,6 +12,7 @@ import GroupModule from "./groups/group.module";
 import InvitationModule from "./invitations/invitation.module";
 import { TerminusModule } from '@nestjs/terminus';
 import { HealthController } from './health/health.controller';
+import ImportModule from "./import/import.module";
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { HealthController } from './health/health.controller';
     TranslationModule,
     GroupModule,
     DatabaseModule,
+    ImportModule,
     ConfigModule.forRoot({
       validationSchema: Joi.object({
         DATABASE_URL: Joi.string().required()
