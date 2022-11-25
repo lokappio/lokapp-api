@@ -2,6 +2,7 @@ import {Module} from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import Group from "src/groups/group.entity";
 import Language from "src/languages/language.entity";
+import TranslationModule from "src/translation/translation.module";
 import TranslationKey from "src/translation/translation_key.entity";
 import TranslationValue from "src/translation/translation_value.entity";
 import UserProject from "src/users-projects/user_project.entity";
@@ -18,7 +19,8 @@ import ProjectsService from "./projects.service";
       Group,
       TranslationKey,
       TranslationValue,
-    ])
+    ]),
+    TranslationModule
   ],
   controllers: [ProjectsController],
   providers: [ProjectsService],

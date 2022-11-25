@@ -1,4 +1,4 @@
-import {Module} from "@nestjs/common";
+import {forwardRef, Module} from "@nestjs/common";
 import TranslationController from "./translation.controller";
 import TranslationService from "./translation.service";
 import ProjectsModule from "../projects/projects.module";
@@ -13,7 +13,7 @@ import TranslationValue from "./translation_value.entity";
       TranslationKey,
       TranslationValue,
     ]),
-    ProjectsModule,
+    forwardRef(() => ProjectsModule),
     GroupModule
   ],
   controllers: [TranslationController],

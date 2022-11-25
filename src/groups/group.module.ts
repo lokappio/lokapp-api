@@ -1,4 +1,4 @@
-import {Module} from "@nestjs/common";
+import {forwardRef, Module} from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import ProjectsModule from "../projects/projects.module";
 import GroupController from "./group.controller";
@@ -8,7 +8,7 @@ import GroupService from "./group.service";
 @Module({
   imports: [
     TypeOrmModule.forFeature([Group]),
-    ProjectsModule,
+    forwardRef(() => ProjectsModule),
   ],
   controllers: [GroupController],
   providers: [GroupService],

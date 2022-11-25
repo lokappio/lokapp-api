@@ -1,4 +1,4 @@
-import {ForbiddenException, Injectable, MethodNotAllowedException, NotFoundException} from "@nestjs/common";
+import {ForbiddenException, forwardRef, Inject, Injectable, MethodNotAllowedException, NotFoundException} from "@nestjs/common";
 import CreateProjectDto from "./dto/create-project.dto";
 import Project from "./project.entity";
 import {InjectRepository} from "@nestjs/typeorm";
@@ -17,6 +17,7 @@ import TranslationValue from "../translation/translation_value.entity";
 import TranslationKey from "../translation/translation_key.entity";
 import DetailedProject from "./detailed-model/detailed-project.model";
 import QuantityString from "../translation/quantity_string.enum";
+import TranslationService from "src/translation/translation.service";
 
 @Injectable()
 export default class ProjectsService {
@@ -32,7 +33,8 @@ export default class ProjectsService {
     @InjectRepository(TranslationValue)
     private readonly valueRepository: Repository<TranslationValue>,
     @InjectRepository(TranslationKey)
-    private readonly keyRepository: Repository<TranslationKey>
+    private readonly keyRepository: Repository<TranslationKey>,
+    @Inject(forwardRef(() => TranslationService)) private readonly translationService: TranslationService,
     ) {
   }
 
@@ -96,6 +98,11 @@ export default class ProjectsService {
     group.name = DefaultGroupName;
     group.project = createdProject;
     await this.groupRepository.save(group);
+
+
+    if (createProjectDto.keys) {
+      await this.translationService.createTranslationKeys(userId, createdProject.id, createProjectDto.keys);
+    }
 
     return createdProject;
   }

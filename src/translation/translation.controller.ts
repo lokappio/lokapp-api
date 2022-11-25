@@ -51,6 +51,20 @@ export default class TranslationController {
     return this.translationService.createTranslationKey(userId, projectId, createKeyDto);
   }
 
+
+  @Post("/keys")
+  @Roles(Role.Owner, Role.Manager, Role.Editor)
+  @ApiOperation({summary: "Create new translation keys"})
+  @ApiBadRequestResponse({description: "BadRequest"})
+  @ApiUnprocessableEntityResponse({description: "Unprocessable"})
+  @ApiCreatedResponse({type: [TranslationKey] })
+  public createKeys(
+    @UserId() userId: string,
+    @Param("projectId", ParseIntPipe) projectId: number,
+    @Body(new JoiValidationPipe(CreateKeyDto.arraySchema)) createKeysDto: CreateKeyDto[]): Promise<TranslationKey[]> {
+    return this.translationService.createTranslationKeys(userId, projectId, createKeysDto);
+  }
+
   @Get()
   @ApiOperation({summary: "Get the list of translation keys within the project"})
   @ApiOkResponse({type: [TranslationKey]})
