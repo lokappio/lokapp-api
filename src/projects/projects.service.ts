@@ -18,6 +18,7 @@ import TranslationKey from "../translation/translation_key.entity";
 import DetailedProject from "./detailed-model/detailed-project.model";
 import QuantityString from "../translation/quantity_string.enum";
 import TranslationService from "src/translation/translation.service";
+import GroupService from "src/groups/group.service";
 
 @Injectable()
 export default class ProjectsService {
@@ -35,8 +36,8 @@ export default class ProjectsService {
     @InjectRepository(TranslationKey)
     private readonly keyRepository: Repository<TranslationKey>,
     @Inject(forwardRef(() => TranslationService)) private readonly translationService: TranslationService,
-    ) {
-  }
+    @Inject(forwardRef(() => GroupService)) private readonly groupService: GroupService,
+  ) {}
 
   public async createUserProjectRelation(userId: string, projectId: number, role: Role): Promise<any> {
     return getManager()
@@ -99,9 +100,17 @@ export default class ProjectsService {
     group.project = createdProject;
     await this.groupRepository.save(group);
 
+    if (createProjectDto.groups) {
+      for (let group of createProjectDto.groups) {
+        if (group.name !== DefaultGroupName) {
+          this.groupService.createGroup(userId, createdProject.id, group);
+        }
 
-    if (createProjectDto.keys) {
-      await this.translationService.createTranslationKeys(userId, createdProject.id, createProjectDto.keys);
+        for (let key of group.keys) {
+          key.groupName = group.name;
+          this.translationService.createTranslationKey(userId, createdProject.id, key);
+        }
+      }
     }
 
     return createdProject;

@@ -1,6 +1,7 @@
-import {Module} from "@nestjs/common";
+import {forwardRef, Module} from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import Group from "src/groups/group.entity";
+import GroupModule from "src/groups/group.module";
 import Language from "src/languages/language.entity";
 import TranslationModule from "src/translation/translation.module";
 import TranslationKey from "src/translation/translation_key.entity";
@@ -20,7 +21,8 @@ import ProjectsService from "./projects.service";
       TranslationKey,
       TranslationValue,
     ]),
-    TranslationModule
+    TranslationModule,
+    GroupModule,
   ],
   controllers: [ProjectsController],
   providers: [ProjectsService],

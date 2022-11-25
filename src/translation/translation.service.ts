@@ -11,7 +11,7 @@ import UpdateValueDto from "./dto/update-value.dto";
 import UpdateKeyDto from "./dto/update-key.dto";
 import GroupService from "../groups/group.service";
 import QuantityString from "./quantity_string.enum";
-import Group from "../groups/group.entity";
+import Group, { DefaultGroupName } from "../groups/group.entity";
 import CreateGroupDto from "../groups/dto/create-group.dto";
 
 @Injectable()
@@ -21,8 +21,8 @@ export default class TranslationService {
     private readonly translationKeyRepository: Repository<TranslationKey>,
     @InjectRepository(TranslationValue)
     private readonly translationValueRepository: Repository<TranslationValue>,
-    private readonly projectsService: ProjectsService,
-    private readonly groupsService: GroupService
+    @Inject(forwardRef(() => ProjectsService)) private readonly projectsService: ProjectsService,
+    @Inject(forwardRef(() => GroupService)) private readonly groupsService: GroupService
   ) {
   }
 
@@ -64,7 +64,8 @@ export default class TranslationService {
 
     // Check DTO as groupId or groupName
     if (createKeyDto.groupId == null && createKeyDto.groupName == null) {
-      throw new BadRequestException(null, "Must have a groupId or a groupName");
+      createKeyDto.groupName = DefaultGroupName;
+      //throw new BadRequestException(null, "Must have a groupId or a groupName");
     }
 
     // Find or create the group
