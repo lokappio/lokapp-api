@@ -64,8 +64,7 @@ export default class TranslationService {
 
     // Check DTO as groupId or groupName
     if (createKeyDto.groupId == null && createKeyDto.groupName == null) {
-      createKeyDto.groupName = DefaultGroupName;
-      //throw new BadRequestException(null, "Must have a groupId or a groupName");
+      throw new BadRequestException(null, "Must have a groupId or a groupName");
     }
 
     // Find or create the group

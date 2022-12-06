@@ -17,8 +17,8 @@ import TranslationValue from "../translation/translation_value.entity";
 import TranslationKey from "../translation/translation_key.entity";
 import DetailedProject from "./detailed-model/detailed-project.model";
 import QuantityString from "../translation/quantity_string.enum";
-import TranslationService from "src/translation/translation.service";
-import GroupService from "src/groups/group.service";
+import TranslationService from "../translation/translation.service";
+import GroupService from "../groups/group.service";
 
 @Injectable()
 export default class ProjectsService {

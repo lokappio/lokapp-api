@@ -1,8 +1,6 @@
-import Group from "../../src/groups/group.entity";
 import {Repository} from "typeorm";
 import {Test, TestingModuleBuilder} from "@nestjs/testing";
 import UsersModule from "../../src/users/users.module";
-import AuthModule from "../../src/auth/auth.module";
 import ProjectsModule from "../../src/projects/projects.module";
 import TestDatabaseModule from "../database/test-database.module";
 import {getRepositoryToken} from "@nestjs/typeorm";
@@ -17,14 +15,16 @@ import InvitationModule from "../../src/invitations/invitation.module";
 import TranslationModule from "../../src/translation/translation.module";
 import Role from "../../src/roles/role.enum";
 import QuantityString from "../../src/translation/quantity_string.enum";
+import Group from "../../src/groups/group.entity";
+import AuthModule from "../../src/auth/auth.module";
 
 export default class TestsHelpers {
   public static getTestingModule(): TestingModuleBuilder {
     return Test.createTestingModule({
       imports: [
         UsersModule,
-        AuthModule,
         ProjectsModule,
+        AuthModule,
         GroupModule,
         InvitationModule,
         TranslationModule,
