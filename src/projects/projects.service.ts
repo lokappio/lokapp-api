@@ -101,12 +101,10 @@ export default class ProjectsService {
     await this.groupRepository.save(group);
 
     if (createProjectDto.groups) {
-      for (let group of createProjectDto.groups) {
-        if (group.name !== DefaultGroupName) {
-          this.groupService.createGroup(userId, createdProject.id, group);
-        }
+      for (let groupDto of createProjectDto.groups) {
+        let group = await this.groupService.findOrCreateGroup(userId, createdProject.id, groupDto);
 
-        for (let key of group.keys) {
+        for (let key of groupDto.keys) {
           key.groupName = group.name;
           this.translationService.createTranslationKey(userId, createdProject.id, key);
         }
