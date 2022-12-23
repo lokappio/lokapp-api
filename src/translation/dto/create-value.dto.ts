@@ -25,6 +25,7 @@ export default class CreateValueDto extends BaseDto {
 
   public name: string;
   public languageId: number;
+  public languageName: string;
   public keyId: number;
   public quantityString: string;
 }

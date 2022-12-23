@@ -1,18 +1,18 @@
-import {BadRequestException, forwardRef, Inject, Injectable, NotFoundException, UnprocessableEntityException} from "@nestjs/common";
-import {InjectRepository} from "@nestjs/typeorm";
-import {QueryFailedErrorType} from "../common/query-error.filter";
+import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException, UnprocessableEntityException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { IsNull, Not, Repository } from "typeorm";
+import { QueryFailedErrorType } from "../common/query-error.filter";
+import CreateGroupDto from "../groups/dto/create-group.dto";
+import Group from "../groups/group.entity";
+import GroupService from "../groups/group.service";
 import ProjectsService from "../projects/projects.service";
-import {IsNull, Not, Repository} from "typeorm";
 import CreateKeyDto from "./dto/create-key.dto";
+import CreateValueDto from "./dto/create-value.dto";
+import UpdateKeyDto from "./dto/update-key.dto";
+import UpdateValueDto from "./dto/update-value.dto";
+import QuantityString from "./quantity_string.enum";
 import TranslationKey from "./translation_key.entity";
 import TranslationValue from "./translation_value.entity";
-import CreateValueDto from "./dto/create-value.dto";
-import UpdateValueDto from "./dto/update-value.dto";
-import UpdateKeyDto from "./dto/update-key.dto";
-import GroupService from "../groups/group.service";
-import QuantityString from "./quantity_string.enum";
-import Group, { DefaultGroupName } from "../groups/group.entity";
-import CreateGroupDto from "../groups/dto/create-group.dto";
 
 @Injectable()
 export default class TranslationService {
