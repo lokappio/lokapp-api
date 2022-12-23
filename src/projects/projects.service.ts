@@ -118,7 +118,7 @@ export default class ProjectsService {
 
         for (let key of groupDto.keys) {
           key.groupName = group.name;
-          this.translationService.createTranslationKey(userId, createdProject.id, key);
+          await this.translationService.createTranslationKey(userId, createdProject.id, key);
         }
       }
     }
