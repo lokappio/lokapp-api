@@ -1,18 +1,18 @@
-import {BadRequestException, Injectable, NotFoundException, UnprocessableEntityException} from "@nestjs/common";
-import {InjectRepository} from "@nestjs/typeorm";
-import {QueryFailedErrorType} from "../common/query-error.filter";
+import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException, UnprocessableEntityException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { IsNull, Not, Repository } from "typeorm";
+import { QueryFailedErrorType } from "../common/query-error.filter";
+import CreateGroupDto from "../groups/dto/create-group.dto";
+import Group from "../groups/group.entity";
+import GroupService from "../groups/group.service";
 import ProjectsService from "../projects/projects.service";
-import {IsNull, Not, Repository} from "typeorm";
 import CreateKeyDto from "./dto/create-key.dto";
+import CreateValueDto from "./dto/create-value.dto";
+import UpdateKeyDto from "./dto/update-key.dto";
+import UpdateValueDto from "./dto/update-value.dto";
+import QuantityString from "./quantity_string.enum";
 import TranslationKey from "./translation_key.entity";
 import TranslationValue from "./translation_value.entity";
-import CreateValueDto from "./dto/create-value.dto";
-import UpdateValueDto from "./dto/update-value.dto";
-import UpdateKeyDto from "./dto/update-key.dto";
-import GroupService from "../groups/group.service";
-import QuantityString from "./quantity_string.enum";
-import Group from "../groups/group.entity";
-import CreateGroupDto from "../groups/dto/create-group.dto";
 
 @Injectable()
 export default class TranslationService {
@@ -21,8 +21,8 @@ export default class TranslationService {
     private readonly translationKeyRepository: Repository<TranslationKey>,
     @InjectRepository(TranslationValue)
     private readonly translationValueRepository: Repository<TranslationValue>,
-    private readonly projectsService: ProjectsService,
-    private readonly groupsService: GroupService
+    @Inject(forwardRef(() => ProjectsService)) private readonly projectsService: ProjectsService,
+    @Inject(forwardRef(() => GroupService)) private readonly groupsService: GroupService
   ) {
   }
 
@@ -50,6 +50,12 @@ export default class TranslationService {
         groupId: groupId
       }
     });
+  }
+
+  public async createTranslationKeys(userId: string, projectId: number, createKeysDto: CreateKeyDto[]): Promise<TranslationKey[]> {
+    return await Promise.all(createKeysDto.map(async (createKeyDto) =>
+      this.createTranslationKey(userId, projectId, createKeyDto)
+    ));
   }
 
   public async createTranslationKey(userId: string, projectId: number, createKeyDto: CreateKeyDto): Promise<TranslationKey> {
@@ -83,20 +89,27 @@ export default class TranslationService {
     key.group = group;
     const createdKey = await this.translationKeyRepository.save(key);
 
-    // Create all default values for this key
-    const languages = await this.projectsService.getAllLanguages(userId, projectId);
-    for (const language of languages) {
-      if (key.isPlural) {
-        // For plural key, create all 3 values by default
-        await Promise.all(
-          Object.values(QuantityString).map(async (quantity) => {
-            return this.createValue(userId, projectId, createdKey.id, new CreateValueDto({name: "", languageId: language.id, quantityString: quantity}));
-          })
-        );
-      } else {
-        // For singular key, create a default value with an empty name
-        await this.createValue(userId, projectId, createdKey.id, new CreateValueDto({name: "", languageId: language.id, quantityString: null}));
+    if(createKeyDto.values === null || createKeyDto.values === undefined || createKeyDto.values.length === 0){
+      // Create all default values for this key
+      const languages = await this.projectsService.getAllLanguages(userId, projectId);
+      for (const language of languages) {
+        if (key.isPlural) {
+          // For plural key, create all 3 values by default
+          await Promise.all(
+            Object.values(QuantityString).map(async (quantity) => {
+              return this.createValue(userId, projectId, createdKey.id, new CreateValueDto({name: "", languageId: language.id, quantityString: quantity}));
+            })
+          );
+        } else {
+          // For singular key, create a default value with an empty name
+          await this.createValue(userId, projectId, createdKey.id, new CreateValueDto({name: "", languageId: language.id, quantityString: null}));
+        }
       }
+    } else {
+      //Create values from DTO
+      await Promise.all(createKeyDto.values.map(async (value) => {
+        await this.createValue(userId, projectId, createdKey.id, value);
+      }))
     }
 
     return createdKey;

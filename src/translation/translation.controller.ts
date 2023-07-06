@@ -1,4 +1,4 @@
-import {Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Patch, Post, Query, UseGuards} from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -11,21 +11,21 @@ import {
   ApiUnauthorizedResponse,
   ApiUnprocessableEntityResponse
 } from "@nestjs/swagger";
-import {ApiImplicitQueries} from "nestjs-swagger-api-implicit-queries-decorator";
-import {JwtAuthUserGuard} from "../auth/guards/jwt-auth-user.guard";
-import {JoiValidationPipe} from "../common/joi-validation.pipe";
-import {UserId} from "../users/user-id.decorator";
+import { ApiImplicitQueries } from "nestjs-swagger-api-implicit-queries-decorator";
+import { JwtAuthUserGuard } from "../auth/guards/jwt-auth-user.guard";
+import { JoiValidationPipe } from "../common/joi-validation.pipe";
+import { Roles } from "../roles/role.decorator";
+import Role from "../roles/role.enum";
+import { RolesGuard } from "../roles/roles.guard";
+import { UserId } from "../users/user-id.decorator";
 import CreateKeyDto from "./dto/create-key.dto";
-import UpdateKeyDto from "./dto/update-key.dto";
 import CreateValueDto from "./dto/create-value.dto";
+import GetTranslationValueDto from "./dto/get-value.dto";
+import UpdateKeyDto from "./dto/update-key.dto";
 import UpdateValueDto from "./dto/update-value.dto";
 import TranslationService from "./translation.service";
 import TranslationKey from "./translation_key.entity";
 import TranslationValue from "./translation_value.entity";
-import {Roles} from "../roles/role.decorator";
-import Role from "../roles/role.enum";
-import {RolesGuard} from "../roles/roles.guard";
-import GetTranslationValueDto from "./dto/get-value.dto";
 
 @ApiBearerAuth()
 @ApiTags("Translation")
@@ -49,6 +49,20 @@ export default class TranslationController {
     @Param("projectId", ParseIntPipe) projectId: number,
     @Body(new JoiValidationPipe(CreateKeyDto.schema)) createKeyDto: CreateKeyDto): Promise<TranslationKey> {
     return this.translationService.createTranslationKey(userId, projectId, createKeyDto);
+  }
+
+
+  @Post("/keys")
+  @Roles(Role.Owner, Role.Manager, Role.Editor)
+  @ApiOperation({summary: "Create new translation keys"})
+  @ApiBadRequestResponse({description: "BadRequest"})
+  @ApiUnprocessableEntityResponse({description: "Unprocessable"})
+  @ApiCreatedResponse({type: [TranslationKey] })
+  public createKeys(
+    @UserId() userId: string,
+    @Param("projectId", ParseIntPipe) projectId: number,
+    @Body(new JoiValidationPipe(CreateKeyDto.arraySchema)) createKeysDto: CreateKeyDto[]): Promise<TranslationKey[]> {
+    return this.translationService.createTranslationKeys(userId, projectId, createKeysDto);
   }
 
   @Get()

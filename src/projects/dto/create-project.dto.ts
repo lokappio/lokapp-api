@@ -1,4 +1,5 @@
 import * as Joi from "@hapi/joi";
+import CreateGroupDto from "src/groups/dto/create-group.dto";
 import BaseDto from "../../data/base.dto";
 
 export default class CreateProjectDto extends BaseDto {
@@ -16,13 +17,17 @@ export default class CreateProjectDto extends BaseDto {
       .string()
       .optional()
       .allow(null, ''),
-    language: Joi
-      .string()
+    languages: Joi
+      .array()
+      .optional(),
+    groups: Joi
+      .array()
       .optional()
   });
 
   public name: string;
   public color: string;
   public description?: string;
-  public language?: string;
+  public languages?: string[];
+  public groups?: CreateGroupDto[];
 }

@@ -1,22 +1,24 @@
-import {ForbiddenException, Injectable, MethodNotAllowedException, NotFoundException} from "@nestjs/common";
-import CreateProjectDto from "./dto/create-project.dto";
-import Project from "./project.entity";
-import {InjectRepository} from "@nestjs/typeorm";
-import {getManager, In, Repository} from "typeorm";
+import { ForbiddenException, forwardRef, Inject, Injectable, MethodNotAllowedException, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { getManager, In, Repository } from "typeorm";
+import Group, { DefaultGroupName } from "../groups/group.entity";
+import GroupService from "../groups/group.service";
+import { InvitationTableName } from "../invitations/invitation.entity";
 import Language from "../languages/language.entity";
-import CreateLanguageDto from "./dto/create-language.dto";
-import UpdateProjectDto from "./dto/update-project.dto";
-import UserProject, {UsersProjectsTableName} from "../users-projects/user_project.entity";
 import Role from "../roles/role.enum";
-import ProjectUser from "./model/project-user.model";
-import Invitation, {InvitationTableName} from "../invitations/invitation.entity";
-import UpdateRoleDto from "./dto/update-role.dto";
-import {UsersTableName} from "../users/user.entity";
-import Group, {DefaultGroupName} from "../groups/group.entity";
-import TranslationValue from "../translation/translation_value.entity";
-import TranslationKey from "../translation/translation_key.entity";
-import DetailedProject from "./detailed-model/detailed-project.model";
 import QuantityString from "../translation/quantity_string.enum";
+import TranslationService from "../translation/translation.service";
+import TranslationKey from "../translation/translation_key.entity";
+import TranslationValue from "../translation/translation_value.entity";
+import UserProject, { UsersProjectsTableName } from "../users-projects/user_project.entity";
+import { UsersTableName } from "../users/user.entity";
+import DetailedProject from "./detailed-model/detailed-project.model";
+import CreateLanguageDto from "./dto/create-language.dto";
+import CreateProjectDto from "./dto/create-project.dto";
+import UpdateProjectDto from "./dto/update-project.dto";
+import UpdateRoleDto from "./dto/update-role.dto";
+import ProjectUser from "./model/project-user.model";
+import Project from "./project.entity";
 
 @Injectable()
 export default class ProjectsService {
@@ -33,9 +35,9 @@ export default class ProjectsService {
     private readonly valueRepository: Repository<TranslationValue>,
     @InjectRepository(TranslationKey)
     private readonly keyRepository: Repository<TranslationKey>,
-    @InjectRepository(Invitation)
-    private readonly invitationRepository: Repository<Invitation>) {
-  }
+    @Inject(forwardRef(() => TranslationService)) private readonly translationService: TranslationService,
+    @Inject(forwardRef(() => GroupService)) private readonly groupService: GroupService,
+  ) {}
 
   public async createUserProjectRelation(userId: string, projectId: number, role: Role): Promise<any> {
     return getManager()
@@ -85,9 +87,23 @@ export default class ProjectsService {
     await this.createUserProjectRelation(userId, createdProject.id, Role.Owner);
 
     // Create the first language of the project if provided in the DTO
-    if (createProjectDto.language != null && createProjectDto.language != "") {
-      const createLanguageDto = new CreateLanguageDto({name: createProjectDto.language});
-      await this.createLanguage(userId, createdProject.id, createLanguageDto);
+    if (createProjectDto.languages != null && createProjectDto.languages.length > 0) {
+      await Promise.all(createProjectDto.languages.map(async (language: string) => {
+        const createLanguageDto = new CreateLanguageDto({name: language});
+        const createdLanguage: Language = await this.createLanguage(userId, createdProject.id, createLanguageDto);
+        
+        createProjectDto.groups.forEach(group => {
+          group.keys.forEach(key => {
+            key.values.forEach(value => {
+              if (value.languageName != language) {
+                return
+              }
+              
+              value.languageId = createdLanguage.id
+            })
+          })
+        })
+      }))
     }
 
     // Create default group
@@ -95,6 +111,17 @@ export default class ProjectsService {
     group.name = DefaultGroupName;
     group.project = createdProject;
     await this.groupRepository.save(group);
+
+    if (createProjectDto.groups) {
+      for (let groupDto of createProjectDto.groups) {
+        let group = await this.groupService.findOrCreateGroup(userId, createdProject.id, groupDto);
+
+        for (let key of groupDto.keys) {
+          key.groupName = group.name;
+          await this.translationService.createTranslationKey(userId, createdProject.id, key);
+        }
+      }
+    }
 
     return createdProject;
   }
@@ -161,27 +188,40 @@ export default class ProjectsService {
     // Find all translation keys of the project
     const projectKeys: TranslationKey[] = await this.keyRepository.find({projectId: projectId});
 
-    // For each key, automatically create values in the new added language
-    await Promise.all(projectKeys.map(async (key) => {
-      if (key.isPlural) {
-        await Promise.all(Object.values(QuantityString).map(async (quantity) => {
+    if(!createLanguageDto.values || createLanguageDto.values.length === 0) {
+      // For each key, automatically create values in the new added language
+      await Promise.all(projectKeys.map(async (key) => {
+        if (key.isPlural) {
+          await Promise.all(Object.values(QuantityString).map(async (quantity) => {
+            const value = new TranslationValue();
+            value.name = "";
+            value.key = key;
+            value.quantityString = quantity;
+            value.language = language;
+
+            return await this.valueRepository.save(value);
+          }));
+        } else {
           const value = new TranslationValue();
           value.name = "";
           value.key = key;
-          value.quantityString = quantity;
           value.language = language;
 
           return await this.valueRepository.save(value);
-        }));
-      } else {
-        const value = new TranslationValue();
-        value.name = "";
-        value.key = key;
-        value.language = language;
+        }
+      }));
+    } else {
+      //Create values from DTO
+      await Promise.all(createLanguageDto.values.map(async (value) => {
+        const translationValue = new TranslationValue();
+        translationValue.keyId = value.keyId;
+        translationValue.language = language;
+        translationValue.name = value.name;
+        translationValue.quantityString = value.quantityString;
 
-        return await this.valueRepository.save(value);
-      }
-    }));
+        return await this.valueRepository.save(translationValue);
+      }))
+    }
 
     return createdLanguage;
   }
@@ -200,6 +240,7 @@ export default class ProjectsService {
   public async getLanguage(userId: string, projectId: number, languageId: number): Promise<Language> {
     const project = await this.getProject(userId, projectId);
     const language: Language = await this.languagesRepository.findOne(languageId);
+
     if (!language || language.projectId != project.id) {
       throw new NotFoundException();
     }

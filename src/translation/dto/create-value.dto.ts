@@ -9,6 +9,10 @@ export default class CreateValueDto extends BaseDto {
       .allow('')
       .required(),
 
+    keyId: Joi
+      .number()
+      .optional(),
+
     languageId: Joi
       .number()
       .required(),
@@ -21,5 +25,7 @@ export default class CreateValueDto extends BaseDto {
 
   public name: string;
   public languageId: number;
+  public languageName: string;
+  public keyId: number;
   public quantityString: string;
 }

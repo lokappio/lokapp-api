@@ -32,6 +32,12 @@ export default class GroupService {
     return group;
   }
 
+  public async createGroups(userId: string, projectId: number, createGroupDtos: CreateGroupDto[]): Promise<void> {
+    for (const createGroupDto of createGroupDtos) {
+      await this.createGroup(userId, projectId, createGroupDto);
+    }
+  }
+
   public async createGroup(userId: string, projectId: number, createGroupDto: CreateGroupDto): Promise<Group> {
     const project = await this.projectsService.getProject(userId, projectId);
     const sameGroups = await this.groupRepository.find({
@@ -42,6 +48,7 @@ export default class GroupService {
         }
       }
     });
+
     if (sameGroups.length > 0) {
       throw new UnprocessableEntityException(QueryFailedErrorType.GROUP_ALREADY_EXISTS);
     }
