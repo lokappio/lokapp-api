@@ -26,6 +26,8 @@ export default class CreateKeyDto extends BaseDto {
       .array()
   });
 
+  public static arraySchema: Joi.ArraySchema = Joi.array().items(CreateKeyDto.schema);
+
   public name: string;
   public groupId?: number;
   public groupName?: string;
