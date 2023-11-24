@@ -157,4 +157,4 @@ Distributed under the Apache 2.0 License. See `LICENSE` for more information.
   <img src="documentation/playmoweb-logo.png" alt="Playmoweb-Logo" width="64">
 </a>
 
-*Lokapp* is built by [Playmoweb](https://playmoweb.com), a mobile agency building web apps and native Android and iOS applications.
+*Lokapp* is built by [Playmoweb](https://playmoweb.com), a mobile agency building web apps, native Android and iOS applications.
