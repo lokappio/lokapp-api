@@ -88,7 +88,7 @@ describe("Invitations", () => {
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
         .send({email: "user@lokapp.io", role: Role.Manager});
-      expect(noProjectIdResp.status).toEqual(403);
+      expect(noProjectIdResp.status).toEqual(400);
 
       const noRoleResp = await request(app.getHttpServer())
         .post("/invitations")
@@ -111,7 +111,7 @@ describe("Invitations", () => {
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
         .send({});
-      expect(noDataResp.status).toEqual(403);
+      expect(noDataResp.status).toEqual(400);
     });
 
     it("Inviting a user that does not exist", async () => {
@@ -207,7 +207,7 @@ describe("Invitations", () => {
           userId: TestsHelpers.MOCKED_USER_ID_3
         }
       });
-      expect(projectRelation).not.toBeUndefined();
+      expect(projectRelation).not.toBeNull();
       expect(projectRelation).not.toBeNull();
       expect(projectRelation.role).toEqual(dto.role);
 
@@ -248,7 +248,7 @@ describe("Invitations", () => {
           userId: TestsHelpers.MOCKED_USER_ID_3
         }
       });
-      expect(projectRelation).toBeUndefined();
+      expect(projectRelation).toBeNull();
 
       const remainingInvitations = await invitationRepository.find({
         where: {
@@ -348,7 +348,7 @@ describe("Invitations", () => {
       // Add user2 into the project
       const relation = new UserProject();
       relation.project = populatedProjects[0];
-      relation.user = await userRepository.findOne(TestsHelpers.MOCKED_USER_ID_2);
+      relation.user = await userRepository.findOneById(TestsHelpers.MOCKED_USER_ID_2);
       relation.role = Role.Manager;
       await userProjectRepository.save(relation);
 

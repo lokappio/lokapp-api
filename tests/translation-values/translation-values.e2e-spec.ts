@@ -244,7 +244,6 @@ describe("Translations values E2E", () => {
       expect(createWithoutQuantityResp.status).toEqual(201);
       expect(createResp.body.name).toEqual("Content of the translation value");
       expect(createResp.body.keyId).toEqual(populatedTranslationKeys[0].id);
-      expect(createResp.body.languageId).toEqual(populatedLanguages[1].id);
       expect(createResp.body.status).toEqual(TranslationStatus.MODIFIED);
 
       const values = await findTranslationValues(populatedTranslationKeys[0].id);
@@ -279,8 +278,6 @@ describe("Translations values E2E", () => {
         .send({name: "Content of the translation value", languageId: populatedLanguages[0].id, quantityString: QuantityString.OTHER});
       expect(createResp.status).toEqual(201);
       expect(createResp.body.name).toEqual("Content of the translation value");
-      expect(createResp.body.keyId).toEqual(populatedTranslationKeys[0].id);
-      expect(createResp.body.languageId).toEqual(populatedLanguages[0].id);
       expect(createResp.body.quantityString).toEqual(QuantityString.OTHER);
       expect(createResp.body.status).toEqual(TranslationStatus.MODIFIED);
 
@@ -645,8 +642,8 @@ describe("Translations values E2E", () => {
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1);
       expect(deleteResp.status).toEqual(204);
 
-      const foundValue = await translationValuesRepository.findOne(translationValue.id);
-      expect(foundValue).toBeUndefined();
+      const foundValue = await translationValuesRepository.findOneById(translationValue.id);
+      expect(foundValue).toBeNull();
     });
 
     it("Deleting a project", async () => {

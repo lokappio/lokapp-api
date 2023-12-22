@@ -1,4 +1,4 @@
-import {ForbiddenException, Injectable, NotFoundException, UnauthorizedException, UnprocessableEntityException} from "@nestjs/common";
+import {ForbiddenException, forwardRef, Inject, Injectable, Logger, NotFoundException, UnauthorizedException, UnprocessableEntityException} from "@nestjs/common";
 import {InjectRepository} from "@nestjs/typeorm";
 import ProjectsService from "../projects/projects.service";
 import {getManager, Repository} from "typeorm";
@@ -21,6 +21,8 @@ export default class InvitationService {
   ) {
   }
 
+  private readonly logger = new Logger("InvitationService");
+
   public async createInvitation(userId: string, createInvitationDto: CreateInvitationDto): Promise<Invitation> {
     const project: Project = await this.projectsService.getProject(userId, createInvitationDto.projectId);
     const guest: User = await this.usersService.getUserByEmail(createInvitationDto.email);
@@ -40,19 +42,22 @@ export default class InvitationService {
   }
 
   public async getInvitationsForUser(userId: string): Promise<UserInvitation[]> {
-    return await getManager()
-      .createQueryBuilder()
-      .select(["invitations.role AS role", "invitations.id AS id", "owner.email AS owner_email", "owner.username AS owner_username", "project.name AS project_name"])
-      .from(InvitationTableName, "invitations")
-      .leftJoin(UsersTableName, "owner", "invitations.ownerId = owner.id")
-      .leftJoin(ProjectsTableName, "project", "invitations.projectId = project.id")
-      .where("invitations.guestId = :guestId")
-      .setParameters({guestId: userId})
-      .getRawMany();
+    return (await this.invitationRepository.find({
+      relations: ["owner", "project"],
+      where: {guestId: userId}
+    })).map((invitation) => {
+      return new UserInvitation(
+        invitation.role,
+        invitation.id,
+        invitation.owner.email,
+        invitation.owner.username,
+        invitation.project.name
+      )
+    });
   }
 
   public async acceptInvitation(userId: string, invitationId: number): Promise<void> {
-    const invitation = await this.invitationRepository.findOne(invitationId);
+    const invitation = await this.invitationRepository.findOneById(invitationId);
     if (!invitation) {
       throw new NotFoundException();
     }
@@ -64,7 +69,7 @@ export default class InvitationService {
   }
 
   public async declineInvitation(userId: string, invitationId: number): Promise<void> {
-    const invitation = await this.invitationRepository.findOne(invitationId);
+    const invitation = await this.invitationRepository.findOneById(invitationId);
     if (!invitation) {
       throw new NotFoundException();
     }
@@ -75,7 +80,7 @@ export default class InvitationService {
   }
 
   public async deleteInvitation(userId: string, invitationId: number): Promise<void> {
-    const invitation = await this.invitationRepository.findOne(invitationId);
+    const invitation = await this.invitationRepository.findOneById(invitationId);
     if (!invitation) {
       throw new NotFoundException();
     }

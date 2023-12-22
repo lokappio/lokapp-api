@@ -18,6 +18,7 @@ import * as request from "supertest";
 import CreateInvitationDto from "../../src/invitations/dto/create-invitation.dto";
 import Invitation from "../../src/invitations/invitation.entity";
 import CreateLanguageDto from "../../src/projects/dto/create-language.dto";
+import TranslationStatus from "../../src/translation/translation_status.enum";
 
 describe("Roles E2E", () => {
   let app: INestApplication;
@@ -1172,6 +1173,21 @@ describe("Roles E2E", () => {
         expect(translationValueResp.status).toEqual(200);
       });
 
+      it("Translator CAN'T update a translation status", async () => {
+        const group = await insertGroup("Name of the group");
+        const language = await insertLanguage("English");
+        const key = await insertTranslationKey("translation_key", group);
+        const value = await insertTranslationValue("Translated value", key, language);
+        const translationValueResp = await request(app.getHttpServer())
+          .patch(`/projects/${project.id}/translations/${key.id}/values/${value.id}/status`)
+          .auth("mocked.jwt", {type: "bearer"})
+          .set("mocked_user_id", TranslatorID)
+          .send({
+            status: TranslationStatus.VALIDATED,
+          });
+        expect(translationValueResp.status).toEqual(403);
+      });
+
       it("Translator can delete a translation value", async () => {
         const group = await insertGroup("Name of the group");
         const key = await insertTranslationKey("translation_key", group);
@@ -1435,6 +1451,22 @@ describe("Roles E2E", () => {
           .set("mocked_user_id", ReviewerID)
           .send({name: "Edited translation"});
         expect(translationValueResp.status).toEqual(403);
+      });
+
+      it("Reviewer can update a translation status", async () => {
+        const group = await insertGroup("Name of the group");
+        const language = await insertLanguage("English");
+        const key = await insertTranslationKey("translation_key", group);
+        const value = await insertTranslationValue("Translated value", key, language);
+        const translationValueResp = await request(app.getHttpServer())
+          .patch(`/projects/${project.id}/translations/${key.id}/values/${value.id}/status`)
+          .auth("mocked.jwt", {type: "bearer"})
+          .set("mocked_user_id", ReviewerID)
+          .send({
+            status: TranslationStatus.VALIDATED,
+          });
+        expect(translationValueResp.status).toEqual(200);
+        expect(translationValueResp.body.status).toEqual(TranslationStatus.VALIDATED);
       });
 
       it("Reviewer CAN'T delete a translation value", async () => {

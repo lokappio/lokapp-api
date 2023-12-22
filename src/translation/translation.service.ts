@@ -1,7 +1,7 @@
-import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException, UnprocessableEntityException } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { IsNull, Not, Repository } from "typeorm";
-import { QueryFailedErrorType } from "../common/query-error.filter";
+import {BadRequestException, forwardRef, Inject, Injectable, NotFoundException, UnprocessableEntityException} from "@nestjs/common";
+import {InjectRepository} from "@nestjs/typeorm";
+import {IsNull, Not, Repository} from "typeorm";
+import {QueryFailedErrorType} from "../common/query-error.filter";
 import CreateGroupDto from "../groups/dto/create-group.dto";
 import Group from "../groups/group.entity";
 import GroupService from "../groups/group.service";
@@ -13,6 +13,8 @@ import UpdateValueDto from "./dto/update-value.dto";
 import QuantityString from "./quantity_string.enum";
 import TranslationKey from "./translation_key.entity";
 import TranslationValue from "./translation_value.entity";
+import TranslationStatus from "./translation_status.enum";
+import UpdateStatusDto from "./dto/update-status.dto";
 
 @Injectable()
 export default class TranslationService {
@@ -117,7 +119,7 @@ export default class TranslationService {
 
   public async getTranslationKey(userId: string, projectId: number, keyId: number): Promise<TranslationKey> {
     const project = await this.projectsService.getProject(userId, projectId);
-    const key: TranslationKey = await this.translationKeyRepository.findOne(keyId);
+    const key: TranslationKey = await this.translationKeyRepository.findOneById(keyId);
     if (!key || key.projectId != project.id) {
       throw new NotFoundException();
     }
@@ -182,7 +184,7 @@ export default class TranslationService {
         // Search for singular translation values
         const singularValues = await this.translationValueRepository.find({
           where: {
-            key: key,
+            keyId: key.id,
             quantityString: IsNull()
           }
         });
@@ -310,7 +312,31 @@ export default class TranslationService {
     updateValueDto: UpdateValueDto
   ): Promise<TranslationValue> {
     const value = await this.getValue(userId, projectId, translationKeyId, valueId);
-    value.name = updateValueDto.name;
+
+    // If current translation is in status MODIFIED, we can update it
+    if (value.status === TranslationStatus.MODIFIED) {
+      value.name = updateValueDto.name;
+      return await this.translationValueRepository.save(value);
+    } else {
+      // If current translation is not in status MODIFIED, we need to create a new one
+      const newValue = new TranslationValue();
+      newValue.keyId = value.keyId;
+      newValue.languageId = value.languageId;
+      newValue.name = updateValueDto.name;
+      newValue.quantityString = value.quantityString;
+      return await this.translationValueRepository.save(newValue);
+    }
+  }
+
+  public async updateStatus(
+    userId: string,
+    projectId: number,
+    translationKeyId: number,
+    valueId: number,
+    updateStatusDto: UpdateStatusDto
+  ): Promise<TranslationValue> {
+    const value = await this.getValue(userId, projectId, translationKeyId, valueId);
+    value.status = <TranslationStatus>updateStatusDto.status;
     return await this.translationValueRepository.save(value);
   }
 
@@ -342,7 +368,14 @@ export default class TranslationService {
 
   public async getValue(userId: string, projectId: number, translationKeyId: number, valueId: number): Promise<TranslationValue> {
     const key = await this.getTranslationKey(userId, projectId, translationKeyId);
-    const value = await this.translationValueRepository.findOne(valueId);
+    const value = await this.translationValueRepository.findOne({
+      where: {
+        id: valueId
+      },
+      order: {
+        createdAt: "DESC"
+      }
+    });
     if (!value || value.keyId !== key.id) {
       throw new NotFoundException();
     }

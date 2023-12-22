@@ -1,17 +1,17 @@
-import { ForbiddenException, forwardRef, Inject, Injectable, MethodNotAllowedException, NotFoundException } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { getManager, In, Repository } from "typeorm";
-import Group, { DefaultGroupName } from "../groups/group.entity";
+import {ForbiddenException, forwardRef, Inject, Injectable, Logger, MethodNotAllowedException, NotFoundException} from "@nestjs/common";
+import {InjectRepository} from "@nestjs/typeorm";
+import {getManager, In, Repository} from "typeorm";
+import Group, {DefaultGroupName} from "../groups/group.entity";
 import GroupService from "../groups/group.service";
-import { InvitationTableName } from "../invitations/invitation.entity";
+import Invitation, {InvitationTableName} from "../invitations/invitation.entity";
 import Language from "../languages/language.entity";
 import Role from "../roles/role.enum";
 import QuantityString from "../translation/quantity_string.enum";
 import TranslationService from "../translation/translation.service";
 import TranslationKey from "../translation/translation_key.entity";
 import TranslationValue from "../translation/translation_value.entity";
-import UserProject, { UsersProjectsTableName } from "../users-projects/user_project.entity";
-import { UsersTableName } from "../users/user.entity";
+import UserProject, {UsersProjectsTableName} from "../users-projects/user_project.entity";
+import User, {UsersTableName} from "../users/user.entity";
 import DetailedProject from "./detailed-model/detailed-project.model";
 import CreateLanguageDto from "./dto/create-language.dto";
 import CreateProjectDto from "./dto/create-project.dto";
@@ -27,8 +27,12 @@ export default class ProjectsService {
     private readonly projectsRepository: Repository<Project>,
     @InjectRepository(Language)
     private readonly languagesRepository: Repository<Language>,
+    @InjectRepository(User)
+    private readonly usersRepository: Repository<User>,
     @InjectRepository(UserProject)
     private readonly usersProjectsRepository: Repository<UserProject>,
+    @InjectRepository(Invitation)
+    private readonly invitationRepository: Repository<Invitation>,
     @InjectRepository(Group)
     private readonly groupRepository: Repository<Group>,
     @InjectRepository(TranslationValue)
@@ -37,19 +41,17 @@ export default class ProjectsService {
     private readonly keyRepository: Repository<TranslationKey>,
     @Inject(forwardRef(() => TranslationService)) private readonly translationService: TranslationService,
     @Inject(forwardRef(() => GroupService)) private readonly groupService: GroupService,
-  ) {}
+  ) {
+  }
+
+  private readonly logger = new Logger("ProjectsService");
 
   public async createUserProjectRelation(userId: string, projectId: number, role: Role): Promise<any> {
-    return getManager()
-      .createQueryBuilder()
-      .insert()
-      .into(UsersProjectsTableName)
-      .values({
-        "projectId": projectId,
-        "userId": userId,
-        "role": role
-      })
-      .execute();
+    return this.usersProjectsRepository.save({
+      "projectId": projectId,
+      "userId": userId,
+      "role": role
+    });
   }
 
   public async doesRelationAlreadyExists(userId: string, projectId: number): Promise<boolean> {
@@ -116,10 +118,10 @@ export default class ProjectsService {
     await this.groupRepository.save(group);
 
     if (createProjectDto.groups) {
-      for (let groupDto of createProjectDto.groups) {
-        let group = await this.groupService.findOrCreateGroup(userId, createdProject.id, groupDto);
+      for (const groupDto of createProjectDto.groups) {
+        const group = await this.groupService.findOrCreateGroup(userId, createdProject.id, groupDto);
 
-        for (let key of groupDto.keys) {
+        for (const key of groupDto.keys) {
           key.groupName = group.name;
           await this.translationService.createTranslationKey(userId, createdProject.id, key);
         }
@@ -130,7 +132,7 @@ export default class ProjectsService {
   }
 
   public async getUserProjects(userId: string): Promise<Project[]> {
-    const usersProjectsSubQuery = getManager()
+    /*const usersProjectsSubQuery = getManager()
       .createQueryBuilder(UsersProjectsTableName, UsersProjectsTableName)
       .select('"projectId"')
       .where('"userId" = :id', {id: userId});
@@ -139,16 +141,27 @@ export default class ProjectsService {
       .createQueryBuilder("project")
       .where("project.id IN (" + usersProjectsSubQuery.getQuery() + ")")
       .setParameters(usersProjectsSubQuery.getParameters())
-      .getMany();
+      .getMany();*/
+
+    return await this.projectsRepository.find({
+      where: {
+        userProjects: {
+          userId: userId
+        }
+      }
+    });
   }
 
   public async getProject(userId: string, projectId: number): Promise<Project> {
-    const project: Project = await this.projectsRepository.findOne(projectId);
-    const canAccessProject = await this.usersProjectsRepository.findOne({
+    const project: Project = await this.projectsRepository.findOne({
+      relations: ["userProjects"],
       where: {
-        userId: userId,
-        projectId: projectId
+        id: projectId
       }
+    });
+    const canAccessProject = await this.usersProjectsRepository.findOneBy({
+      userId: userId,
+      projectId: projectId
     });
 
     if (!project) {
@@ -189,9 +202,9 @@ export default class ProjectsService {
     const createdLanguage = await this.languagesRepository.save(language);
 
     // Find all translation keys of the project
-    const projectKeys: TranslationKey[] = await this.keyRepository.find({projectId: projectId});
+    const projectKeys: TranslationKey[] = await this.keyRepository.findBy({projectId: projectId});
 
-    if(!createLanguageDto.values || createLanguageDto.values.length === 0) {
+    if (!createLanguageDto.values || createLanguageDto.values.length === 0) {
       // For each key, automatically create values in the new added language
       await Promise.all(projectKeys.map(async (key) => {
         if (key.isPlural) {
@@ -242,7 +255,7 @@ export default class ProjectsService {
 
   public async getLanguage(userId: string, projectId: number, languageId: number): Promise<Language> {
     const project = await this.getProject(userId, projectId);
-    const language: Language = await this.languagesRepository.findOne(languageId);
+    const language: Language = await this.languagesRepository.findOneById(languageId);
 
     if (!language || language.projectId != project.id) {
       throw new NotFoundException();
@@ -267,37 +280,38 @@ export default class ProjectsService {
    * */
   public async getUsersOfProject(userId: string, projectId: number): Promise<ProjectUser[]> {
     const project = await this.getProject(userId, projectId);
-    const relations = await getManager()
-      .createQueryBuilder()
-      .select(['"relations"."userId" AS "userId"', '"relations"."role" AS "role"', '"users"."username" AS "username"', '"users"."email" AS "email"'])
-      .from(UsersProjectsTableName, "relations")
-      .leftJoin(UsersTableName, "users", '"relations"."userId" = users.id')
-      .where('"relations"."projectId" = :projectId')
-      .setParameters({projectId: project.id})
-      .getRawMany();
 
-    const invitations = await getManager()
-      .createQueryBuilder()
-      .select(['invitations."guestId" AS "guestId"', 'invitations.id AS id', 'invitations.role AS role', 'users.email AS email', 'users.username AS username'])
-      .from(InvitationTableName, "invitations")
-      .leftJoin(UsersTableName, "users", 'invitations."guestId" = users.id')
-      .where('invitations."projectId" = :projectId')
-      .setParameters({"projectId": project.id})
-      .getRawMany();
+    const relations = await this.usersProjectsRepository.find(
+      {
+        where: {
+          projectId: project.id
+        },
+        relations: ["user"]
+      }
+    ) || [];
 
-    const usersFromRelations = relations.map(relation => new ProjectUser(
-      relation.userId,
-      relation.username,
-      relation.email,
-      relation.role,
-      false,
-      null
-    ));
+    const invitations = await this.invitationRepository.find({
+      where: {
+        projectId: project.id
+      },
+      relations: ["guest"]
+    }) || [];
+
+    const usersFromRelations = relations.map(relation => {
+      return new ProjectUser(
+        relation.userId,
+        relation.user.username,
+        relation.user.email,
+        relation.role,
+        false,
+        null
+      )
+    });
 
     const usersFromInvitations = invitations.map(invitation => new ProjectUser(
       invitation.guestId,
-      invitation.username,
-      invitation.email,
+      invitation.guest.username,
+      invitation.guest.email,
       invitation.role,
       true,
       invitation.id
@@ -353,13 +367,8 @@ export default class ProjectsService {
     changingRelation.role = <Role>updateRoleDto.role;
     const updatedRelation = await this.usersProjectsRepository.save(changingRelation);
 
-    const updatedUser = await getManager()
-      .createQueryBuilder()
-      .select(["users.id AS id", "users.username AS username", "users.email AS email"])
-      .from(UsersTableName, "users")
-      .where("users.id = :userId")
-      .setParameters({userId: userIdToUpdate})
-      .getRawOne();
+    const updatedUser = await this.usersRepository.findOneBy({id: userIdToUpdate})
+
     return new ProjectUser(
       userIdToUpdate,
       updatedUser.username,
@@ -388,7 +397,10 @@ export default class ProjectsService {
     if (relation.role === Role.Owner) {
       throw new ForbiddenException(null, "Can't remove the owner of the project");
     }
-    await this.usersProjectsRepository.delete(relation);
+    await this.usersProjectsRepository.delete({
+      projectId: project.id,
+      userId: userIdToDelete
+    });
   }
 
   public async leaveProject(userId: string, projectId: number): Promise<void> {
@@ -405,7 +417,10 @@ export default class ProjectsService {
     if (relation.role === Role.Owner) {
       await this.projectsRepository.delete(project.id);
     } else {
-      await this.usersProjectsRepository.delete(relation);
+      await this.usersProjectsRepository.delete({
+        projectId: project.id,
+        userId: userId
+      });
     }
   }
 

@@ -498,7 +498,7 @@ describe("Translations keys E2E", () => {
 
       // Add relation
       const relation = new UserProject();
-      relation.user = await userRepository.findOne(TestsHelpers.MOCKED_USER_ID_1);
+      relation.user = await userRepository.findOneById(TestsHelpers.MOCKED_USER_ID_1);
       relation.project = createdProject;
       relation.role = Role.Owner;
       await userProjectRepository.save(relation);
