@@ -91,18 +91,21 @@ export default class ProjectsService {
       await Promise.all(createProjectDto.languages.map(async (language: string) => {
         const createLanguageDto = new CreateLanguageDto({name: language});
         const createdLanguage: Language = await this.createLanguage(userId, createdProject.id, createLanguageDto);
-        
-        createProjectDto.groups.forEach(group => {
-          group.keys.forEach(key => {
-            key.values.forEach(value => {
-              if (value.languageName != language) {
-                return
-              }
-              
-              value.languageId = createdLanguage.id
+
+        // Create values for the language if the project in DTO has groups
+        if (createProjectDto.groups != null && createProjectDto.groups.length > 0) {
+          createProjectDto.groups.forEach(group => {
+            group.keys.forEach(key => {
+              key.values.forEach(value => {
+                if (value.languageName != language) {
+                  return
+                }
+
+                value.languageId = createdLanguage.id
+              })
             })
           })
-        })
+        }
       }))
     }
 
