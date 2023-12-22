@@ -6,7 +6,7 @@ export default class UpdateRoleDto extends BaseDto {
   public static schema: Joi.ObjectSchema = Joi.object({
     role: Joi
       .string()
-      .valid(Role.Owner, Role.Manager, Role.Editor, Role.Translator)
+      .valid(Role.Owner, Role.Manager, Role.Editor, Role.Translator, Role.Reviewer)
       .required()
   });
   public role: string;
