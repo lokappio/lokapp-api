@@ -811,7 +811,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"first_translation_key\",\n    \"group_id\": 1,\n    \"is_plural\": false\n}",
+									"raw": "{\n    \"name\": \"first_translation_key\",\n    \"groupId\": 1,\n    \"isPlural\": false\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -944,7 +944,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"edited_translation_key\",\n    \"group_id\": 1,\n    \"is_plural\": false\n}",
+									"raw": "{\n    \"name\": \"edited_translation_key\",\n    \"groupId\": 1,\n    \"isPlural\": false\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -992,7 +992,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"Content of the translation value\",\n    \"language_id\": 1,\n    \"quantity_string\": null\n}",
+									"raw": "{\n    \"name\": \"Content of the translation value\",\n    \"languageId\": 1,\n    \"quantityString\": null\n}",
 									"options": {
 										"raw": {
 											"language": "json"

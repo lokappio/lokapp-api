@@ -17,6 +17,7 @@ import TestsHelpers from "../helpers/tests.helpers";
 import * as request from "supertest";
 import CreateValueDto from "../../src/translation/dto/create-value.dto";
 import Role from "../../src/roles/role.enum";
+import TranslationStatus from "../../src/translation/translation_status.enum";
 
 describe("Translations values E2E", () => {
   let app: INestApplication;
@@ -230,6 +231,10 @@ describe("Translations values E2E", () => {
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
         .send({name: "Content of the translation value", languageId: populatedLanguages[0].id, quantityString: null});
       expect(createResp.status).toEqual(201);
+      expect(createResp.body.name).toEqual("Content of the translation value");
+      expect(createResp.body.keyId).toEqual(populatedTranslationKeys[0].id);
+      expect(createResp.body.languageId).toEqual(populatedLanguages[0].id);
+      expect(createResp.body.status).toEqual(TranslationStatus.MODIFIED);
 
       const createWithoutQuantityResp = await request(app.getHttpServer())
         .post(`/projects/${populatedProjects[0].id}/translations/${populatedTranslationKeys[0].id}/values`)
@@ -237,6 +242,10 @@ describe("Translations values E2E", () => {
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
         .send({name: "Content of the translation value", languageId: populatedLanguages[1].id});
       expect(createWithoutQuantityResp.status).toEqual(201);
+      expect(createResp.body.name).toEqual("Content of the translation value");
+      expect(createResp.body.keyId).toEqual(populatedTranslationKeys[0].id);
+      expect(createResp.body.languageId).toEqual(populatedLanguages[1].id);
+      expect(createResp.body.status).toEqual(TranslationStatus.MODIFIED);
 
       const values = await findTranslationValues(populatedTranslationKeys[0].id);
       expect(values.length).toEqual(2);
@@ -269,6 +278,11 @@ describe("Translations values E2E", () => {
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
         .send({name: "Content of the translation value", languageId: populatedLanguages[0].id, quantityString: QuantityString.OTHER});
       expect(createResp.status).toEqual(201);
+      expect(createResp.body.name).toEqual("Content of the translation value");
+      expect(createResp.body.keyId).toEqual(populatedTranslationKeys[0].id);
+      expect(createResp.body.languageId).toEqual(populatedLanguages[0].id);
+      expect(createResp.body.quantityString).toEqual(QuantityString.OTHER);
+      expect(createResp.body.status).toEqual(TranslationStatus.MODIFIED);
 
       const values = await findTranslationValues(createdKey.id);
       expect(values.length).toEqual(1);
