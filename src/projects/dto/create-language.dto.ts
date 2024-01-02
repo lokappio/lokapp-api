@@ -1,6 +1,6 @@
 import * as Joi from "@hapi/joi";
 import BaseDto from "../../data/base.dto";
-import CreateValueDto from "../../translation/dto/create-value.dto";
+import CreateGroupDto from "../../groups/dto/create-group.dto";
 
 export default class CreateLanguageDto extends BaseDto {
   public static schema: Joi.ObjectSchema = Joi.object({
@@ -9,11 +9,11 @@ export default class CreateLanguageDto extends BaseDto {
       .required()
       .max(80),
 
-    values: Joi
+    groups: Joi
       .array()
       .optional()
   });
 
   public name: string;
-  public values: CreateValueDto[];
+  public groups: CreateGroupDto[];
 }

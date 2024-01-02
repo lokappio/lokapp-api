@@ -1,17 +1,17 @@
 import {ForbiddenException, forwardRef, Inject, Injectable, Logger, MethodNotAllowedException, NotFoundException} from "@nestjs/common";
 import {InjectRepository} from "@nestjs/typeorm";
-import {getManager, In, Repository} from "typeorm";
+import {In, Repository} from "typeorm";
 import Group, {DefaultGroupName} from "../groups/group.entity";
 import GroupService from "../groups/group.service";
-import Invitation, {InvitationTableName} from "../invitations/invitation.entity";
+import Invitation from "../invitations/invitation.entity";
 import Language from "../languages/language.entity";
 import Role from "../roles/role.enum";
 import QuantityString from "../translation/quantity_string.enum";
 import TranslationService from "../translation/translation.service";
 import TranslationKey from "../translation/translation_key.entity";
 import TranslationValue from "../translation/translation_value.entity";
-import UserProject, {UsersProjectsTableName} from "../users-projects/user_project.entity";
-import User, {UsersTableName} from "../users/user.entity";
+import UserProject from "../users-projects/user_project.entity";
+import User from "../users/user.entity";
 import DetailedProject from "./detailed-model/detailed-project.model";
 import CreateLanguageDto from "./dto/create-language.dto";
 import CreateProjectDto from "./dto/create-project.dto";
@@ -132,17 +132,6 @@ export default class ProjectsService {
   }
 
   public async getUserProjects(userId: string): Promise<Project[]> {
-    /*const usersProjectsSubQuery = getManager()
-      .createQueryBuilder(UsersProjectsTableName, UsersProjectsTableName)
-      .select('"projectId"')
-      .where('"userId" = :id', {id: userId});
-
-    return await this.projectsRepository
-      .createQueryBuilder("project")
-      .where("project.id IN (" + usersProjectsSubQuery.getQuery() + ")")
-      .setParameters(usersProjectsSubQuery.getParameters())
-      .getMany();*/
-
     return await this.projectsRepository.find({
       where: {
         userProjects: {
@@ -201,42 +190,54 @@ export default class ProjectsService {
     language.project = project;
     const createdLanguage = await this.languagesRepository.save(language);
 
-    // Find all translation keys of the project
-    const projectKeys: TranslationKey[] = await this.keyRepository.findBy({projectId: projectId});
+    // We check if the language to create has groups
+    if (createLanguageDto.groups && createLanguageDto.groups.length > 0) {
+      await Promise.all(createLanguageDto.groups.map(async (groupToCreate) => {
+        // We check if the group already exists
+        let group = await this.groupRepository.findOneBy({name: groupToCreate.name, projectId: projectId});
+        // If not, we create it
+        if (!group) {
+          group = new Group();
+          group.project = project;
+          group.name = groupToCreate.name;
+          console.log("Group to create: ", group);
+          group = await this.groupRepository.save(group);
+        }
 
-    if (!createLanguageDto.values || createLanguageDto.values.length === 0) {
-      // For each key, automatically create values in the new added language
-      await Promise.all(projectKeys.map(async (key) => {
-        if (key.isPlural) {
-          await Promise.all(Object.values(QuantityString).map(async (quantity) => {
-            const value = new TranslationValue();
-            value.name = "";
-            value.key = key;
-            value.quantityString = quantity;
-            value.language = language;
+        // We check if the group has keys
+        if (groupToCreate.keys && groupToCreate.keys.length > 0) {
+          await Promise.all(groupToCreate.keys.map(async (keyToCreate) => {
+            // We check if the key already exists
+            let key = await this.keyRepository.findOneBy({name: keyToCreate.name, groupId: group.id});
+            // If not, we create it
+            if (!key) {
+              key = new TranslationKey();
+              key.project = project;
+              key.group = group;
+              key.name = keyToCreate.name;
+              key.isPlural = keyToCreate.isPlural;
+              key = await this.keyRepository.save(key);
+            }
 
-            return await this.valueRepository.save(value);
+            // We check if the key has values
+            if (keyToCreate.values && keyToCreate.values.length > 0) {
+              await Promise.all(keyToCreate.values.map(async (valueToCreate) => {
+                // We check if values already exists
+                const values = await this.valueRepository.findBy({keyId: key.id});
+                // If not, we create it
+                if (!values || values.length === 0) {
+                  const value = new TranslationValue();
+                  value.key = key;
+                  value.name = valueToCreate.name;
+                  value.language = createdLanguage;
+                  value.quantityString = valueToCreate.quantityString;
+                  await this.valueRepository.save(value);
+                }
+              }));
+            }
           }));
-        } else {
-          const value = new TranslationValue();
-          value.name = "";
-          value.key = key;
-          value.language = language;
-
-          return await this.valueRepository.save(value);
         }
       }));
-    } else {
-      //Create values from DTO
-      await Promise.all(createLanguageDto.values.map(async (value) => {
-        const translationValue = new TranslationValue();
-        translationValue.keyId = value.keyId;
-        translationValue.language = language;
-        translationValue.name = value.name;
-        translationValue.quantityString = value.quantityString;
-
-        return await this.valueRepository.save(translationValue);
-      }))
     }
 
     return createdLanguage;

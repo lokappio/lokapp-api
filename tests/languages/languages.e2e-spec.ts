@@ -16,7 +16,8 @@ import CreateProjectDto from "../../src/projects/dto/create-project.dto";
 import TranslationValue from "../../src/translation/translation_value.entity";
 import TranslationKey from "../../src/translation/translation_key.entity";
 import Group, {DefaultGroupName} from "../../src/groups/group.entity";
-import CreateValueDto from "../../src/translation/dto/create-value.dto";
+import CreateGroupDto from "../../src/groups/dto/create-group.dto";
+import CreateKeyDto from "../../src/translation/dto/create-key.dto";
 
 describe("Languages of a project E2E", () => {
   let app: INestApplication;
@@ -150,11 +151,9 @@ describe("Languages of a project E2E", () => {
 
       const createdLanguage: Language = languages[0];
 
-      const values_singular = await valuesRepository.find({where: {language: createdLanguage, keyId: 1}});
-      const values_plural = await valuesRepository.find({where: {language: createdLanguage, keyId: 2}});
+      const values = await valuesRepository.find({where: {languageId: createdLanguage.id}});
 
-      expect(values_singular.length).toBe(0);
-      expect(values_plural.length).toBe(0);
+      expect(values.length).toBe(0);
     });
 
     it("Creating a language with existing values", async () => {
@@ -164,23 +163,70 @@ describe("Languages of a project E2E", () => {
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
         .send(new CreateLanguageDto({
           name: "fr",
-          values: [
-            new CreateValueDto({
-              name: "singular_key_fr",
-              keyId: 1,
-              quantityString: null
-            }), new CreateValueDto({
-              name: "plural_key_fr_zero",
-              keyId: 2,
-              quantityString: "zero"
-            }), new CreateValueDto({
-              name: "plural_key_fr_one",
-              keyId: 2,
-              quantityString: "one"
-            }), new CreateValueDto({
-              name: "plural_key_fr_other",
-              keyId: 2,
-              quantityString: "other"
+          groups: [
+            // This group exists in the project, but the keys and values should be created
+            new CreateGroupDto({
+              name: "common",
+              keys: [
+                new CreateKeyDto({
+                  name: "singular_key",
+                  isPlural: false,
+                  values: [
+                    new CreateGroupDto({
+                      name: "singular_key_fr",
+                      quantityString: null
+                    })
+                  ],
+                }),
+                new CreateKeyDto({
+                  name: "plural_key",
+                  isPlural: true,
+                  values: [
+                    new CreateGroupDto({
+                      name: "plural_key_fr_zero",
+                      quantityString: "zero"
+                    }), new CreateGroupDto({
+                      name: "plural_key_fr_one",
+                      quantityString: "one"
+                    }), new CreateGroupDto({
+                      name: "plural_key_fr_other",
+                      quantityString: "other"
+                    })
+                  ],
+                })
+              ]
+            }),
+            // This group is new and should be created
+            new CreateGroupDto({
+              name: "new_group",
+              keys: [
+                new CreateKeyDto({
+                  name: "singular_key",
+                  isPlural: false,
+                  values: [
+                    new CreateGroupDto({
+                      name: "singular_key_fr",
+                      quantityString: null
+                    })
+                  ],
+                }),
+                new CreateKeyDto({
+                  name: "plural_key",
+                  isPlural: true,
+                  values: [
+                    new CreateGroupDto({
+                      name: "plural_key_fr_zero",
+                      quantityString: "zero"
+                    }), new CreateGroupDto({
+                      name: "plural_key_fr_one",
+                      quantityString: "one"
+                    }), new CreateGroupDto({
+                      name: "plural_key_fr_other",
+                      quantityString: "other"
+                    })
+                  ],
+                })
+              ]
             })
           ]
         }));
@@ -194,16 +240,15 @@ describe("Languages of a project E2E", () => {
 
       const createdLanguage: Language = languages[0];
 
-      const values_singular = await valuesRepository.find({where: {language: createdLanguage, keyId: 1}});
-      const values_plural = await valuesRepository.find({where: {language: createdLanguage, keyId: 2}});
-
-      /* TODO : There is a bug here, the values are not created
-      expect(values_singular.length).toBe(1);
-      expect(values_singular[0].name).toBe("singular_key_fr");
-      expect(values_plural.length).toBe(1);
-      values_plural.forEach(value => {
-        expect(value.name).toBe(`plural_key_fr_${value.quantityString}`);
-      })*/
+      const values = await valuesRepository.find({where: {languageId: createdLanguage.id}});
+      expect(values.length).toBe(8);
+      values.forEach(value => {
+        if (value.quantityString) {
+          expect(value.name).toBe(`plural_key_fr_${value.quantityString}`);
+        } else {
+          expect(value.name).toBe(`singular_key_fr`);
+        }
+      })
     });
 
     it("Already existing language", async () => {
