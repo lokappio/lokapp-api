@@ -71,7 +71,8 @@ describe("ProjectsController", function () {
           color: "121212",
           description: null,
           createdAt: new Date(),
-          updatedAt: new Date()
+          updatedAt: new Date(),
+          userProjects: [],
         };
         jest.spyOn(projectsService, "getProject").mockImplementationOnce(() => Promise.resolve(expectedResult));
         expect(await projectsController.getProject("user-id", 1)).toBe(expectedResult);
@@ -114,7 +115,8 @@ describe("ProjectsController", function () {
       name: "Lorem ipsum",
       color: "121212",
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      userProjects: [],
     };
 
     const mockedLanguage: Language = {

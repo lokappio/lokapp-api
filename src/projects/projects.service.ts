@@ -6,7 +6,6 @@ import GroupService from "../groups/group.service";
 import Invitation from "../invitations/invitation.entity";
 import Language from "../languages/language.entity";
 import Role from "../roles/role.enum";
-import QuantityString from "../translation/quantity_string.enum";
 import TranslationService from "../translation/translation.service";
 import TranslationKey from "../translation/translation_key.entity";
 import TranslationValue from "../translation/translation_value.entity";
@@ -200,7 +199,6 @@ export default class ProjectsService {
           group = new Group();
           group.project = project;
           group.name = groupToCreate.name;
-          console.log("Group to create: ", group);
           group = await this.groupRepository.save(group);
         }
 
