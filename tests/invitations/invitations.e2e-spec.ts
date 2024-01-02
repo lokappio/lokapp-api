@@ -131,7 +131,9 @@ describe("Invitations", () => {
         .send(new CreateInvitationDto({
           email: "user_c@lokapp.io",
           projectId: populatedProjects[0].id,
-          role: Role.Manager
+          role: Role.Manager,
+          sourceLanguagesIds: "1",
+          targetLanguagesIds: "2"
         }));
       expect(invitationResp.status).toEqual(201);
     });

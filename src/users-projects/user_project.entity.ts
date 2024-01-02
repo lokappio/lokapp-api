@@ -31,4 +31,12 @@ export default class UserProject {
   @Column()
   @ApiProperty()
   public role: Role;
+
+  @Column({nullable: true})
+  @ApiProperty()
+  sourceLanguagesIds: string;
+
+  @Column({nullable: true})
+  @ApiProperty()
+  targetLanguagesIds: string;
 }

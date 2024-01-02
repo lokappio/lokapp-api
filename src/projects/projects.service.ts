@@ -4,7 +4,7 @@ import {In, Repository} from "typeorm";
 import Group, {DefaultGroupName} from "../groups/group.entity";
 import GroupService from "../groups/group.service";
 import Invitation from "../invitations/invitation.entity";
-import Language from "../languages/language.entity";
+import Language, {LanguageAccess} from "../languages/language.entity";
 import Role from "../roles/role.enum";
 import TranslationService from "../translation/translation.service";
 import TranslationKey from "../translation/translation_key.entity";
@@ -45,11 +45,13 @@ export default class ProjectsService {
 
   private readonly logger = new Logger("ProjectsService");
 
-  public async createUserProjectRelation(userId: string, projectId: number, role: Role): Promise<any> {
+  public async createUserProjectRelation(userId: string, projectId: number, role: Role, sourceLanguagesIds: string = null, targetLanguagesIds: string = null): Promise<any> {
     return this.usersProjectsRepository.save({
       "projectId": projectId,
       "userId": userId,
-      "role": role
+      "role": role,
+      "sourceLanguagesIds": sourceLanguagesIds,
+      "targetLanguagesIds": targetLanguagesIds,
     });
   }
 
@@ -243,18 +245,37 @@ export default class ProjectsService {
 
   public async getAllLanguages(userId: string, projectId: number): Promise<Language[]> {
     const project = await this.getProject(userId, projectId);
-    return await this.languagesRepository.find({
+    const languages = await this.languagesRepository.find({
       where: {
         project: {
           id: project.id
         }
       }
     });
+    const userProject = project.userProjects.find(relation => relation.userId === userId);
+    if (userProject.sourceLanguagesIds === null || userProject.targetLanguagesIds === null) {
+      return languages;
+    } else {
+      const sourceLanguagesIds = userProject.sourceLanguagesIds.split(",").map(id => parseInt(id));
+      const targetLanguagesIds = userProject.targetLanguagesIds.split(",").map(id => parseInt(id));
+      const languagesIds = sourceLanguagesIds.concat(targetLanguagesIds);
+      return languages
+        .filter(language => languagesIds.indexOf(language.id) >= 0)
+        .map(language => {
+          if (sourceLanguagesIds.indexOf(language.id) >= 0) {
+            language.access = LanguageAccess.source;
+          }
+          if (targetLanguagesIds.indexOf(language.id) >= 0) {
+            language.access = LanguageAccess.target;
+          }
+          return language
+        });
+    }
   }
 
   public async getLanguage(userId: string, projectId: number, languageId: number): Promise<Language> {
     const project = await this.getProject(userId, projectId);
-    const language: Language = await this.languagesRepository.findOneById(languageId);
+    const language: Language = await this.languagesRepository.findOneBy({id: languageId});
 
     if (!language || language.projectId != project.id) {
       throw new NotFoundException();

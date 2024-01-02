@@ -37,6 +37,8 @@ export default class InvitationService {
     invitation.guest = guest;
     invitation.owner = owner;
     invitation.project = project;
+    invitation.sourceLanguagesIds = createInvitationDto.sourceLanguagesIds;
+    invitation.targetLanguagesIds = createInvitationDto.targetLanguagesIds;
     invitation.role = <Role>createInvitationDto.role;
     return await this.invitationRepository.save(invitation);
   }
@@ -57,19 +59,25 @@ export default class InvitationService {
   }
 
   public async acceptInvitation(userId: string, invitationId: number): Promise<void> {
-    const invitation = await this.invitationRepository.findOneById(invitationId);
+    const invitation = await this.invitationRepository.findOneBy({id: invitationId});
     if (!invitation) {
       throw new NotFoundException();
     }
     if (userId !== invitation.guestId) {
       throw new ForbiddenException(null, "Can't accept invitation for someone else");
     }
-    await this.projectsService.createUserProjectRelation(userId, invitation.projectId, invitation.role);
+    await this.projectsService.createUserProjectRelation(
+      userId,
+      invitation.projectId,
+      invitation.role,
+      invitation.sourceLanguagesIds,
+      invitation.targetLanguagesIds
+    );
     await this.invitationRepository.delete(invitationId);
   }
 
   public async declineInvitation(userId: string, invitationId: number): Promise<void> {
-    const invitation = await this.invitationRepository.findOneById(invitationId);
+    const invitation = await this.invitationRepository.findOneBy({id: invitationId});
     if (!invitation) {
       throw new NotFoundException();
     }
@@ -80,7 +88,7 @@ export default class InvitationService {
   }
 
   public async deleteInvitation(userId: string, invitationId: number): Promise<void> {
-    const invitation = await this.invitationRepository.findOneById(invitationId);
+    const invitation = await this.invitationRepository.findOneBy({id: invitationId});
     if (!invitation) {
       throw new NotFoundException();
     }

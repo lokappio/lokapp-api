@@ -34,7 +34,7 @@ describe("Translations keys E2E", () => {
     await translationKeysRepository.clear();
   }
 
-  async function findTranslationKeys(projectId: number): Promise<Language[]> {
+  async function findTranslationKeys(projectId: number): Promise<TranslationKey[]> {
     return await translationKeysRepository.find({
       where: {
         project: {
