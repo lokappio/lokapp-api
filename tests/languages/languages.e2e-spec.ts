@@ -153,7 +153,7 @@ describe("Languages of a project E2E", () => {
 
       const values = await valuesRepository.find({where: {languageId: createdLanguage.id}});
 
-      expect(values.length).toBe(0);
+      expect(values.length).toBe(4);
     });
 
     it("Creating a language with existing values", async () => {

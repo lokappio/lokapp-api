@@ -18,6 +18,7 @@ import UpdateProjectDto from "./dto/update-project.dto";
 import UpdateRoleDto from "./dto/update-role.dto";
 import ProjectUser from "./model/project-user.model";
 import Project from "./project.entity";
+import QuantityString from "../translation/quantity_string.enum";
 
 @Injectable()
 export default class ProjectsService {
@@ -177,7 +178,9 @@ export default class ProjectsService {
 
   public async getWholeProjectDetails(userId: string, projectId: number): Promise<DetailedProject> {
     const project = await this.getProject(userId, projectId);
-    const rawLanguages = await this.languagesRepository.find({where: {project: {id: project.id}}});
+    const languages = await this.languagesRepository.find({where: {project: {id: project.id}}});
+    const userProject = project.userProjects.find(relation => relation.userId === userId);
+    const rawLanguages = this.filterUserLanguages(languages, userProject);
     const rawGroups = await this.groupRepository.find({where: {project: {id: project.id}}});
     const rawKeys = await this.keyRepository.find({where: {project: {id: project.id}}});
     const rawValues = await this.valueRepository.find({where: {keyId: In(rawKeys.map(k => k.id))}});
@@ -191,6 +194,11 @@ export default class ProjectsService {
     language.project = project;
     const createdLanguage = await this.languagesRepository.save(language);
 
+    const createdKeyIds = [];
+
+    // Find all translation keys of the project in order to create the translation values for the new language
+    const projectKeys: TranslationKey[] = await this.keyRepository.findBy({projectId: projectId});
+
     // We check if the language to create has groups
     if (createLanguageDto.groups && createLanguageDto.groups.length > 0) {
       await Promise.all(createLanguageDto.groups.map(async (groupToCreate) => {
@@ -199,7 +207,7 @@ export default class ProjectsService {
         // If not, we create it
         if (!group) {
           group = new Group();
-          group.project = project;
+          group.projectId = project.id;
           group.name = groupToCreate.name;
           group = await this.groupRepository.save(group);
         }
@@ -212,11 +220,12 @@ export default class ProjectsService {
             // If not, we create it
             if (!key) {
               key = new TranslationKey();
-              key.project = project;
-              key.group = group;
+              key.projectId = project.id;
+              key.groupId = group.id;
               key.name = keyToCreate.name;
               key.isPlural = keyToCreate.isPlural;
               key = await this.keyRepository.save(key);
+              createdKeyIds.push(key.id);
             }
 
             // We check if the key has values
@@ -227,9 +236,9 @@ export default class ProjectsService {
                 // If not, we create it
                 if (!values || values.length === 0) {
                   const value = new TranslationValue();
-                  value.key = key;
+                  value.keyId = key.id;
                   value.name = valueToCreate.name;
-                  value.language = createdLanguage;
+                  value.languageId = createdLanguage.id;
                   value.quantityString = valueToCreate.quantityString;
                   await this.valueRepository.save(value);
                 }
@@ -239,6 +248,32 @@ export default class ProjectsService {
         }
       }));
     }
+
+    // For each key, automatically create values in the new added language
+    await Promise.all(projectKeys.map(async (key) => {
+      // We check if the key has values
+      const values = await this.valueRepository.findBy({keyId: key.id});
+      // If not, we create it
+      if (!values || values.length === 0) {
+        if (key.isPlural) {
+          await Promise.all(Object.values(QuantityString).map(async (quantity) => {
+            const value = new TranslationValue();
+            value.name = "";
+            value.keyId = key.id;
+            value.quantityString = quantity;
+            value.languageId = language.id;
+            return await this.valueRepository.save(value);
+          }));
+        } else {
+          const value = new TranslationValue();
+          value.name = "";
+          value.keyId = key.id;
+          value.languageId = language.id;
+
+          return await this.valueRepository.save(value);
+        }
+      }
+    }));
 
     return createdLanguage;
   }
@@ -253,6 +288,10 @@ export default class ProjectsService {
       }
     });
     const userProject = project.userProjects.find(relation => relation.userId === userId);
+    return this.filterUserLanguages(languages, userProject);
+  }
+
+  private filterUserLanguages(languages: Language[], userProject: UserProject): Language[] {
     if (userProject.sourceLanguagesIds === null || userProject.targetLanguagesIds === null) {
       return languages;
     } else {

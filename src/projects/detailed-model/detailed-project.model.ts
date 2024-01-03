@@ -45,15 +45,21 @@ export default class DetailedProject {
     const projectLanguages = languages
       .sort((a, b) => (a.id > b.id) ? 1 : -1)
       .map(lang => {
-        return new ProjectLanguage(lang.id, lang.name);
+        return new ProjectLanguage(lang.id, lang.name, lang.access);
       });
 
     const projectValues = values
       .sort((a, b) => (a.id > b.id) ? 1 : -1)
       .map(val => {
         const lang = projectLanguages.find(lang => lang.id == val.languageId);
-        return new ProjectTranslationValue(val.id, val.name, val.quantityString, lang.id, lang.name, val.keyId);
-      });
+        // The language may have been filtered by access rights (source/target)
+        if (lang) {
+          return new ProjectTranslationValue(val.id, val.name, val.quantityString, lang.id, lang.name, lang.access, val.keyId, val.status);
+        } else {
+          return null;
+        }
+      })
+      .filter(val => val != null);
 
     const projectKeys = keys
       .sort((a, b) => (a.id > b.id) ? 1 : -1)

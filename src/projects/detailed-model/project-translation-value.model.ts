@@ -1,3 +1,6 @@
+import {LanguageAccess} from "../../languages/language.entity";
+import TranslationStatus from "../../translation/translation_status.enum";
+
 /**
  * Translation value.
  *
@@ -9,7 +12,9 @@ export default class ProjectTranslationValue {
   quantityString: string;
   languageId: number;
   languageName: string;
+  languageAccess: LanguageAccess;
   keyId: number;
+  status: TranslationStatus;
 
   constructor(
     id: number,
@@ -17,13 +22,17 @@ export default class ProjectTranslationValue {
     quantityString: string,
     languageId: number,
     languageName: string,
-    keyId: number
+    languageAccess: LanguageAccess,
+    keyId: number,
+    status: TranslationStatus
   ) {
     this.id = id;
     this.name = name;
     this.quantityString = quantityString;
     this.languageId = languageId;
     this.languageName = languageName;
+    this.languageAccess = languageAccess;
     this.keyId = keyId;
+    this.status = status;
   }
 }

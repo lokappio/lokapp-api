@@ -1,3 +1,5 @@
+import {LanguageAccess} from "../../languages/language.entity";
+
 /**
  * Language of a project.
  *
@@ -6,12 +8,15 @@
 export default class ProjectLanguage {
   id: number;
   name: string;
+  access: LanguageAccess;
 
   constructor(
     id: number,
-    name: string
+    name: string,
+    access: LanguageAccess
   ) {
     this.id = id;
     this.name = name;
+    this.access = access;
   }
 }
