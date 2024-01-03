@@ -193,6 +193,9 @@ export default class ProjectsService {
     language.name = createLanguageDto.name;
     language.project = project;
     const createdLanguage = await this.languagesRepository.save(language);
+    const allLanguages = await this.languagesRepository.findBy({
+      projectId: projectId
+    });
 
     const createdKeyIds = [];
 
@@ -231,17 +234,20 @@ export default class ProjectsService {
             // We check if the key has values
             if (keyToCreate.values && keyToCreate.values.length > 0) {
               await Promise.all(keyToCreate.values.map(async (valueToCreate) => {
+                if (valueToCreate.languageName != createdLanguage.name) return;
                 // We check if values already exists
                 const values = await this.valueRepository.findBy({keyId: key.id});
-                // If not, we create it
-                if (!values || values.length === 0) {
-                  const value = new TranslationValue();
-                  value.keyId = key.id;
-                  value.name = valueToCreate.name;
-                  value.languageId = createdLanguage.id;
-                  value.quantityString = valueToCreate.quantityString;
-                  await this.valueRepository.save(value);
-                }
+                allLanguages.forEach(language => {
+                  const valueExists = values.find(value => value.languageId === language.id);
+                  if (!valueExists) {
+                    const value = new TranslationValue();
+                    value.keyId = key.id;
+                    value.name = language.id === createdLanguage.id ? valueToCreate.name : ""; // Empty if the language is not the one we are creating
+                    value.languageId = language.id;
+                    value.quantityString = valueToCreate.quantityString;
+                    this.valueRepository.save(value);
+                  }
+                });
               }));
             }
           }));

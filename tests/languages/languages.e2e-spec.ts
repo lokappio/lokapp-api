@@ -18,6 +18,7 @@ import TranslationKey from "../../src/translation/translation_key.entity";
 import Group, {DefaultGroupName} from "../../src/groups/group.entity";
 import CreateGroupDto from "../../src/groups/dto/create-group.dto";
 import CreateKeyDto from "../../src/translation/dto/create-key.dto";
+import CreateValueDto from "../../src/translation/dto/create-value.dto";
 
 describe("Languages of a project E2E", () => {
   let app: INestApplication;
@@ -172,9 +173,10 @@ describe("Languages of a project E2E", () => {
                   name: "singular_key",
                   isPlural: false,
                   values: [
-                    new CreateGroupDto({
+                    new CreateValueDto({
                       name: "singular_key_fr",
-                      quantityString: null
+                      quantityString: null,
+                      languageName: "fr"
                     })
                   ],
                 }),
@@ -182,15 +184,18 @@ describe("Languages of a project E2E", () => {
                   name: "plural_key",
                   isPlural: true,
                   values: [
-                    new CreateGroupDto({
+                    new CreateValueDto({
                       name: "plural_key_fr_zero",
-                      quantityString: "zero"
-                    }), new CreateGroupDto({
+                      quantityString: "zero",
+                      languageName: "fr"
+                    }), new CreateValueDto({
                       name: "plural_key_fr_one",
-                      quantityString: "one"
-                    }), new CreateGroupDto({
+                      quantityString: "one",
+                      languageName: "fr"
+                    }), new CreateValueDto({
                       name: "plural_key_fr_other",
-                      quantityString: "other"
+                      quantityString: "other",
+                      languageName: "fr"
                     })
                   ],
                 })
@@ -204,9 +209,10 @@ describe("Languages of a project E2E", () => {
                   name: "singular_key",
                   isPlural: false,
                   values: [
-                    new CreateGroupDto({
+                    new CreateValueDto({
                       name: "singular_key_fr",
-                      quantityString: null
+                      quantityString: null,
+                      languageName: "fr"
                     })
                   ],
                 }),
@@ -214,15 +220,18 @@ describe("Languages of a project E2E", () => {
                   name: "plural_key",
                   isPlural: true,
                   values: [
-                    new CreateGroupDto({
+                    new CreateValueDto({
                       name: "plural_key_fr_zero",
-                      quantityString: "zero"
-                    }), new CreateGroupDto({
+                      quantityString: "zero",
+                      languageName: "fr"
+                    }), new CreateValueDto({
                       name: "plural_key_fr_one",
-                      quantityString: "one"
-                    }), new CreateGroupDto({
+                      quantityString: "one",
+                      languageName: "fr"
+                    }), new CreateValueDto({
                       name: "plural_key_fr_other",
-                      quantityString: "other"
+                      quantityString: "other",
+                      languageName: "fr"
                     })
                   ],
                 })
