@@ -54,7 +54,7 @@ export default class DetailedProject {
         const lang = projectLanguages.find(lang => lang.id == val.languageId);
         // The language may have been filtered by access rights (source/target)
         if (lang) {
-          return new ProjectTranslationValue(val.id, val.name, val.quantityString, lang.id, lang.name, lang.access, val.keyId, val.status);
+          return new ProjectTranslationValue(val.id, val.name, val.quantityString, lang.id, lang.name, lang.access, val.keyId, val.status, val.updatedAt);
         } else {
           return null;
         }

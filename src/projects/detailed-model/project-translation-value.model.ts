@@ -15,6 +15,7 @@ export default class ProjectTranslationValue {
   languageAccess: LanguageAccess;
   keyId: number;
   status: TranslationStatus;
+  updatedAt: Date;
 
   constructor(
     id: number,
@@ -24,7 +25,8 @@ export default class ProjectTranslationValue {
     languageName: string,
     languageAccess: LanguageAccess,
     keyId: number,
-    status: TranslationStatus
+    status: TranslationStatus,
+    updatedAt: Date
   ) {
     this.id = id;
     this.name = name;
@@ -34,5 +36,6 @@ export default class ProjectTranslationValue {
     this.languageAccess = languageAccess;
     this.keyId = keyId;
     this.status = status;
+    this.updatedAt = updatedAt;
   }
 }
