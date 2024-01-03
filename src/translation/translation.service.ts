@@ -312,11 +312,20 @@ export default class TranslationService {
     updateValueDto: UpdateValueDto
   ): Promise<TranslationValue> {
     const value = await this.getValue(userId, projectId, translationKeyId, valueId);
-
+    const lastModifiedValue = (await this.translationValueRepository.find({
+      where: {
+        keyId: value.keyId,
+        languageId: value.languageId,
+        quantityString: value.quantityString
+      },
+      order: {
+        updatedAt: "DESC"
+      }
+    }))[0];
     // If current translation is in status MODIFIED, we can update it
-    if (value.status === TranslationStatus.MODIFIED) {
-      value.name = updateValueDto.name;
-      return await this.translationValueRepository.save(value);
+    if (lastModifiedValue.status === TranslationStatus.MODIFIED) {
+      lastModifiedValue.name = updateValueDto.name;
+      return await this.translationValueRepository.save(lastModifiedValue);
     } else {
       // If current translation is not in status MODIFIED, we need to create a new one
       const newValue = new TranslationValue();
@@ -371,9 +380,6 @@ export default class TranslationService {
     const value = await this.translationValueRepository.findOne({
       where: {
         id: valueId
-      },
-      order: {
-        createdAt: "DESC"
       }
     });
     if (!value || value.keyId !== key.id) {

@@ -8,7 +8,6 @@ import TranslationStatus from "./translation_status.enum";
 export const TranslationValuesTableName: string = "translation_values";
 
 @Entity(TranslationValuesTableName)
-@Unique(PostgresUniqueKeys.TranslationValueInProject, ["key", "quantityString", "language"])
 export default class TranslationValue {
   @PrimaryGeneratedColumn()
   @ApiProperty()
