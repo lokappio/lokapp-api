@@ -362,6 +362,10 @@ export default class ProjectsService {
       relations: ["guest"]
     }) || [];
 
+    const languages = await this.languagesRepository.findBy({
+      projectId: project.id
+    });
+
     const usersFromRelations = relations.map(relation => {
       return new ProjectUser(
         relation.userId,
@@ -369,7 +373,9 @@ export default class ProjectsService {
         relation.user.email,
         relation.role,
         false,
-        null
+        null,
+        relation.sourceLanguagesIds ? relation.sourceLanguagesIds.split(",").map(id => languages.find(language => language.id === parseInt(id))).filter(language => language !== undefined) : [],
+        relation.targetLanguagesIds ? relation.targetLanguagesIds.split(",").map(id => languages.find(language => language.id === parseInt(id))).filter(language => language !== undefined) : []
       )
     });
 
@@ -379,7 +385,9 @@ export default class ProjectsService {
       invitation.guest.email,
       invitation.role,
       true,
-      invitation.id
+      invitation.id,
+      invitation.sourceLanguagesIds ? invitation.sourceLanguagesIds.split(",").map(id => languages.find(language => language.id === parseInt(id))).filter(language => language !== undefined) : [],
+      invitation.targetLanguagesIds ? invitation.targetLanguagesIds.split(",").map(id => languages.find(language => language.id === parseInt(id))).filter(language => language !== undefined) : []
     ));
 
     return usersFromRelations.concat(usersFromInvitations);
@@ -429,7 +437,13 @@ export default class ProjectsService {
       }
     }
 
+    const languages = await this.languagesRepository.findBy({
+      projectId: projectId
+    });
+
     changingRelation.role = <Role>updateRoleDto.role;
+    changingRelation.sourceLanguagesIds = updateRoleDto.sourceLanguagesIds;
+    changingRelation.targetLanguagesIds = updateRoleDto.targetLanguagesIds;
     const updatedRelation = await this.usersProjectsRepository.save(changingRelation);
 
     const updatedUser = await this.usersRepository.findOneBy({id: userIdToUpdate})
@@ -440,7 +454,9 @@ export default class ProjectsService {
       updatedUser.email,
       updatedRelation.role,
       false,
-      null
+      null,
+      updatedRelation.sourceLanguagesIds ? updatedRelation.sourceLanguagesIds.split(",").map(id => languages.find(language => language.id === parseInt(id))).filter(language => language !== undefined) : [],
+      updatedRelation.targetLanguagesIds ? updatedRelation.targetLanguagesIds.split(",").map(id => languages.find(language => language.id === parseInt(id))).filter(language => language !== undefined) : []
     );
   }
 

@@ -8,7 +8,7 @@ import CreateProjectDto from "../../src/projects/dto/create-project.dto";
 import ProjectsModule from "../../src/projects/projects.module";
 import TestDatabaseModule from "../database/test-database.module";
 import CreateLanguageDto from "../../src/projects/dto/create-language.dto";
-import Language from "../../src/languages/language.entity";
+import Language, {LanguageAccess} from "../../src/languages/language.entity";
 import ProjectsService from "../../src/projects/projects.service";
 
 describe("ProjectsController", function () {
@@ -125,7 +125,8 @@ describe("ProjectsController", function () {
       projectId: mockedProject.id,
       project: mockedProject,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      access: LanguageAccess.all
     };
 
     describe("Create", () => {

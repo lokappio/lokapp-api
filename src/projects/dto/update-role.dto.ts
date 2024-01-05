@@ -7,7 +7,15 @@ export default class UpdateRoleDto extends BaseDto {
     role: Joi
       .string()
       .valid(Role.Owner, Role.Manager, Role.Editor, Role.Translator, Role.Reviewer)
-      .required()
+      .required(),
+
+    sourceLanguagesIds: Joi
+      .string(),
+
+    targetLanguagesIds: Joi
+      .string()
   });
   public role: string;
+  public sourceLanguagesIds: string;
+  public targetLanguagesIds: string;
 }
