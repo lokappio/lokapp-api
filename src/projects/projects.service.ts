@@ -298,7 +298,7 @@ export default class ProjectsService {
   }
 
   private filterUserLanguages(languages: Language[], userProject: UserProject): Language[] {
-    if (userProject.sourceLanguagesIds === null || userProject.targetLanguagesIds === null) {
+    if (userProject.sourceLanguagesIds === null || userProject.targetLanguagesIds === null || userProject.sourceLanguagesIds === "" || userProject.targetLanguagesIds === "") {
       return languages;
     } else {
       const sourceLanguagesIds = userProject.sourceLanguagesIds.split(",").map(id => parseInt(id));
