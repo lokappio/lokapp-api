@@ -153,14 +153,82 @@ describe("Projects E2E", () => {
       expect(relations[0].projectId).toEqual(createdProjectResp.body.id);
     });
 
-    it("Creating project with multiple languages", async () => {
+    it("Creating project with multiple languages and values", async () => {
       const projectsCount = (await projectRepository.find()).length;
 
       const dto = new CreateProjectDto({
         name: "New project name",
         description: "Lorem ipsum dolor sit amet",
         color: "112233",
-        languages: ["fr", "en"]
+        languages: ["fr", "en"],
+        groups: [
+          {
+            name: "Group 1",
+            keys: [
+              {
+                isPlural: false,
+                name: "Key 1",
+                values: [
+                  {
+                    name: "Group 1 - Value 1 fr",
+                    language: "fr"
+                  },
+                  {
+                    name: "Group 1 - Value 1 en",
+                    language: "en"
+                  }
+                ]
+              },
+              {
+                isPlural: false,
+                name: "Key 2",
+                values: [
+                  {
+                    name: "Group 1 - Value 2 fr",
+                    language: "fr"
+                  },
+                  {
+                    name: "Group 1 - Value 2 en",
+                    language: "en"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            name: "Group 2",
+            keys: [
+              {
+                isPlural: false,
+                name: "Key 1",
+                values: [
+                  {
+                    name: "Group 2 - Value 1 fr",
+                    language: "fr"
+                  },
+                  {
+                    name: "Group 2 - Value 1 en",
+                    language: "en"
+                  }
+                ]
+              },
+              {
+                isPlural: false,
+                name: "Key 2",
+                values: [
+                  {
+                    name: "Group 2 - Value 2 fr",
+                    language: "fr"
+                  },
+                  {
+                    name: "Group 2 - Value 2 en",
+                    language: "en"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
       });
 
       const createdProjectResp = await request(app.getHttpServer())

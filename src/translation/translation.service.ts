@@ -78,7 +78,7 @@ export default class TranslationService {
     }
 
     // Check if the translation key already exists
-    const keyAlreadyExists = await this.translationKeyAlreadyExists(createKeyDto.name, projectId, createKeyDto.groupId);
+    const keyAlreadyExists = await this.translationKeyAlreadyExists(createKeyDto.name, projectId, group.id);
     if (keyAlreadyExists) {
       throw new UnprocessableEntityException(QueryFailedErrorType.KEY_ALREADY_EXISTS);
     }
