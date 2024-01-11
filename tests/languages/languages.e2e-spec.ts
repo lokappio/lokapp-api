@@ -273,7 +273,10 @@ describe("Languages of a project E2E", () => {
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
         .send({name: "language"});
-      expect(duplicatedLanguageResp.status).toEqual(422);
+      expect(duplicatedLanguageResp.status).toEqual(201);
+
+      // The language should be the same as the first one
+      expect(duplicatedLanguageResp.body.id).toEqual(createLanguageResp.body.id);
     });
 
     it("Creating a project from the API", async () => {

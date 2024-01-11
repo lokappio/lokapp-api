@@ -192,12 +192,15 @@ export default class ProjectsService {
     const language = new Language();
     language.name = createLanguageDto.name;
     language.project = project;
-    const createdLanguage = await this.languagesRepository.save(language);
+
+    let createdLanguage = await this.languagesRepository.findOneBy({name: language.name, projectId: project.id});
+    if (!createdLanguage) {
+      createdLanguage = await this.languagesRepository.save(language);
+    }
+
     const allLanguages = await this.languagesRepository.findBy({
       projectId: projectId
     });
-
-    const createdKeyIds = [];
 
     // Find all translation keys of the project in order to create the translation values for the new language
     const projectKeys: TranslationKey[] = await this.keyRepository.findBy({projectId: projectId});
@@ -228,7 +231,6 @@ export default class ProjectsService {
               key.name = keyToCreate.name;
               key.isPlural = keyToCreate.isPlural;
               key = await this.keyRepository.save(key);
-              createdKeyIds.push(key.id);
             }
 
             // We check if the key has values
@@ -239,7 +241,9 @@ export default class ProjectsService {
                 const values = await this.valueRepository.findBy({keyId: key.id});
                 allLanguages.forEach(language => {
                   const valueExists = values.find(value => value.languageId === language.id);
-                  if (!valueExists) {
+                  // If this is the language we are importing and replaceExistingKeys is true, we replace the value
+                  const shouldReplaceValue = language.id === createdLanguage.id && createLanguageDto.replaceExistingKeys;
+                  if (!valueExists || shouldReplaceValue) {
                     const value = new TranslationValue();
                     value.keyId = key.id;
                     value.name = language.id === createdLanguage.id ? valueToCreate.name : ""; // Empty if the language is not the one we are creating
@@ -267,14 +271,14 @@ export default class ProjectsService {
             value.name = "";
             value.keyId = key.id;
             value.quantityString = quantity;
-            value.languageId = language.id;
+            value.languageId = createdLanguage.id;
             return await this.valueRepository.save(value);
           }));
         } else {
           const value = new TranslationValue();
           value.name = "";
           value.keyId = key.id;
-          value.languageId = language.id;
+          value.languageId = createdLanguage.id;
 
           return await this.valueRepository.save(value);
         }

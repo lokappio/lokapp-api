@@ -11,9 +11,14 @@ export default class CreateLanguageDto extends BaseDto {
 
     groups: Joi
       .array()
+      .optional(),
+
+    replaceExistingKeys: Joi
+      .boolean()
       .optional()
   });
 
   public name: string;
   public groups: CreateGroupDto[];
+  public replaceExistingKeys: boolean;
 }
