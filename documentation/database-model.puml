@@ -1,0 +1,91 @@
+@startuml
+!include dbdiagramtheme.puml
+
+table( projects ) #header:07198C {
+  primary_key( id, integer )
+  column( name, "character varying", true )
+  column( description, "character varying" )
+  column( color, "character varying", true )
+  column( createdAt, timestamp, true ) 
+  column( updatedAt, timestamp, true ) 
+}
+
+table( users ) #header:F39C1B {
+  primary_key( id, "character varying" )
+  column( username, "character varying" )
+  column( email, "character varying", true )
+  column( createdAt, timestamp, true ) 
+  column( updatedAt, timestamp, true ) 
+}
+
+table( invitations ) #header:F39C1B {
+  primary_key( id, integer )
+  foreign_key( projectId, integer )
+  foreign_key( ownerId, "character varying" )
+  foreign_key( guestId, "character varying" )
+  column( role, "character varying", true )
+  column( createdAt, timestamp )
+  column( sourceLanguagesIds, "character varying" )
+  column( targetLanguagesIds, "character varying" )
+}
+
+table( users_projects ) #header:F39C1B {
+  primary_key( projectId, integer )
+  primary_key( userId, "character varying" )
+  column( role, "character varying", true )
+  column( createdAt, timestamp )
+  column( sourceLanguagesIds, "character varying" )
+  column( targetLanguagesIds, "character varying" )
+}
+
+table( groups ) {
+  primary_key( id, integer )
+  foreign_key( projectId, integer, false )
+  column( name, "character varying", true )
+  column( createdAt, timestamp, true ) 
+  column( updatedAt, timestamp, true ) 
+}
+
+table( project_languages ) {
+  primary_key( id, integer )
+  foreign_key( projectId, integer )
+  column( name, "character varying", true )
+  column( createdAt, timestamp, true ) 
+  column( updatedAt, timestamp, true ) 
+  column( isRtl, boolean, true )
+}
+
+table( translation_keys ) #header:C0392A {
+  primary_key( id, integer )
+  foreign_key( projectId, integer )
+  foreign_key( groupId, integer, false )
+  column( name, "character varying", true )
+  column( isPlural, boolean, true )
+  column( createdAt, timestamp, true ) 
+  column( updatedAt, timestamp, true ) 
+}
+
+table( translation_values ) #header:C0392A {
+  primary_key( id, integer )
+  column( name, "character varying", true )
+  column( quantityString, "character varying", true )
+  column( createdAt, timestamp, true ) 
+  column( updatedAt, timestamp, true ) 
+  foreign_key( keyId, integer )
+  foreign_key( languageId, integer )
+  column( status, "character varying", true ) 
+}
+
+invitations::ownerId }|-- users::id
+invitations::guestId }|-- users::id
+invitations::projectId }|-- projects::id
+users_projects::userId }|-- users::id
+users_projects::projectId }|-- projects::id
+groups::projectId }|-- projects::id
+translation_keys::groupId }|-- groups::id
+translation_keys::projectId }|-- projects::id
+project_languages::projectId }|-- projects::id
+translation_values::keyId }|-- translation_keys::id
+translation_values::languageId }|-- project_languages::id
+
+@enduml
