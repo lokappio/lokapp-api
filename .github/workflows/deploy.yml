@@ -2,7 +2,7 @@ name: Build and publish image to Docker Packages
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "feat-reviewer-and-status"]
 
 env:
   REGISTRY: ghcr.io
