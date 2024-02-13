@@ -10,8 +10,8 @@ import * as winston from "winston";
 import TranslationModule from "./translation/translation.module";
 import GroupModule from "./groups/group.module";
 import InvitationModule from "./invitations/invitation.module";
-import { TerminusModule } from '@nestjs/terminus';
-import { HealthController } from './health/health.controller';
+import {TerminusModule} from '@nestjs/terminus';
+import {HealthController} from './health/health.controller';
 
 @Module({
   imports: [

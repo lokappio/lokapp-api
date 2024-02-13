@@ -19,10 +19,12 @@ export default class CreateInvitationDto extends BaseDto {
       .required(),
 
     sourceLanguagesIds: Joi
-      .string(),
+      .string()
+      .allow(null, ''),
 
     targetLanguagesIds: Joi
       .string()
+      .allow(null, ''),
   });
 
   public projectId: number;
