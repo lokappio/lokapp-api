@@ -262,7 +262,7 @@ export default class ProjectsService {
     // For each key, automatically create values in the new added language
     await Promise.all(projectKeys.map(async (key) => {
       // We check if the key has values
-      const values = await this.valueRepository.findBy({keyId: key.id});
+      const values = await this.valueRepository.findBy({keyId: key.id, languageId: createdLanguage.id});
       // If not, we create it
       if (!values || values.length === 0) {
         if (key.isPlural) {
