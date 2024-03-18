@@ -108,7 +108,7 @@ describe("Groups E2E", () => {
       expect(groupResp.status).toEqual(201);
 
       const groups = await findGroups(populatedProjects[0].id);
-      expect(groups).not.toBeUndefined();
+      expect(groups).not.toBeNull();
       expect(groups.length).toEqual(1);
     });
 
@@ -284,7 +284,7 @@ describe("Groups E2E", () => {
       const previousGroupName = groups.find(group => group.name == "Group name");
       expect(previousGroupName).toBeUndefined();
       const updatedGroupName = groups.find(group => group.name == editGroupDto.name);
-      expect(updatedGroupName).not.toBeUndefined();
+      expect(updatedGroupName).not.toBeNull();
     });
 
     it("Already existing group", async () => {
@@ -319,7 +319,7 @@ describe("Groups E2E", () => {
       const previousGroupName = gettingGroupsResp.body.find(group => group.name == "Group name");
       expect(previousGroupName).toBeUndefined();
       const updatedGroupName = gettingGroupsResp.body.find(group => group.name == editGroupDto.name);
-      expect(updatedGroupName).not.toBeUndefined();
+      expect(updatedGroupName).not.toBeNull();
     });
   });
 });

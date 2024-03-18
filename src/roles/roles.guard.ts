@@ -9,7 +9,7 @@ import Role from "./role.enum";
 export class RolesGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    @Inject("ProjectsService") private readonly projectsService: ProjectsService) {
+    private readonly projectsService: ProjectsService) {
   }
 
   async checkRole(requiredRoles: Role[], projectId: number, userId: string): Promise<boolean> {

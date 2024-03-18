@@ -8,7 +8,7 @@ import CreateProjectDto from "../../src/projects/dto/create-project.dto";
 import ProjectsModule from "../../src/projects/projects.module";
 import TestDatabaseModule from "../database/test-database.module";
 import CreateLanguageDto from "../../src/projects/dto/create-language.dto";
-import Language from "../../src/languages/language.entity";
+import Language, {LanguageAccess} from "../../src/languages/language.entity";
 import ProjectsService from "../../src/projects/projects.service";
 
 describe("ProjectsController", function () {
@@ -71,7 +71,8 @@ describe("ProjectsController", function () {
           color: "121212",
           description: null,
           createdAt: new Date(),
-          updatedAt: new Date()
+          updatedAt: new Date(),
+          userProjects: [],
         };
         jest.spyOn(projectsService, "getProject").mockImplementationOnce(() => Promise.resolve(expectedResult));
         expect(await projectsController.getProject("user-id", 1)).toBe(expectedResult);
@@ -114,7 +115,8 @@ describe("ProjectsController", function () {
       name: "Lorem ipsum",
       color: "121212",
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      userProjects: [],
     };
 
     const mockedLanguage: Language = {
@@ -123,7 +125,8 @@ describe("ProjectsController", function () {
       projectId: mockedProject.id,
       project: mockedProject,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      access: LanguageAccess.all
     };
 
     describe("Create", () => {

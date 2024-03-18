@@ -1,0 +1,41 @@
+@startuml
+left to right direction
+skinparam roundcorner 10
+skinparam shadowing false
+skinparam handwritten false
+skinparam BackgroundColor #44444D
+skinparam class {
+    FontColor white
+    AttributeFontColor white
+    BackgroundColor #38383F
+    ArrowColor white
+    BorderColor #38383F
+    HeaderBackgroundColor #232323
+    HeaderFontStyle bold
+}
+
+!define table(x) entity x << (T, white) >>
+
+!function primary_key($name, $type, $nonnull=true)
+  !$nn = ""
+  !if ($nonnull == true) 
+    !$nn = "<<NN>>"
+  !endif
+  !return "<b><color:#b8861b><&key></color> " + $name + ": " + $type + " <<PK>> " + $nn + "</b>"
+!endfunction
+!function foreign_key($name, $type, $nonnull=true)
+  !$nn = ""
+  !if ($nonnull == true) 
+    !$nn = "<<NN>>"
+  !endif
+  !return "<color:#aaaaaa><&key></color> " + $name + ": " + $type + " <<FK>> " + $nn
+!endfunction
+!function column($name, $type, $nonnull=false)
+  !$nn = ""
+  !if ($nonnull == true) 
+    !$nn = "<<NN>>"
+  !endif
+  !return "<color:#efefef><&media-record></color> " + $name + ": " + $type + " " + $nn
+!endfunction
+
+@enduml

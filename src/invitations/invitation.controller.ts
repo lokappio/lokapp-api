@@ -1,15 +1,5 @@
 import {Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Post, UseGuards} from "@nestjs/common";
-import {
-  ApiBearerAuth,
-  ApiCreatedResponse,
-  ApiForbiddenResponse,
-  ApiNoContentResponse,
-  ApiNotFoundResponse,
-  ApiOkResponse, ApiOperation,
-  ApiTags,
-  ApiUnauthorizedResponse,
-  ApiUnprocessableEntityResponse
-} from "@nestjs/swagger";
+import {ApiBearerAuth, ApiCreatedResponse, ApiForbiddenResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse, ApiUnprocessableEntityResponse} from "@nestjs/swagger";
 import {JoiValidationPipe} from "../common/joi-validation.pipe";
 import {JwtAuthUserGuard} from "../auth/guards/jwt-auth-user.guard";
 import {RolesGuard} from "../roles/roles.guard";
@@ -20,7 +10,6 @@ import CreateInvitationDto from "./dto/create-invitation.dto";
 import {Roles} from "../roles/role.decorator";
 import Role from "../roles/role.enum";
 import UserInvitation from "./model/user-invitation.model";
-import Group from "../groups/group.entity";
 
 @ApiBearerAuth()
 @ApiTags("Invitations")

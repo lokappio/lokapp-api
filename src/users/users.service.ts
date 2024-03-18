@@ -14,7 +14,7 @@ export default class UsersService {
   }
 
   public async getUser(id: string): Promise<User> {
-    const userFound: User = await this.usersRepository.findOne(id);
+    const userFound: User = await this.usersRepository.findOneById(id);
     if (!userFound) {
       throw new NotFoundException();
     }
@@ -34,7 +34,7 @@ export default class UsersService {
   }
 
   public async create(userData: CreateUserDto): Promise<User> {
-    const userExists = await this.usersRepository.findOne(userData.id);
+    const userExists = await this.usersRepository.findOneById(userData.id);
     if (userExists) {
       throw new BadRequestException("User already exists");
     }

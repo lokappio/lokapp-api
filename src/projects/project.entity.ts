@@ -1,5 +1,7 @@
-import {Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
-import {ApiProperty, ApiPropertyOptional} from "@nestjs/swagger";
+import {Column, CreateDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
+import {ApiHideProperty, ApiProperty, ApiPropertyOptional} from "@nestjs/swagger";
+import User from "../users/user.entity";
+import UserProject from "../users-projects/user_project.entity";
 
 export const ProjectsTableName: string = "projects";
 
@@ -28,4 +30,8 @@ export default class Project {
   @UpdateDateColumn()
   @ApiProperty()
   readonly updatedAt: Date;
+
+  @OneToMany(() => UserProject, (userProject) => userProject.project)
+  @ApiHideProperty()
+  userProjects: UserProject[]
 }

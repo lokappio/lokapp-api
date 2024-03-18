@@ -1,23 +1,12 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from "@nestjs/common";
-import {
-  ApiBadRequestResponse,
-  ApiBearerAuth,
-  ApiCreatedResponse,
-  ApiForbiddenResponse,
-  ApiNoContentResponse,
-  ApiNotFoundResponse,
-  ApiOkResponse, ApiOperation,
-  ApiTags,
-  ApiUnauthorizedResponse,
-  ApiUnprocessableEntityResponse
-} from "@nestjs/swagger";
-import { ApiImplicitQueries } from "nestjs-swagger-api-implicit-queries-decorator";
-import { JwtAuthUserGuard } from "../auth/guards/jwt-auth-user.guard";
-import { JoiValidationPipe } from "../common/joi-validation.pipe";
-import { Roles } from "../roles/role.decorator";
+import {Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Patch, Post, Query, UseGuards} from "@nestjs/common";
+import {ApiBadRequestResponse, ApiBearerAuth, ApiCreatedResponse, ApiForbiddenResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse, ApiUnprocessableEntityResponse} from "@nestjs/swagger";
+import {ApiImplicitQueries} from "nestjs-swagger-api-implicit-queries-decorator";
+import {JwtAuthUserGuard} from "../auth/guards/jwt-auth-user.guard";
+import {JoiValidationPipe} from "../common/joi-validation.pipe";
+import {Roles} from "../roles/role.decorator";
 import Role from "../roles/role.enum";
-import { RolesGuard } from "../roles/roles.guard";
-import { UserId } from "../users/user-id.decorator";
+import {RolesGuard} from "../roles/roles.guard";
+import {UserId} from "../users/user-id.decorator";
 import CreateKeyDto from "./dto/create-key.dto";
 import CreateValueDto from "./dto/create-value.dto";
 import GetTranslationValueDto from "./dto/get-value.dto";
@@ -26,6 +15,7 @@ import UpdateValueDto from "./dto/update-value.dto";
 import TranslationService from "./translation.service";
 import TranslationKey from "./translation_key.entity";
 import TranslationValue from "./translation_value.entity";
+import UpdateStatusDto from "./dto/update-status.dto";
 
 @ApiBearerAuth()
 @ApiTags("Translation")
@@ -168,6 +158,19 @@ export default class TranslationController {
     @Param("valueId", ParseIntPipe) valueId: number,
     @Body(new JoiValidationPipe(UpdateValueDto.schema)) updateValueDto: UpdateValueDto): Promise<TranslationValue> {
     return this.translationService.updateValue(userId, projectId, translationId, valueId, updateValueDto);
+  }
+
+  @Patch(":translationId/values/:valueId/status")
+  @Roles(Role.Owner, Role.Manager, Role.Editor, Role.Reviewer)
+  @ApiOperation({summary: "Update a translation value status"})
+  @ApiOkResponse({type: TranslationValue})
+  public updateStatus(
+    @UserId() userId: string,
+    @Param("projectId", ParseIntPipe) projectId: number,
+    @Param("translationId", ParseIntPipe) translationId: number,
+    @Param("valueId", ParseIntPipe) valueId: number,
+    @Body(new JoiValidationPipe(UpdateStatusDto.schema)) updateStatusDto: UpdateStatusDto): Promise<TranslationValue> {
+    return this.translationService.updateStatus(userId, projectId, translationId, valueId, updateStatusDto);
   }
 
   @Delete(":translationId/values/:valueId")

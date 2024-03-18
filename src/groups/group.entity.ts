@@ -25,6 +25,10 @@ export default class Group {
   @ApiProperty()
   readonly updatedAt: Date;
 
+  @Column("int")
+  @ApiProperty()
+  projectId: number;
+
   @ManyToOne(() => Project, {onDelete: "CASCADE"})
   @ApiHideProperty()
   public project: Project;

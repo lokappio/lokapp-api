@@ -153,14 +153,82 @@ describe("Projects E2E", () => {
       expect(relations[0].projectId).toEqual(createdProjectResp.body.id);
     });
 
-    it("Creating project with multiple languages", async () => {
+    it("Creating project with multiple languages and values", async () => {
       const projectsCount = (await projectRepository.find()).length;
 
       const dto = new CreateProjectDto({
         name: "New project name",
         description: "Lorem ipsum dolor sit amet",
         color: "112233",
-        languages: ["fr", "en"]
+        languages: ["fr", "en"],
+        groups: [
+          {
+            name: "Group 1",
+            keys: [
+              {
+                isPlural: false,
+                name: "Key 1",
+                values: [
+                  {
+                    name: "Group 1 - Value 1 fr",
+                    language: "fr"
+                  },
+                  {
+                    name: "Group 1 - Value 1 en",
+                    language: "en"
+                  }
+                ]
+              },
+              {
+                isPlural: false,
+                name: "Key 2",
+                values: [
+                  {
+                    name: "Group 1 - Value 2 fr",
+                    language: "fr"
+                  },
+                  {
+                    name: "Group 1 - Value 2 en",
+                    language: "en"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            name: "Group 2",
+            keys: [
+              {
+                isPlural: false,
+                name: "Key 1",
+                values: [
+                  {
+                    name: "Group 2 - Value 1 fr",
+                    language: "fr"
+                  },
+                  {
+                    name: "Group 2 - Value 1 en",
+                    language: "en"
+                  }
+                ]
+              },
+              {
+                isPlural: false,
+                name: "Key 2",
+                values: [
+                  {
+                    name: "Group 2 - Value 2 fr",
+                    language: "fr"
+                  },
+                  {
+                    name: "Group 2 - Value 2 en",
+                    language: "en"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
       });
 
       const createdProjectResp = await request(app.getHttpServer())
@@ -227,7 +295,7 @@ describe("Projects E2E", () => {
           userId: TestsHelpers.MOCKED_USER_ID_1
         }
       });
-      expect(relation).not.toBeUndefined();
+      expect(relation).not.toBeNull();
       expect(relation.role).toEqual(Role.Owner);
     });
 
@@ -603,8 +671,8 @@ describe("Projects E2E", () => {
       expect(deleteResp.status).toBe(204);
 
       // Expect to not be able to find the project anymore
-      const foundProject = await projectRepository.findOne(createdProject.body.id);
-      expect(foundProject).toBeUndefined();
+      const foundProject = await projectRepository.findOneById(createdProject.body.id);
+      expect(foundProject).toBeNull();
 
       const relations = await userProjectRepository.find({
         where: {
@@ -624,14 +692,14 @@ describe("Projects E2E", () => {
 
       // Create relation for user1
       const relation1 = new UserProject();
-      relation1.user = await userRepository.findOne(TestsHelpers.MOCKED_USER_ID_1);
+      relation1.user = await userRepository.findOneById(TestsHelpers.MOCKED_USER_ID_1);
       relation1.project = project;
       relation1.role = Role.Owner;
       await userProjectRepository.save(relation1);
 
       // Create relation for user2
       const relation2 = new UserProject();
-      relation2.user = await userRepository.findOne(TestsHelpers.MOCKED_USER_ID_2);
+      relation2.user = await userRepository.findOneById(TestsHelpers.MOCKED_USER_ID_2);
       relation2.project = project;
       relation2.role = Role.Manager;
       await userProjectRepository.save(relation2);
@@ -652,8 +720,8 @@ describe("Projects E2E", () => {
       expect(deleteResp.status).toBe(204);
 
       // Expect to not be able to find the project anymore
-      const foundProject = await projectRepository.findOne(project.id);
-      expect(foundProject).toBeUndefined();
+      const foundProject = await projectRepository.findOneById(project.id);
+      expect(foundProject).toBeNull();
 
       const relationsCountAfterDeletion = await userProjectRepository.find({
         where: {

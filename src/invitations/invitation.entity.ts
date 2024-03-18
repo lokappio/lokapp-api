@@ -51,4 +51,12 @@ export default class Invitation {
   @CreateDateColumn()
   @ApiProperty()
   readonly createdAt: Date;
+
+  @Column({nullable: true})
+  @ApiProperty()
+  sourceLanguagesIds: string;
+
+  @Column({nullable: true})
+  @ApiProperty()
+  targetLanguagesIds: string;
 }

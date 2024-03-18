@@ -18,12 +18,12 @@ export default class UserProject {
   @ApiProperty()
   userId: string;
 
-  @ManyToOne(() => Project, (project) => project.id, {primary: true, onDelete: "CASCADE"})
+  @ManyToOne(() => Project, (project) => project.id, {onDelete: "CASCADE"})
   @JoinColumn({name: "projectId"})
   @ApiHideProperty()
   public project: Project;
 
-  @ManyToOne(() => User, (user) => user.id, {primary: true, onDelete: "CASCADE"})
+  @ManyToOne(() => User, (user) => user.id, {onDelete: "CASCADE"})
   @JoinColumn({name: "userId"})
   @ApiHideProperty()
   public user: User;
@@ -31,4 +31,12 @@ export default class UserProject {
   @Column()
   @ApiProperty()
   public role: Role;
+
+  @Column({nullable: true})
+  @ApiProperty()
+  sourceLanguagesIds: string;
+
+  @Column({nullable: true})
+  @ApiProperty()
+  targetLanguagesIds: string;
 }

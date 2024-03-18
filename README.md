@@ -146,6 +146,10 @@ A Postman's collection can be found [here](postman-collection/).
 
 To try out our product, you can use our [demo](https://demo.lokapp.io).
 
+## Database model
+
+![Database Diagram](./documentation/database-model.png)
+
 ## License
 
 Distributed under the Apache 2.0 License. See `LICENSE` for more information.

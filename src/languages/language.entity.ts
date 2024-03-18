@@ -5,6 +5,13 @@ import {PostgresUniqueKeys} from "../data/database/postgres-unique-keys.enum";
 
 export const ProjectLanguagesTableName: string = "project_languages";
 
+
+export enum LanguageAccess {
+  all = "all",
+  source = "source",
+  target = "target"
+}
+
 @Entity(ProjectLanguagesTableName)
 @Unique(PostgresUniqueKeys.LanguageInProject, ["name", "project"])
 export default class Language {
@@ -32,4 +39,7 @@ export default class Language {
   @UpdateDateColumn()
   @ApiProperty()
   readonly updatedAt: Date;
+
+  @ApiProperty()
+  public access: LanguageAccess = LanguageAccess.all;
 }

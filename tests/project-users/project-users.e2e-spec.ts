@@ -54,7 +54,7 @@ describe("Users of a project E2E", () => {
 
   async function createRelation(project: Project, userId: string, role: Role): Promise<void> {
     const relation = new UserProject();
-    relation.user = await userRepository.findOne(userId);
+    relation.user = await userRepository.findOneById(userId);
     relation.project = project;
     relation.role = role;
     await userProjectRepository.save(relation);
@@ -128,7 +128,7 @@ describe("Users of a project E2E", () => {
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
         .send(new CreateInvitationDto({
-          email: (await userRepository.findOne(TestsHelpers.MOCKED_USER_ID_2)).email,
+          email: (await userRepository.findOneById(TestsHelpers.MOCKED_USER_ID_2)).email,
           projectId: populatedProjects[0].id,
           role: Role.Manager
         }));
@@ -195,7 +195,7 @@ describe("Users of a project E2E", () => {
       expect(ownRoleChangeResp.status).toEqual(403);
 
       const relation = await getRelation(populatedProjects[0], TestsHelpers.MOCKED_USER_ID_1);
-      expect(relation).not.toBeUndefined();
+      expect(relation).not.toBeNull();
       // Expect the user1 to still have the same role
       expect(relation.role).toEqual(Role.Manager);
     });
@@ -212,7 +212,7 @@ describe("Users of a project E2E", () => {
       expect(changeOwnerRoleResp.status).toEqual(403);
 
       const relation = await getRelation(populatedProjects[0], TestsHelpers.MOCKED_USER_ID_1);
-      expect(relation).not.toBeUndefined();
+      expect(relation).not.toBeNull();
       // Expect the user1 to still be the owner
       expect(relation.role).toEqual(Role.Owner);
     });
@@ -231,12 +231,12 @@ describe("Users of a project E2E", () => {
 
       // Expect the user1 to still be the owner
       const user1Relation = await getRelation(populatedProjects[0], TestsHelpers.MOCKED_USER_ID_1);
-      expect(user1Relation).not.toBeUndefined();
+      expect(user1Relation).not.toBeNull();
       expect(user1Relation.role).toEqual(Role.Owner);
 
       // Expect the user3 to still be an editor
       const user3Relation = await getRelation(populatedProjects[0], TestsHelpers.MOCKED_USER_ID_3);
-      expect(user3Relation).not.toBeUndefined();
+      expect(user3Relation).not.toBeNull();
       expect(user3Relation.role).toEqual(Role.Editor);
     });
 
@@ -253,12 +253,12 @@ describe("Users of a project E2E", () => {
 
       // Expect the user1 to be a manager
       const user1Relation = await getRelation(populatedProjects[0], TestsHelpers.MOCKED_USER_ID_1);
-      expect(user1Relation).not.toBeUndefined();
+      expect(user1Relation).not.toBeNull();
       expect(user1Relation.role).toEqual(Role.Manager);
 
       // Expect the user2 to be the new owner
       const user2Relation = await getRelation(populatedProjects[0], TestsHelpers.MOCKED_USER_ID_2);
-      expect(user2Relation).not.toBeUndefined();
+      expect(user2Relation).not.toBeNull();
       expect(user2Relation.role).toEqual(Role.Owner);
     });
 
@@ -275,7 +275,7 @@ describe("Users of a project E2E", () => {
 
       // Expect the user2 to be editor
       const editorRelation = await getRelation(populatedProjects[0], TestsHelpers.MOCKED_USER_ID_2);
-      expect(editorRelation).not.toBeUndefined();
+      expect(editorRelation).not.toBeNull();
       expect(editorRelation.role).toEqual(Role.Editor);
 
       const changeToTranslatorResp = await request(app.getHttpServer())
@@ -287,7 +287,7 @@ describe("Users of a project E2E", () => {
 
       // Expect the user2 to be translator
       const translatorRelation = await getRelation(populatedProjects[0], TestsHelpers.MOCKED_USER_ID_2);
-      expect(translatorRelation).not.toBeUndefined();
+      expect(translatorRelation).not.toBeNull();
       expect(translatorRelation.role).toEqual(Role.Translator);
     });
   });
@@ -339,7 +339,7 @@ describe("Users of a project E2E", () => {
       expect(response.status).toEqual(403);
 
       const relation = await getRelation(populatedProjects[0], TestsHelpers.MOCKED_USER_ID_1);
-      expect(relation).not.toBeUndefined();
+      expect(relation).not.toBeNull();
       expect(relation).not.toBeNull();
     });
 
@@ -354,7 +354,7 @@ describe("Users of a project E2E", () => {
       expect(response.status).toEqual(204);
 
       const relation = await getRelation(populatedProjects[0], TestsHelpers.MOCKED_USER_ID_2);
-      expect(relation).toBeUndefined();
+      expect(relation).toBeNull();
     });
   });
 
@@ -387,11 +387,11 @@ describe("Users of a project E2E", () => {
 
       // Check the relation doesn't exist anymore
       const relation = await getRelation(populatedProjects[0], TestsHelpers.MOCKED_USER_ID_1);
-      expect(relation).toBeUndefined();
+      expect(relation).toBeNull();
 
       // Check the project still exists
-      const project = await projectRepository.findOne(populatedProjects[0].id);
-      expect(project).not.toBeUndefined();
+      const project = await projectRepository.findOneById(populatedProjects[0].id);
+      expect(project).not.toBeNull();
       expect(project).not.toBeNull();
     });
 
@@ -404,8 +404,8 @@ describe("Users of a project E2E", () => {
       expect(leaveResp.status).toEqual(204);
 
       // Check the project doesn't exist anymore
-      const project = await projectRepository.findOne(populatedProjects[0].id);
-      expect(project).toBeUndefined();
+      const project = await projectRepository.findOneById(populatedProjects[0].id);
+      expect(project).toBeNull();
 
       // Check all relations have been deleted
       const relations = await userProjectRepository.find({

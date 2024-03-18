@@ -16,6 +16,8 @@ import CreateProjectDto from "../../src/projects/dto/create-project.dto";
 import TranslationValue from "../../src/translation/translation_value.entity";
 import TranslationKey from "../../src/translation/translation_key.entity";
 import Group, {DefaultGroupName} from "../../src/groups/group.entity";
+import CreateGroupDto from "../../src/groups/dto/create-group.dto";
+import CreateKeyDto from "../../src/translation/dto/create-key.dto";
 import CreateValueDto from "../../src/translation/dto/create-value.dto";
 
 describe("Languages of a project E2E", () => {
@@ -132,7 +134,7 @@ describe("Languages of a project E2E", () => {
       expect(tooLongNameResp.status).toEqual(400);
     });
 
-    it("Creating a language", async () => {
+    it("Creating a language without existing values", async () => {
       await populateProjectGroup(populatedProjects[0]);
 
       const languageResp = await request(app.getHttpServer())
@@ -145,16 +147,14 @@ describe("Languages of a project E2E", () => {
 
       const languages = await findLanguages(populatedProjects[0].id);
 
-      expect(languages).not.toBeUndefined();
+      expect(languages).not.toBeNull();
       expect(languages.length).toEqual(1);
 
       const createdLanguage: Language = languages[0];
 
-      const values_singular = await valuesRepository.find({where: {language: createdLanguage, keyId: 1}});
-      const values_plural = await valuesRepository.find({where: {language: createdLanguage, keyId: 2}});
+      const values = await valuesRepository.find({where: {languageId: createdLanguage.id}});
 
-      expect(values_singular.length).toBe(1);
-      expect(values_plural.length).toBe(3);
+      expect(values.length).toBe(4);
     });
 
     it("Creating a language with existing values", async () => {
@@ -164,23 +164,78 @@ describe("Languages of a project E2E", () => {
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
         .send(new CreateLanguageDto({
           name: "fr",
-          values: [
-            new CreateValueDto({
-              name: "singular_key_fr",
-              keyId: 1,
-              quantityString: null
-            }), new CreateValueDto({
-              name: "plural_key_fr_zero",
-              keyId: 2,
-              quantityString: "zero"
-            }), new CreateValueDto({
-              name: "plural_key_fr_one",
-              keyId: 2,
-              quantityString: "one"
-            }), new CreateValueDto({
-              name: "plural_key_fr_other",
-              keyId: 2,
-              quantityString: "other"
+          groups: [
+            // This group exists in the project, but the keys and values should be created
+            new CreateGroupDto({
+              name: "common",
+              keys: [
+                new CreateKeyDto({
+                  name: "singular_key",
+                  isPlural: false,
+                  values: [
+                    new CreateValueDto({
+                      name: "singular_key_fr",
+                      quantityString: null,
+                      languageName: "fr"
+                    })
+                  ],
+                }),
+                new CreateKeyDto({
+                  name: "plural_key",
+                  isPlural: true,
+                  values: [
+                    new CreateValueDto({
+                      name: "plural_key_fr_zero",
+                      quantityString: "zero",
+                      languageName: "fr"
+                    }), new CreateValueDto({
+                      name: "plural_key_fr_one",
+                      quantityString: "one",
+                      languageName: "fr"
+                    }), new CreateValueDto({
+                      name: "plural_key_fr_other",
+                      quantityString: "other",
+                      languageName: "fr"
+                    })
+                  ],
+                })
+              ]
+            }),
+            // This group is new and should be created
+            new CreateGroupDto({
+              name: "new_group",
+              keys: [
+                new CreateKeyDto({
+                  name: "singular_key",
+                  isPlural: false,
+                  values: [
+                    new CreateValueDto({
+                      name: "singular_key_fr",
+                      quantityString: null,
+                      languageName: "fr"
+                    })
+                  ],
+                }),
+                new CreateKeyDto({
+                  name: "plural_key",
+                  isPlural: true,
+                  values: [
+                    new CreateValueDto({
+                      name: "plural_key_fr_zero",
+                      quantityString: "zero",
+                      languageName: "fr"
+                    }), new CreateValueDto({
+                      name: "plural_key_fr_one",
+                      quantityString: "one",
+                      languageName: "fr"
+                    }), new CreateValueDto({
+                      name: "plural_key_fr_other",
+                      quantityString: "other",
+                      languageName: "fr"
+                    })
+                  ],
+                })
+              ]
             })
           ]
         }));
@@ -189,19 +244,19 @@ describe("Languages of a project E2E", () => {
 
       const languages = await findLanguages(populatedProjects[0].id);
 
-      expect(languages).not.toBeUndefined();
+      expect(languages).not.toBeNull();
       expect(languages.length).toEqual(1);
 
       const createdLanguage: Language = languages[0];
 
-      const values_singular = await valuesRepository.find({where: {language: createdLanguage, keyId: 1}});
-      const values_plural = await valuesRepository.find({where: {language: createdLanguage, keyId: 2}});
-
-      expect(values_singular.length).toBe(1);
-      expect(values_singular[0].name).toBe("singular_key_fr");
-      expect(values_plural.length).toBe(3);
-      values_plural.forEach(value => {
-        expect(value.name).toBe(`plural_key_fr_${value.quantityString}`);
+      const values = await valuesRepository.find({where: {languageId: createdLanguage.id}});
+      expect(values.length).toBe(8);
+      values.forEach(value => {
+        if (value.quantityString) {
+          expect(value.name).toBe(`plural_key_fr_${value.quantityString}`);
+        } else {
+          expect(value.name).toBe(`singular_key_fr`);
+        }
       })
     });
 
@@ -218,7 +273,10 @@ describe("Languages of a project E2E", () => {
         .auth("mocked.jwt", {type: "bearer"})
         .set("mocked_user_id", TestsHelpers.MOCKED_USER_ID_1)
         .send({name: "language"});
-      expect(duplicatedLanguageResp.status).toEqual(422);
+      expect(duplicatedLanguageResp.status).toEqual(201);
+
+      // The language should be the same as the first one
+      expect(duplicatedLanguageResp.body.id).toEqual(createLanguageResp.body.id);
     });
 
     it("Creating a project from the API", async () => {

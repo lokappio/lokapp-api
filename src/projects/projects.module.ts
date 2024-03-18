@@ -10,19 +10,25 @@ import UserProject from "../users-projects/user_project.entity";
 import Project from "./project.entity";
 import ProjectsController from "./projects.controller";
 import ProjectsService from "./projects.service";
+import Invitation from "../invitations/invitation.entity";
+import User from "../users/user.entity";
+import UsersModule from "../users/users.module";
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
-      Project,
-      Language,
-      UserProject,
       Group,
+      Invitation,
+      Language,
+      Project,
       TranslationKey,
       TranslationValue,
+      User,
+      UserProject,
     ]),
     TranslationModule,
     GroupModule,
+    UsersModule
   ],
   controllers: [ProjectsController],
   providers: [ProjectsService],

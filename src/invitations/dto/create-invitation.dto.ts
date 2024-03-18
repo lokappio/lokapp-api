@@ -11,15 +11,25 @@ export default class CreateInvitationDto extends BaseDto {
     // Role.Owner isn't a valid role when creating an invitation
     role: Joi
       .string()
-      .valid(Role.Manager, Role.Translator, Role.Editor)
+      .valid(Role.Manager, Role.Translator, Role.Editor, Role.Reviewer)
       .required(),
 
     projectId: Joi
       .number()
-      .required()
+      .required(),
+
+    sourceLanguagesIds: Joi
+      .string()
+      .allow(null, ''),
+
+    targetLanguagesIds: Joi
+      .string()
+      .allow(null, ''),
   });
 
   public projectId: number;
   public email: string;
   public role: string;
+  public sourceLanguagesIds: string;
+  public targetLanguagesIds: string;
 }

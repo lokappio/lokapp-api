@@ -18,6 +18,7 @@ import * as request from "supertest";
 import CreateInvitationDto from "../../src/invitations/dto/create-invitation.dto";
 import Invitation from "../../src/invitations/invitation.entity";
 import CreateLanguageDto from "../../src/projects/dto/create-language.dto";
+import TranslationStatus from "../../src/translation/translation_status.enum";
 
 describe("Roles E2E", () => {
   let app: INestApplication;
@@ -35,11 +36,13 @@ describe("Roles E2E", () => {
   let manager: User;
   let editor: User;
   let translator: User;
+  let reviewer: User;
 
   const OwnerID: string = "owner-id";
   const ManagerID: string = "manager-id";
   const EditorID: string = "editor-id";
   const TranslatorID: string = "translator-id";
+  const ReviewerID: string = "reviewer-id";
 
   async function insertProject(): Promise<Project> {
     const project = new Project();
@@ -114,6 +117,10 @@ describe("Roles E2E", () => {
     // Create Translator
     translator = await insertUser(TranslatorID, "translator", "translator@lokapp.io");
     await insertRelation(translator, project, Role.Translator);
+
+    // Create Reviewer
+    reviewer = await insertUser(ReviewerID, "reviewer", "reviewe@lokapp.ior");
+    await insertRelation(reviewer, project, Role.Reviewer);
   }
 
   async function clearDatabase(): Promise<void> {
@@ -191,7 +198,7 @@ describe("Roles E2E", () => {
           .auth("mocked.jwt", {type: "bearer"})
           .set("mocked_user_id", OwnerID);
         expect(usersResp.status).toEqual(200);
-        expect(usersResp.body.length).toEqual(4);
+        expect(usersResp.body.length).toEqual(5);
       });
 
       it("Owner can edit another user's role", async () => {
@@ -434,7 +441,7 @@ describe("Roles E2E", () => {
           .auth("mocked.jwt", {type: "bearer"})
           .set("mocked_user_id", ManagerID);
         expect(usersResp.status).toEqual(200);
-        expect(usersResp.body.length).toEqual(4);
+        expect(usersResp.body.length).toEqual(5);
       });
 
       it("Manager can edit another user's role", async () => {
@@ -685,7 +692,7 @@ describe("Roles E2E", () => {
           .auth("mocked.jwt", {type: "bearer"})
           .set("mocked_user_id", EditorID);
         expect(usersResp.status).toEqual(200);
-        expect(usersResp.body.length).toEqual(4);
+        expect(usersResp.body.length).toEqual(5);
       });
 
       it("Editor CAN'T edit another user's role", async () => {
@@ -951,7 +958,7 @@ describe("Roles E2E", () => {
           .auth("mocked.jwt", {type: "bearer"})
           .set("mocked_user_id", TranslatorID);
         expect(usersResp.status).toEqual(200);
-        expect(usersResp.body.length).toEqual(4);
+        expect(usersResp.body.length).toEqual(5);
       });
 
       it("Translator CAN'T edit another user's role", async () => {
@@ -1166,6 +1173,21 @@ describe("Roles E2E", () => {
         expect(translationValueResp.status).toEqual(200);
       });
 
+      it("Translator CAN'T update a translation status", async () => {
+        const group = await insertGroup("Name of the group");
+        const language = await insertLanguage("English");
+        const key = await insertTranslationKey("translation_key", group);
+        const value = await insertTranslationValue("Translated value", key, language);
+        const translationValueResp = await request(app.getHttpServer())
+          .patch(`/projects/${project.id}/translations/${key.id}/values/${value.id}/status`)
+          .auth("mocked.jwt", {type: "bearer"})
+          .set("mocked_user_id", TranslatorID)
+          .send({
+            status: TranslationStatus.VALIDATED,
+          });
+        expect(translationValueResp.status).toEqual(403);
+      });
+
       it("Translator can delete a translation value", async () => {
         const group = await insertGroup("Name of the group");
         const key = await insertTranslationKey("translation_key", group);
@@ -1176,6 +1198,287 @@ describe("Roles E2E", () => {
           .auth("mocked.jwt", {type: "bearer"})
           .set("mocked_user_id", TranslatorID);
         expect(translationValueResp.status).toEqual(204);
+      });
+    });
+  });
+
+  describe("Reviewer", () => {
+    afterEach(async () => {
+      await clearDatabase();
+      await populateDatabase();
+    });
+
+    describe("Projects", () => {
+      it("Reviewer CAN'T can edit project", async () => {
+        const editedResp = await request(app.getHttpServer())
+          .put(`/projects/${project.id}`)
+          .auth("mocked.jwt", {type: "bearer"})
+          .set("mocked_user_id", ReviewerID)
+          .send({
+            name: "Edited name",
+            color: "123456",
+            description: "Edited description"
+          });
+        expect(editedResp.status).toEqual(403);
+      });
+
+      it("Reviewer CAN'T can delete project", async () => {
+        const deleteResp = await request(app.getHttpServer())
+          .delete(`/projects/${project.id}`)
+          .auth("mocked.jwt", {type: "bearer"})
+          .set("mocked_user_id", ReviewerID);
+        expect(deleteResp.status).toEqual(403);
+      });
+    });
+
+    describe("Users of the project", () => {
+      it("Reviewer can see the list of users within the project", async () => {
+        const usersResp = await request(app.getHttpServer())
+          .get(`/projects/${project.id}/users`)
+          .auth("mocked.jwt", {type: "bearer"})
+          .set("mocked_user_id", ReviewerID);
+        expect(usersResp.status).toEqual(200);
+        expect(usersResp.body.length).toEqual(5);
+      });
+
+      it("Reviewer CAN'T edit another user's role", async () => {
+        const changeRoleResp = await request(app.getHttpServer())
+          .patch(`/projects/${project.id}/users/${EditorID}`)
+          .auth("mocked.jwt", {type: "bearer"})
+          .set("mocked_user_id", ReviewerID)
+          .send({role: Role.Reviewer});
+        expect(changeRoleResp.status).toEqual(403);
+      });
+
+      it("Reviewer CAN'T delete users", async () => {
+        const deleteResp = await request(app.getHttpServer())
+          .delete(`/projects/${project.id}/users/${EditorID}`)
+          .auth("mocked.jwt", {type: "bearer"})
+          .set("mocked_user_id", ReviewerID);
+        expect(deleteResp.status).toEqual(403);
+      });
+    });
+
+    describe("Invitations", () => {
+      beforeEach(async () => {
+        // Insert user to invite in DB
+        const guest = new User("guest-id", "guest username");
+        guest.email = "guest@lokapp.io";
+        await userRepository.save(guest);
+      });
+
+      afterEach(async () => {
+        await invitationRepository.clear();
+      });
+
+      it("Reviewer CAN'T create an invitation", async () => {
+        const invitationResp = await request(app.getHttpServer())
+          .post("/invitations")
+          .auth("mocked.jwt", {type: "bearer"})
+          .set("mocked_user_id", ReviewerID)
+          .send(new CreateInvitationDto({
+            email: "guest@lokapp.io",
+            projectId: project.id,
+            role: Role.Manager
+          }));
+        expect(invitationResp.status).toEqual(403);
+      });
+
+      it("Reviewer CAN'T delete an invitation", async () => {
+        // Create an invitation as the owner
+        const invitationResp = await request(app.getHttpServer())
+          .post("/invitations")
+          .auth("mocked.jwt", {type: "bearer"})
+          .set("mocked_user_id", OwnerID)
+          .send(new CreateInvitationDto({
+            email: "guest@lokapp.io",
+            projectId: project.id,
+            role: Role.Manager
+          }));
+        expect(invitationResp.status).toEqual(201);
+
+        // Try to delete the invitation as the Editor
+        const deleteInvitation = await request(app.getHttpServer())
+          .delete(`/invitations/${invitationResp.body.id}`)
+          .auth("mocked.jwt", {type: "bearer"})
+          .set("mocked_user_id", ReviewerID);
+        expect(deleteInvitation.status).toEqual(403);
+      });
+    });
+
+    describe("Groups", () => {
+      beforeEach(async () => {
+        const group = new Group();
+        group.name = "Name of the group";
+        group.project = project;
+        await groupRepository.save(group);
+      });
+
+      it("Reviewer CAN't create groups", async () => {
+        const groupResp = await request(app.getHttpServer())
+          .post(`/projects/${project.id}/groups`)
+          .auth("mocked.jwt", {type: "bearer"})
+          .set("mocked_user_id", ReviewerID)
+          .send({name: "Group #1"});
+        expect(groupResp.status).toEqual(403);
+      });
+
+      it("Reviewer can see groups", async () => {
+        const groupsResp = await request(app.getHttpServer())
+          .get(`/projects/${project.id}/groups`)
+          .auth("mocked.jwt", {type: "bearer"})
+          .set("mocked_user_id", ReviewerID);
+        expect(groupsResp.status).toEqual(200);
+        expect(groupsResp.body.length).toBeGreaterThan(0);
+      });
+
+      it("Reviewer CAN'T edit groups", async () => {
+        const group = new Group();
+        group.name = "Editable group";
+        group.project = project;
+        const groupEntity = await groupRepository.save(group);
+
+        const editingResp = await request(app.getHttpServer())
+          .patch(`/projects/${project.id}/groups/${groupEntity.id}`)
+          .auth("mocked.jwt", {type: "bearer"})
+          .set("mocked_user_id", ReviewerID)
+          .send({name: "Edited group name"});
+        expect(editingResp.status).toEqual(403);
+      });
+    });
+
+    describe("Languages", () => {
+      it("Reviewer CAN'T create new language", async () => {
+        const createLanguageResp = await request(app.getHttpServer())
+          .post(`/projects/${project.id}/languages`)
+          .auth("mocked.jwt", {type: "bearer"})
+          .set("mocked_user_id", ReviewerID)
+          .send(new CreateLanguageDto({name: "English"}));
+        expect(createLanguageResp.status).toEqual(403);
+      });
+
+      it("Reviewer CAN'T update a language", async () => {
+        const language = new Language();
+        language.project = project;
+        language.name = "To edit";
+        const languageEntity = await languageRepository.save(language);
+
+        const editingResp = await request(app.getHttpServer())
+          .put(`/projects/${project.id}/languages/${languageEntity.id}`)
+          .auth("mocked.jwt", {type: "bearer"})
+          .set("mocked_user_id", ReviewerID)
+          .send({name: "Edited name"});
+        expect(editingResp.status).toEqual(403);
+      });
+
+      it("Reviewer CAN'T delete a language", async () => {
+        const language = new Language();
+        language.project = project;
+        language.name = "To delete";
+        const languageEntity = await languageRepository.save(language);
+
+        const deleteResp = await request(app.getHttpServer())
+          .delete(`/projects/${project.id}/languages/${languageEntity.id}`)
+          .auth("mocked.jwt", {type: "bearer"})
+          .set("mocked_user_id", ReviewerID);
+        expect(deleteResp.status).toEqual(403);
+      });
+    });
+
+    describe("Translation keys", () => {
+      it("Reviewer CAN'T create a translation key", async () => {
+        const groupEntity = await insertGroup("Name of the group");
+        const translationKeyResp = await request(app.getHttpServer())
+          .post(`/projects/${project.id}/translations`)
+          .auth("mocked.jwt", {type: "bearer"})
+          .set("mocked_user_id", ReviewerID)
+          .send({
+            name: "Translation key",
+            groupId: groupEntity.id,
+            isPlural: false
+          });
+        expect(translationKeyResp.status).toEqual(403);
+      });
+
+      it("Reviewer CAN'T edit a translation key", async () => {
+        const group = await insertGroup("Name of the group");
+        const key = await insertTranslationKey("translation_key_1", group);
+        const translationKeyResp = await request(app.getHttpServer())
+          .patch(`/projects/${project.id}/translations/${key.id}`)
+          .auth("mocked.jwt", {type: "bearer"})
+          .set("mocked_user_id", ReviewerID)
+          .send({name: "new_key"});
+        expect(translationKeyResp.status).toEqual(403);
+      });
+
+      it("Reviewer CAN'T delete a translation key", async () => {
+        const group = await insertGroup("Name of the group");
+        const key = await insertTranslationKey("translation_key_1", group);
+        const translationKeyResp = await request(app.getHttpServer())
+          .delete(`/projects/${project.id}/translations/${key.id}`)
+          .auth("mocked.jwt", {type: "bearer"})
+          .set("mocked_user_id", ReviewerID);
+        expect(translationKeyResp.status).toEqual(403);
+      });
+    });
+
+    describe("Translation values", () => {
+      it("Reviewer CAN'T create a translation value", async () => {
+        const group = await insertGroup("Name of the group");
+        const language = await insertLanguage("English");
+        const key = await insertTranslationKey("translation_key", group);
+
+        const translationValueResp = await request(app.getHttpServer())
+          .post(`/projects/${project.id}/translations/${key.id}/values`)
+          .auth("mocked.jwt", {type: "bearer"})
+          .set("mocked_user_id", ReviewerID)
+          .send({
+            name: "Translated value",
+            languageId: language.id,
+            quantityString: null
+          });
+        expect(translationValueResp.status).toEqual(403);
+      });
+
+      it("Reviewer CAN'T edit a translation value", async () => {
+        const group = await insertGroup("Name of the group");
+        const key = await insertTranslationKey("translation_key", group);
+        const language = await insertLanguage("English");
+        const value = await insertTranslationValue("Translated value", key, language);
+        const translationValueResp = await request(app.getHttpServer())
+          .patch(`/projects/${project.id}/translations/${key.id}/values/${value.id}`)
+          .auth("mocked.jwt", {type: "bearer"})
+          .set("mocked_user_id", ReviewerID)
+          .send({name: "Edited translation"});
+        expect(translationValueResp.status).toEqual(403);
+      });
+
+      it("Reviewer can update a translation status", async () => {
+        const group = await insertGroup("Name of the group");
+        const language = await insertLanguage("English");
+        const key = await insertTranslationKey("translation_key", group);
+        const value = await insertTranslationValue("Translated value", key, language);
+        const translationValueResp = await request(app.getHttpServer())
+          .patch(`/projects/${project.id}/translations/${key.id}/values/${value.id}/status`)
+          .auth("mocked.jwt", {type: "bearer"})
+          .set("mocked_user_id", ReviewerID)
+          .send({
+            status: TranslationStatus.VALIDATED,
+          });
+        expect(translationValueResp.status).toEqual(200);
+        expect(translationValueResp.body.status).toEqual(TranslationStatus.VALIDATED);
+      });
+
+      it("Reviewer CAN'T delete a translation value", async () => {
+        const group = await insertGroup("Name of the group");
+        const key = await insertTranslationKey("translation_key", group);
+        const language = await insertLanguage("English");
+        const value = await insertTranslationValue("Translated value", key, language);
+        const translationValueResp = await request(app.getHttpServer())
+          .delete(`/projects/${project.id}/translations/${key.id}/values/${value.id}`)
+          .auth("mocked.jwt", {type: "bearer"})
+          .set("mocked_user_id", ReviewerID);
+        expect(translationValueResp.status).toEqual(403);
       });
     });
   });

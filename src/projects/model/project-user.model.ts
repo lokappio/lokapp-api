@@ -1,4 +1,5 @@
 import Role from "../../roles/role.enum";
+import Language from "../../languages/language.entity";
 
 /**
  * Represents an user within a project.
@@ -11,6 +12,8 @@ export default class ProjectUser {
   role: Role;
   pending: boolean;
   invitationId: number | null;
+  sourceLanguages: Language[];
+  targetLanguages: Language[];
 
   constructor(
     userId: string,
@@ -18,7 +21,9 @@ export default class ProjectUser {
     email: string,
     role: Role,
     pending: boolean,
-    invitationId: number | null
+    invitationId: number | null,
+    sourceLanguages: Language[] = [],
+    targetLanguages: Language[] = [],
   ) {
     this.userId = userId;
     this.username = username;
@@ -26,5 +31,7 @@ export default class ProjectUser {
     this.role = role;
     this.pending = pending;
     this.invitationId = invitationId;
+    this.sourceLanguages = sourceLanguages;
+    this.targetLanguages = targetLanguages;
   }
 }

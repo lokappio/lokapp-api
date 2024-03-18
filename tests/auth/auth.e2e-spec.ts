@@ -76,7 +76,7 @@ describe("Auth", () => {
       expect(allUsers.length).toBe(1);
 
       // Check user id
-      const foundUser = await userRepository.findOne(userID);
+      const foundUser = await userRepository.findOneById(userID);
       expect(foundUser).not.toBeNull();
       expect(registerResult.body.id).toEqual(userID);
     });
@@ -98,7 +98,7 @@ describe("Auth", () => {
       });
 
       // Check user has been inserted
-      const foundUser = await userRepository.findOne(userID);
+      const foundUser = await userRepository.findOneById(userID);
       expect(foundUser).not.toBeNull();
       expect(registerResult.body.id).toEqual(userID);
     });
